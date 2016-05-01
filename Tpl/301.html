@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>错误跳转页面</title>
+	<meta charset="utf-8">
+	<meta http-equiv="refresh" content="<?php echo $time;?>; URL=<?php echo $url;?>">  
+</head>
+<body>
+访问出错，错误信息：
+<?php 
+echo $msg;
+?>
+将在<?php echo $time; ?>内跳转。
+
+若未跳转<a href="<?php echo $url;?>">请点击</a>
+
+</body>
+</html>
