@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
-namespace Core\Vendor\Image;
+namespace Msqphp\Vendor\Image;
 /**
  *  image类(图片类)，基于GD库;
  *  用法:
- *      $image = new \Core\Image();
+ *      $image = new \Msqphp\Image();
  *      if($image->load('image_file_path')) {
  *      $bool = $image->resize(100)
  *                    ->water()
@@ -17,7 +17,7 @@ namespace Core\Vendor\Image;
  *      $image->close();
  *      $image = null;
  *  用法：
- *      $image = new \Core\Image();
+ *      $image = new \Msqphp\Image();
  *      if($image->create(100,100,'white') === true) {
  *          1.$bool = $image->fillRandom(10,1)->save('new.jpg','jpg');
  *          2.$bool = $image->fillPoint(x,y,'#888888')

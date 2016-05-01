@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
     /**
      * 目录是否为空
      * @param  string $dir      目录路径

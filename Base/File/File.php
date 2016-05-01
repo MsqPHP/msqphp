@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 /**
 *类使用说明：
 *    例：
-*    $driver = \Core\Base\File::getInstance();        ->        获得本对象
+*    $driver = \Msqphp\Base\File::getInstance();        ->        获得本对象
 *    参数：
 *        @param  string $file        =>        文件路径
 *        @param  string $dir         =>        目录路径
@@ -55,7 +55,7 @@ namespace Core\Base\File;
 *             
 *             getDirSize($dir,$round,$unit)                    ->  获得目录大小
 *             getFileSize($file,$round,$unit)                  ->  获得文件大小
-*                注：路径，是否取整，带单位,依赖于 \Core\StringClass::getSize();
+*                注：路径，是否取整，带单位,依赖于 \Msqphp\StringClass::getSize();
 *             getFileExt($file) : string                       ->  获得文件后缀名，失败返回''
 *             getFileInfo($file,$type)                         ->  获得文件信息
 *

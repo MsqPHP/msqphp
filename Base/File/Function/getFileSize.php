@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 /**
  * 得到文件大小
  * @func_name     getFileSize
@@ -17,6 +17,6 @@ return function (string $file,bool $round = true,bool $unit = true) {
     $size = filesize($path);
     
     $round === true && $size = round($size);
-    $unit === true && $size = \Core\StringClass::getSize($size);
+    $unit === true && $size = \Msqphp\StringClass::getSize($size);
     return $size;
 };

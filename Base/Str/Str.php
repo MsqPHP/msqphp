@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\Str;
+namespace Msqphp\Base\Str;
 class Str
 {
     /**
@@ -212,18 +212,6 @@ class Str
         $string = ucwords(str_replace(['-', '_'], ' ', $string));
         return str_replace(' ', '', $string);
     }
-    
-
-    public static function __callStatic(string $method, array $args)
-    {
-        static $func = [];
-        if(!isset($func[$method])) {
-            $func[$method] = require __DIR__.DIRECTORY_SEPARATOR.'Function'.DIRECTORY_SEPARATOR.$method.'.php';
-        }
-        return call_user_func_array($func[$method],$args);
-    }
-
-
     public static function gzcompress(string $string) : string
     {
         return gzcompress($string);
@@ -255,5 +243,28 @@ class Str
     public static function wordwrap(string $string) : string
     {
         return wordwrap($string);
+    }
+
+    /**
+     * 万能静态call
+     * @param  string $method 方法名
+     * @param  array  $args   参数
+     * @return mixed
+     */
+    public static function __callStatic(string $method, array $args)
+    {
+        static $func = [];
+        if (!isset($func[$method])) {
+            $file = __DIR__.DIRECTORY_SEPARATOR.'Function'.DIRECTORY_SEPARATOR.$method.'.php';
+            if (!is_file($file)) {
+                $file = strtr(\Msqphp\Environment::$framework_path,\Msqphp\Environment::$library_path,$file);
+                if (!is_file($file)) {
+                    throw new StrException(__CLASS__.$method.'不存在');
+                    return;
+                }
+            }
+            $func[$method] = require $file;
+        }
+        return call_user_func_array($func[$method],$args);
     }
 }

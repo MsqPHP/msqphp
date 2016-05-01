@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Vendor\Filter;
+namespace Msqphp\Vendor\Filter;
 
 class Filter
 {

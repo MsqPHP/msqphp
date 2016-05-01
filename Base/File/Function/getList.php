@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 /**
  * 得到当前目录列表
  * @func_name       getList

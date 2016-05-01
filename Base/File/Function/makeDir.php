@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 /**
  * 创建目录
  * @func_name             makeDir

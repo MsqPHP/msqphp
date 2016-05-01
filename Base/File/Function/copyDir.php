@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
     /**
      * 复制目录,文件
      * @func_name                 copyDir 

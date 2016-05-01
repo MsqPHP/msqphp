@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Vendor\Date;
+namespace Msqphp\Vendor\Date;
 class Date {
 	/**
 	 * 年月日合法检测

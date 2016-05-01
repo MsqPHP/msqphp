@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 /**
  * 得到目录文件大小
  * @func_name     getDirSize
@@ -26,7 +26,7 @@ return function (string $dir,bool $round = true,bool $unit = true) {
     
     $round === true && $size = round($size);
     
-    $unit === true && $size = \Core\Base\Str\Str::getSize($size);
+    $unit === true && $size = \Msqphp\Base\Str\Str::getSize($size);
     
     return $size;
 };

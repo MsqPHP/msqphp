@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Vendor\Collect;
+namespace Msqphp\Vendor\Collect;
 
 class Collect
 {

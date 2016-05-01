@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\Memcached;
+namespace Msqphp\Base\Memcached;
 
-use Core\Base;
+use Msqphp\Base;
 
 class Memcached
 {

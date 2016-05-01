@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\Arr;
+namespace Msqphp\Base\Arr;
 
 class Arr
 {

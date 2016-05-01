@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\Str;
+namespace Msqphp\Base\Str;
 
 class StrException extends \Exception
 {

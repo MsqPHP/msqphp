@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\Memcached;
+namespace Msqphp\Base\Memcached;
 
-use Core\Base;
+use Msqphp\Base;
 
 class Memcached
 {
@@ -10,12 +10,12 @@ class Memcached
     private function __construct()
     {
         //载入配置文件
-        $config = require \Core\Framework::$config_path.'memcached.php';
+        $config = require \Msqphp\Environment::$config_path.'memcached.php';
         if (!extension_loaded('memcached')) {
             throw new MemcachedException('not support memcached');
         }
         //获得实例
-        $this->memcached = $memcached = new \Memcached('core');
+        $this->memcached = $memcached = new \Memcached('Msqphp');
         //是否是原始的
         if ($memcached->isPristine()) {
             //参数设置

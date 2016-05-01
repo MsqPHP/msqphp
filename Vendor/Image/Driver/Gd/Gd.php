@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
-namespace Core\Vender\Image\Driver\Gd;
-class Gd implements Core\Vender\Image\DriverInterface
+namespace Msqphp\Vender\Image\Driver\Gd;
+class Gd implements Msqphp\Vender\Image\DriverInterface
 {
 	//图片资源
 	private $resource     = null;

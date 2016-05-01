@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
     /**
      * 清空目录内容
      * @func_name               emptyDir

@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace Core\Base\File;
+namespace Msqphp\Base\File;
 return function (string $content) :string {
     $content = preg_replace_callback('/<script([\s\S]*)>([\s\S]*)<\/script>/',function($matches){
         $result = '<script'.$matches[1].'>';
