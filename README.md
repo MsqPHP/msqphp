@@ -60,14 +60,14 @@ git : https://github.com/msqphp/msqphp
 + 确保所有配置的对应路径或文件存在, 不负责创建什么的
 + 注意以上及一系列未知注意事项
 
-## 完成或未完成
+## 完成或未完成(伪成品,差不多可以当成成品使用,但可能还会有更改)
 + cookie(完成)
 + session(完善中)
-+ cache(半成品)
-+ route(半成品)
++ cache(伪成品)
++ route(伪成品)
 + controller(伪成品)
 + model(伪成品)
-+ view(完善中)
++ view(伪成品)
 + test类(伪成品)
 + test(完善中)
 + 基类(完善中)
