@@ -4,4 +4,4 @@ namespace msqphp\core\controller;
 use msqphp\base;
 use msqphp\core;
 
-return '\msqphp\core\response\Response';
+return '\msqphp\base\response\Response';

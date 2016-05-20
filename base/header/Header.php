@@ -1,29 +1,18 @@
 <?php declare(strict_types = 1);
-namespace msqphp\Vender\Header;
+namespace msqphp\vender\header;
 
 class Header
 {
     private static $instance = null;
-    private function __construct()
-    {
 
-    }
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-        return static::$instance;
-    }
-
-    public function noCache()
+    public static function noCache()
     {
         header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
         header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
         header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
         header( 'Pragma: no-cache' );
     }
-    public function status(int $code)
+    public static function status(int $code)
     {
         static $status_info = [
             // Informational 1xx
@@ -78,7 +67,7 @@ class Header
             header('HTTP/1.1 '.$code.' '.$status_info[$code]);
         }
     }
-    public function type(string $type)
+    public static function type(string $type)
     {
         static $headers = [
             'json'   => 'application/json', 
@@ -94,7 +83,7 @@ class Header
             throw new HeaderException($type.'暂未支持');
         }
     }
-    public function download(string $type, string $filepath, string $filename = '')
+    public static function download(string $type, string $filepath, string $filename = '')
     {
         $this->type($type);
         header('Accept-Ranges:bytes');

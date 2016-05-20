@@ -19,7 +19,7 @@ class Environment
                 if (is_dir($path)) {
                     return realpath($path) . DIRECTORY_SEPARATOR;
                 } else {
-                    core\response\Response::error($path.'不存在');
+                    base\response\Response::error($path.'不存在');
                 }
             }, 
             $path_config
@@ -29,7 +29,7 @@ class Environment
             require __DIR__.'/core/debug/Debug.php';
             core\debug\Debug::start();
         } catch(core\debug\DebugException $e) {
-            core\response\Response::error($e->getMessage());
+            base\response\Response::error($e->getMessage());
         }
 
         //初始化配置
@@ -37,7 +37,7 @@ class Environment
             require __DIR__.'/core/config/Config.php';
             core\config\Config::init();
         } catch(core\config\ConfigException $e) {
-            core\response\Response::error($e->getMessage());
+            base\response\Response::error($e->getMessage());
         }
         define('FRAMEWORK_INIT_END', microtime(true));
     }
@@ -69,7 +69,7 @@ class Environment
         try {
             core\route\Route::run();
         } catch(core\route\RouteException $e) {
-            core\response\Response::error($e->getMessage());
+            base\response\Response::error($e->getMessage());
         }
         define('FRAMEWORK_RUN_END', microtime(true));
     }
@@ -84,7 +84,7 @@ class Environment
         try {
             core\debug\Debug::end();
         } catch(core\Debug\DebugException $e) {
-            core\response\Response::error($e->getMessage());
+            base\response\Response::error($e->getMessage());
         }
     }
     /**
@@ -109,7 +109,7 @@ class Environment
         if (is_dir($path)) {
             static::$path[$name] = realpath($path).DIRECTORY_SEPARATOR;
         } else {
-            core\response\Response::error($path.'不存在');
+            base\response\Response::error($path.'不存在');
         }
     }
 }

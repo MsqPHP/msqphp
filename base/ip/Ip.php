@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\vendor\ip;
+namespace msqphp\base\ip;
 
 class Ip
 {

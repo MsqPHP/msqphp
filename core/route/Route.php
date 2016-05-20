@@ -1,6 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
+use msqphp\base;
 use msqphp\core;
 
 class Route
@@ -163,7 +164,7 @@ class Route
         if (static::$matched) {
             return;
         }
-        static::$info['ip'] = static::$info['ip'] ?? \msqphp\vendor\ip\Ip::get();
+        static::$info['ip'] = static::$info['ip'] ?? base\ip\Ip::get();
         if (in_array(static::$info['ip'], (array)$ip)) {
             call_user_func_array($func, $args);
         }

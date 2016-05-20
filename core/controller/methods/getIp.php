@@ -3,9 +3,8 @@ namespace msqphp\core\controller;
 
 use msqphp\base;
 use msqphp\core;
-use msqphp\vendor;
 
 return function()
 {
-    return vendor\ip\Ip::get();
+    return base\ip\Ip::get();
 };
