@@ -169,7 +169,16 @@ class Route
             call_user_func_array($func, $args);
         }
     }
-
+    public static function port( $port, $func, array $args = [])
+    {
+        if (static::$matched) {
+            return;
+        }
+        static::$info['port'] = static::$info['port'] ?? $_SERVER['SERVER_PORT'];
+        if (in_array(static::$info['port'], (array)$port)) {
+            call_user_func_array($func, $args);
+        }
+    }
     public static function get(string $param, $func)
     {
         if (static::$matched || 'get' !== static::$method) {

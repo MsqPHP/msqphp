@@ -113,7 +113,7 @@ abstract class View
             throw new ViwException('未设置多语支持');
         }
     }
-    public function getLanguageData(string $file_name) : array
+    private function getLanguageData(string $file_name) : array
     {
         if ($this->language) {
             $file =realpath($this->config['language_path'].DIRECTORY_SEPARATOR.$this->options['language'].DIRECTORY_SEPARATOR.$this->options['group']).DIRECTORY_SEPARATOR.$file_name.'.php'; 
