@@ -24,17 +24,11 @@ class Response
     public static function jump(string $url, int $time = 0, string $msg = '')
     {
         $msg = $msg ?: '系统将在'.$time.'秒之后自动跳转到<a href="'.$url.'">'.$url.'</a>！';
-        if(!headers_sent()) {
-            if($time > 0) {
-                header('refresh:'.$time.';url='.$url);
-                echo $msg;
-            } else {
-                header('location:'.$url, true, 301);
-            }
+        if($time > 0) {
+            header('refresh:'.$time.';url='.$url);
+            echo $msg;
         } else {
-            $str = '<meta http-equiv="Refresh" content="'.$time.'URL='.$url.'">';
-            $time > 0 || ($str .=$msg);
-            echo $str;
+            header('location:'.$url, true, 301);
         }
     }
     /**
@@ -72,7 +66,7 @@ class Response
      */
     public static function alert(string $msg, string $url = '', $charset='utf-8')
     {
-        header('Content-type: text/html; charset='.$charset);
+        base\header\Header::type('html');
         $alert_msg = 'alert("'.$msg.'");';
         if( empty($url) ) {
             $go_url = 'history.go(-1);';
@@ -81,5 +75,20 @@ class Response
         }
         echo '<script type="text/javascript">'.$alert_msg.$go_url.'</script>';
         exit;
+    }
+    /**
+     * xml
+     */
+    public static function xml($data, string $root = 'root', bool $end = false)
+    {
+        base\header\Header::type('xml');
+
+        $xml = '<?xml version="1.0" encoding="utf-8"?>';
+
+        $xml = '<'.$root.'>'.base\xml\Xml::encode($data).'</'.$root.'>';
+
+        echo $xml;
+
+        $end && exit;
     }
 }

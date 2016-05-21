@@ -13,7 +13,7 @@ use msqphp\base;
  */
 return function (string $dir, bool $absolute = false) : array
 {
-    
+
     if (!is_dir($dir)) {
         throw new DirException($dir.'文件夹不存在');
     }

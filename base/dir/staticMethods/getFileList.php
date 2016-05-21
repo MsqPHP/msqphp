@@ -14,7 +14,7 @@ use msqphp\base;
  */
 return function (string $dir, bool $absolute = false) : array
 {
-    
+
     if (!is_dir($dir)) {
         //无法操作
         throw new DirException($dir.'文件夹不存在');
@@ -37,5 +37,5 @@ return function (string $dir, bool $absolute = false) : array
         return array_filter($list, function($path) use ($dir) {
             return is_file($dir.$path);
         }, 0);
-    }    
+    }
 };

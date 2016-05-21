@@ -285,7 +285,6 @@ class Route
                         $args[] = $_POST[$key];
                     }
                 }
-                show($method);
                 $namespace = static::$namespace . $class;
                 $cont = new $namespace();
                 call_user_func_array([$cont, $method], $args);

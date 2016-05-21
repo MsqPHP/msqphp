@@ -18,7 +18,7 @@ trait Base
             if (!is_file($file)) {
                 $file = str_replace(\msqphp\Environment::getPath('library'), \msqphp\Environment::getPath('framework'), $file);
                 if (!is_file($file)) {
-                    throw new BaseException(__CLASS__.$method.'不存在');
+                    throw new BaseException(__CLASS__.'类的'.$method.'不存在');
                 }
             }
             $func[$method] = require $file;

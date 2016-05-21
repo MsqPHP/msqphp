@@ -12,7 +12,7 @@ namespace msqphp\base\dir;
  */
 return function (string $dir, string $type= '*', string $pre = '') : array
 {
-    
+
     if (!is_dir($dir)) {
         throw new DirException($dir.' 文件夹不存在');
     }
@@ -22,7 +22,7 @@ return function (string $dir, string $type= '*', string $pre = '') : array
     }
 
     $dir = realpath($dir).DIRECTORY_SEPARATOR;
-    
+
     false === strpos($type, '.') && $type = '.'.$type;
 
     $files = glob($dir.$pre.'*'.$type);
