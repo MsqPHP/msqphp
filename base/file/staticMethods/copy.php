@@ -24,7 +24,7 @@ return function (string $from, string $to, bool $force = false)
     //对应文件是否存在
     if (is_file($to)) {
         if ($force) {
-            static::deleteFile($to, true);
+            static::delete($to, true);
         } else {
             throw new FileException($to.'已存在, 无法复制');
         }

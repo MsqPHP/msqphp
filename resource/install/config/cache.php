@@ -1,5 +1,4 @@
 <?php declare(strict_types = 1);
-defined('APP_DEBUG') || die('不合理访问');
 return [
     //是否允许多缓存处理器
     'multi'            =>  true,

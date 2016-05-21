@@ -1,6 +1,12 @@
 <?php declare(strict_types = 1);
-defined('APP_DEBUG') || die('不合理访问');
 return [
+    /**
+     * mysql[type,host,port,username.password,name,chatset,prefix,params]
+     * cubrid[name,host,port,username,password,charset]
+     * mssql[host,name,charset,username,password]
+     * sybase[host,name,charset,username,password]
+     * dblib[host,name,charset,username,password]
+     */
     // 数据库类型
     'type'               =>  'mysql',
     // 服务器地址
@@ -12,11 +18,9 @@ return [
     // 密码
     'password'           =>  'password',
     // 数据库名
-    'name'               =>  'databasename',
+    'name'               =>  'daname',
     // 数据库编码默认采用utf8
     'charset'            =>  'utf8',
-    // 数据库表前缀
-    'prefix'             =>  '',
     // 数据库连接参数
     'params'             =>  [\PDO::ATTR_PERSISTENT=>true],
     //多数据库
@@ -27,9 +31,8 @@ return [
             'port'               =>  '3306',
             'username'           =>  'root',
             'password'           =>  'password',
-            'name'               =>  'databasename',
+            'name'               =>  'daname',
             'charset'            =>  'utf8',
-            'prefix'             =>  '',
         ],
     ],
 ];

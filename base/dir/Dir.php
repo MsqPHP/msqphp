@@ -58,7 +58,6 @@ class Dir
      */
     public static function copy(string $from, string $to, bool $force = false)
     {
-
         //原目录是否存在
         if (!is_dir($from)) {
             throw new DirException($from.' 目录不存在');
@@ -72,13 +71,16 @@ class Dir
         //目标目录是否存在
         if (is_dir($to)) {
             if ($force) {
-                Dir::delete($to, true);
+                Dir::empty($to, true);
             } else {
                 throw new DirException($to.' 目录已存在');
             }
+        } else {
+            Dir::make($to);
         }
+        $to_parent = dirname($to);
         //目标父目录是否可操作
-        if (!is_writable(dirname($to)) || !is_executable(dirname($to))) {
+        if (!is_writable($to_parent) || !is_executable($to_parent)) {
             throw new DirException($to.' 父目录无法操作');
         }
 
@@ -115,7 +117,7 @@ class Dir
 
     /**
      * 清空目录内容
-     * @func_name               emptyDir
+     * @func_name               empty
      * @param  string $dir      目录路径
      * @param  bool   $force    为空创建
      * @throws DirException
@@ -155,7 +157,7 @@ class Dir
     public static function delete(string $dir, bool $force = false)
     {
         //目录是否存在
-        if(!is_dir($dir)) {
+        if(is_dir($dir)) {
             if (!$force) {
                 throw new DirException($dir.'目录不存在, 无法删除');
             }
@@ -165,7 +167,7 @@ class Dir
                 throw new DirException($dir.'目录不可操作, 无法删除');
             }
             //如果强制，先清空目录
-            $force === true && Dir::emptyDir($dir);
+            $force === true && Dir::empty($dir);
             //检测是否为空
             if (!Dir::isEmpty($dir)) {
                 throw new DirException($dir.' 目录不为空, 无法删除');

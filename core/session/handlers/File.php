@@ -33,9 +33,9 @@ class File  implements \SessionHandlerInterface {
     public function gc ($maxlifetime)
     {
         try {
-            base\file\File::deleteFileByTime($this->path, 'm', $maxlifetime, $this->extension);
+            base\dir\dir::deleteAllFileByTime($this->path, 'm', $maxlifetime, $this->extension);
             return true;
-        } catch (base\file\FileException $e) {
+        } catch (base\dir\DirException $e) {
             throw new SessionHandlerException($e->getMessage());
         }
     }

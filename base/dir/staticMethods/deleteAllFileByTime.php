@@ -31,6 +31,6 @@ return function (string $dir, string $type, int $expire = 3600, string $ext = ''
     //遍历获得所有文件
     foreach(Dir::getAllFileByType($dir, $ext, $pre) as $file) {
         //过期删除
-        $func($file) < $expire && base\file\File::delete($file);        
-    }    
+        $func($file) < $expire && base\file\File::delete($file);
+    }
 };

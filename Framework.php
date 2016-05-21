@@ -8,6 +8,7 @@ class Framework
         require_once __DIR__.'/../../autoload.php';
         $root = realpath($root) . DIRECTORY_SEPARATOR;
         $lib_path = $root . 'library' . DIRECTORY_SEPARATOR . 'msqphp' . DIRECTORY_SEPARATOR . 'framework';
+        $install_path = __DIR__.DIRECTORY_SEPARATOR.'resource'.DIRECTORY_SEPARATOR.'install'.DIRECTORY_SEPARATOR;
         $path_config = [
             'root'        => $root,
             'application' => $root . 'application',
@@ -20,8 +21,9 @@ class Framework
         ];
         foreach ($path_config as $key => $path) {
             base\dir\Dir::make($path, true);
-            if ($key === 'public' || base\dir\Dir::isEmpty($path, true)) {
-                base\dir\Dir::copy(__DIR__.DIRECTORY_SEPARATOR.'resource'.DIRECTORY_SEPARATOR.$key, $path, true);
+            if ($key === 'public' || base\dir\Dir::isEmpty($path, true))
+            {
+                base\dir\Dir::copy($install_path.$key, $path, true);
             }
         }
         $dir_list = base\dir\Dir::getAllDir(__DIR__);
