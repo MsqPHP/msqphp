@@ -2,7 +2,7 @@
 namespace msqphp\base\file;
 /**
  * 复制文件
- * @func_name                 copy 
+ * @func_name                 copy
  * @param  string $from       文件路径
  * @param  string $to         文件路径
  * @param  string $force      不存在则创建, 存在则替换

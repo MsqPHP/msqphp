@@ -26,7 +26,7 @@ git : https://github.com/msqphp/msqphp
 + pdo 否则数据库什么的就别想了
 + config 按需合理配置
 + apache 重写规则以及 自定义 入口文件后缀
-    
+
     > 注:因为框架比较强大的视图类(至少我认为很强大), 导致静态html可以不经过apache重写规则直接访问(是不是很强大), 且只需判断一下是否过期就直接返回, 所以入口文件后缀为server.php;
 
 
@@ -35,18 +35,24 @@ git : https://github.com/msqphp/msqphp
 ##特性
 
 
++ 仅一常量(APP_DEBUG)两函数(show,show_bug(用于测试等)),其余全部是类
++ 极轻量级(羽毛级别)的框架
+
+    > 在带注释,10k左右配置或更多,20k左右composer或更多,一个4k有一定逻辑的route类的情况下运行
+    > 最小化空框架运行等于composer自动加载类的3倍较多,加载不到60kb大小
+    > 测试运行空框架等于composer自动加载类的4倍较多,加载不到50kb大小
+
 + 命名空间, 闭包函数一堆
 + 万能get, call, staticcall, 便于扩展
 
     > 注:结果导致我不确定这个框架是不是面向对象什么的了, 需要一个新功能, 好, 多一个method文件, 返回一个function, 需要一个新引用, 好, 多一个get文件, 返回一个instance, 0.0, 无法想象会变成什么样子
-    
+
 + 伪面向对象, 原因如上
 + 基础类
 + 框架核心类
 + 扩展类
 + composer支持(虽然是废话)(但这真的是一个很大的特性)
 + beta -2.0(注意是负)
-
 
 
 ####################################################
@@ -80,7 +86,7 @@ git : https://github.com/msqphp/msqphp
 + composer.json require msqphp/framework 版本号??(好像是1.几的beta版本)
 + 配置composer autoload pas-4 "App":"application" , 自己app应用的顶级命名空间位置
 + composer update
-+ 引入vendor/msqphp/framework/Framework.php(或者引入composer auto类)
++ 引入vendor/msqphp/framework/Framework.php(或者引入composer autoload类)
 + 写代码: \msqphp\Framework::install(根目录) (理想状态, 现在是个半成品)
 + 配置入口目录 根目录下public
 + 输入配置的网站(ip地址)开始使用吧.
@@ -160,7 +166,7 @@ www  WEB部署目录（或者子目录）
 
 + 文件名   类文件大驼峰, 过程形文件小驼峰, 后缀.php
 
-+ 类       大驼峰 例 Index, UserView, 
++ 类       大驼峰 例 Index, UserView,
 
 + 类函数   小驼峰  例  login, loginWithCookie
 
@@ -175,7 +181,7 @@ www  WEB部署目录（或者子目录）
 + 数组     [ ], 不推荐或避免使用[), 无论多维还是一维;
 
 + 闭包函数  function ($arg1, $arg2) use ($arg3, $arg4) {
-    
+
             };
 
 + 缩进     4个空格, 原因, 便于空格控制缩进

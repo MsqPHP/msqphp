@@ -3,5 +3,4 @@ namespace msqphp\core\controller;
 
 class ControllerException extends \Exception
 {
-    
 }

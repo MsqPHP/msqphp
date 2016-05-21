@@ -45,7 +45,6 @@ namespace msqphp\vendor\image;
  *      fillPoint   填充点
  *      fillLine    填充线
  *      fillRandom  批量填充点，线，矩形
- *  
  */
 class Image
 {
@@ -63,8 +62,6 @@ class Image
     const IMAGE_FILL_POINT = 1;//点
     const IMAGE_FILL_LINE  = 2;//直线
     const IMAGE_FILL_RECT  = 3;//矩形
-    //默认保存图片格式
-    private $default_type  = 'jpeg';
     //允许图片格式
     private $allowed       = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
 
@@ -111,7 +108,7 @@ class Image
         if (!in_array($type,$this->allowed)) {
             throw new \Exception($type,'不被允许', 500);
         }
-        self::$driver->convert($type);
+        static::$driver->convert($type);
         return $this;
     }
 

@@ -27,7 +27,7 @@ abstract class View
         $this->config = $config = core\config\Config::get('view');
         //选项
         $options = [];
-        //是否支持多主题     
+        //是否支持多主题
         if ($config['theme']) {
             $this->theme = true;
             $options['theme'] = $config['default_theme'];
@@ -248,9 +248,9 @@ abstract class View
             if (!is_file($tpl_file)) {
                 throw new ViewException($tpl_file.'模版文件不存在');
             }
-            
+
             $result = core\template\Template::commpile(base\file\File::get($tpl_file), $this->data, $this->getLanguageData($file_name));
-            
+
             base\file\File::write($tpl_cache_file, $result, true);
 
             if (0 !== $expire) {
@@ -279,9 +279,9 @@ abstract class View
         $content = '';
 
         $display = $this->layout ? array_merge($this->options['layout_begin'],$this->options['display'],$this->options['layout_end']) : $this->options['display'];
-        
+
         unset($this->options['display']);
-        
+
         foreach ($display as $file) {
             $content .= base\file\File::get($file);
         }
@@ -299,7 +299,7 @@ abstract class View
 
         if (0 !== $expire) {
             $this->all_view[$tpl_cache_file] = ['expire'=>time()+$expire,'file'=>$tpl_cache_file];
-            $this->all_changed = true;            
+            $this->all_changed = true;
         }
 
         return $this;
@@ -346,7 +346,7 @@ abstract class View
     {
         //拼装文件路径
         $tpl_last_file = $this->getTplLastFilePath($file_name);
-        
+
         $tpl_arr = [];
         //遍历赋值
         foreach ($this->data as $tpl_key => $tpl_value) {

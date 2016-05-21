@@ -2,5 +2,4 @@
 namespace msqphp\base\file;
 class FileException extends \Exception
 {
-    
 }

@@ -3,5 +3,4 @@ namespace msqphp\vender\header;
 
 class HeaderException extends \Exception
 {
-    
 }

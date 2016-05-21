@@ -131,7 +131,7 @@ class File
             //错
             if (!$force) {
                 throw new FileException($file.'父目录不存在');
-            } else {                
+            } else {
                 //创建
                 base\dir\Dir::make($parent_dir, true);
             }

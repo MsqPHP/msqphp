@@ -11,7 +11,6 @@ function mime(string $file) : string
     }
     if (!function_exists('finfo_open')) {
         throw new FileException('需要php_fileinfo扩展');
-        
     }
     $finfo    = finfo_open(FILEINFO_MIME);
     $mime = finfo_file($finfo, $filename);

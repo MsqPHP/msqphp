@@ -3,5 +3,4 @@ namespace msqphp\base\json;
 
 class JsonException extends \Exception
 {
-    
 }

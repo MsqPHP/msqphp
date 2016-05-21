@@ -19,7 +19,6 @@ return function (string $old_path, string $new_path)
     if (!is_writable($old_path) || !is_executable($old_path)) {
         throw new FileException($old_path.'文件不可操作, 无法重命名');
     }
-    
     //目标目录是否存在
     if (is_file($new_path)) {
         if ($force) {
@@ -27,8 +26,8 @@ return function (string $old_path, string $new_path)
         } else {
             throw new FileException($new_path.'对应文件已存在, 无法重命名');
         }
-        
-    }        
+
+    }
     //目标父目录是否存在
     $new_parent_path = dirname($new_path);
     if (!is_dir($new_parent_path)) {

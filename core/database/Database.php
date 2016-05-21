@@ -16,7 +16,7 @@ class Database
             switch ($config['type']) {
                 case 'mysql':
                     $dns = $config['type'].':host='.$config['host'].';port='.$config['port'].';dbname='.$config['name'].';charset='.$config['charset'].';';
-                    break;                
+                    break;
                 default:
                     throw new DatabaseException('未知的数据库类型', 1);
             }

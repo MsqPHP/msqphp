@@ -3,5 +3,4 @@ namespace msqphp\base\crypt;
 
 class CryptException extends \Exception
 {
-    
 }

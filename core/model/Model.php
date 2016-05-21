@@ -125,7 +125,6 @@ abstract class Model
         return $this;
     }
 
-    
     public function getOne()
     {
         return static::$db::getOne($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
@@ -241,7 +240,7 @@ abstract class Model
                         $query .= $v.' AND ';
                     } else {
                         $query .= '`'.$this->table.'`.`'.$v[0].'` = `'.$key.'`.`'.$v[1].'` AND ';
-                    }                    
+                    }
                 }
                 $query = substr($query, 0, strlen($query)-4);
             }

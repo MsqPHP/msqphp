@@ -3,5 +3,4 @@ namespace msqphp\core\log;
 
 class LogException extends \Exception
 {
-    
 }

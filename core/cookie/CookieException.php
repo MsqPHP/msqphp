@@ -3,5 +3,4 @@ namespace msqphp\core\cookie;
 
 class CookieException extends \Exception
 {
-    
 }

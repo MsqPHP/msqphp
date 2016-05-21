@@ -27,7 +27,7 @@ class Dir
             $parent_dir = dirname($dir);
 
             if (!is_dir($parent_dir)) {
-                
+
                 if ($force) {
                     //创建
                     Dir::make($parent_dir, true, $code);
@@ -58,17 +58,17 @@ class Dir
      */
     public static function copy(string $from, string $to, bool $force = false)
     {
-        
+
         //原目录是否存在
         if (!is_dir($from)) {
             throw new DirException($from.' 目录不存在');
         }
-    
+
         //是否可操作
         if (!is_writable($from) || !is_executable($from)) {
             throw new DirException($from.' 无法操作');
         }
-    
+
         //目标目录是否存在
         if (is_dir($to)) {
             if ($force) {
@@ -81,10 +81,10 @@ class Dir
         if (!is_writable(dirname($to)) || !is_executable(dirname($to))) {
             throw new DirException($to.' 父目录无法操作');
         }
-    
+
         $from = realpath($from) . DIRECTORY_SEPARATOR;
         $to   = realpath($to)   . DIRECTORY_SEPARATOR;
-    
+
         //复制目录
         foreach (Dir::getDirList($from, false) as $dir) {
             Dir::copy($from.$dir, $to.$dir, true);
@@ -107,7 +107,7 @@ class Dir
             throw new DirException($dir.' 不存在');
         }
         if (!is_readable($dir)) {
-            throw new DirException($dir.'不可读');            
+            throw new DirException($dir.'不可读');
         }
         //scandir 获得当前目录列表, 如果为空, 则只有 . 和 ..
         return count(scandir($dir)) === 2;
@@ -192,28 +192,28 @@ class Dir
      */
     public static function getSize(string $dir, bool $round = true, bool $unit = true)
     {
-        
+
         if (!is_dir($dir)) {
             throw new DirException($dir.' 文件夹不存在');
-            
+
         }
         if (!is_readable($dir)) {
             throw new DirException($dir.' 文件夹不可读');
         }
-        
+
         $size = 0;
-        
+
         foreach (Dir::getDirList($dir, true) as $children_dir) {
             $size += Dir::getSize($children_dir, false, false);
         }
         foreach (Dir::getFileList($dir, true) as $children_file) {
             $size += base\file\File::getSize($children_file, false, false);
         }
-        
+
         $round && $size = round($size);
-        
+
         $unit  && $size = base\number\Number::byte($size);
-        
+
         return $size;
     }
     /**

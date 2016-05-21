@@ -3,5 +3,4 @@ namespace msqphp\core\database;
 
 class DatabaseException extends \Exception
 {
-    
 }

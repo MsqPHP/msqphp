@@ -18,8 +18,8 @@ class Filter
             }
             return $value;
         } elseif(is_string($value)) {
-            return function_exists('htmlspecialchars') ? 
-                htmlspecialchars($value, ENT_QUOTES) : 
+            return function_exists('htmlspecialchars') ?
+                htmlspecialchars($value, ENT_QUOTES) :
                 str_replace(['&', '\'', '"', '<', '>'], ['&amp;', '&quot;', '&#039;', '&lt;', '&gt;'], $value);
         } else {
                 return $value;

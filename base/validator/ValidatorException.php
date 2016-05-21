@@ -3,5 +3,4 @@ namespace msqphp\base\validator;
 
 class ValidatorException extends \Exception
 {
-    
 }

@@ -3,5 +3,4 @@ namespace msqphp\base\html;
 
 class HtmlException extends \Exception
 {
-    
 }

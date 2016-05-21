@@ -9,23 +9,23 @@ class Cookie
     private static $instance = null;
     private static $config   = [
         //前缀
-        'prefix'=>'', 
+        'prefix'      =>'',
         //过期时间
-        'expire'=>3600, 
+        'expire'      =>3600,
         //路径
-        'path'=>'/', 
+        'path'        =>'/',
         //域名
-        'domain'=>'', 
+        'domain'      =>'',
         //https
-        'secure'=>false, 
+        'secure'      =>false,
         //httpoly
-        'httponly'=>false, 
+        'httponly'    =>false,
         //过滤
-        'filter'=>false, 
+        'filter'      =>false,
         //url转义
-        'transcoding'=>false, 
+        'transcoding' =>false,
         //加密
-        'encode'=>false, 
+        'encode'      =>false,
     ];
     //当前脚本所有的cookie
     private static $cookies   = [];
@@ -224,7 +224,7 @@ class Cookie
         //获得cookie信息
         $cookie   = $this->pointer;
         $key      = $this->getKey();
-        
+
         $this->isSetValue();
 
         $value    = (string) $cookie['value'];
@@ -265,7 +265,7 @@ class Cookie
     }
     /**
      * 得到当前操作cookie正确键值
-     * @param  string $key 
+     * @param  string $key
      * @return string
      */
     private function getKey() : string
@@ -306,7 +306,7 @@ class Cookie
     private function encodeValue()
     {
         $this->isSetValue();
-        
+
         $this->pointer['value'] = base\crypt\Crypt::encrypt(serialize($this->pointer['value']));
     }
     /**

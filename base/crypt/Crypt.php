@@ -6,7 +6,7 @@ use msqphp\base;
 class Crypt
 {
     use base\Base;
-    
+
     public static function base64_encode(string $str) : string
     {
         return base64_encode($str);

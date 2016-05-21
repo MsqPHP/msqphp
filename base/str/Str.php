@@ -48,7 +48,7 @@ class Str
      * @param  int|integer $length 长度
      * @return string
      */
-    public static  function randomBytes(int $length = 16) : string 
+    public static  function randomBytes(int $length = 16) : string
     {
         if ($length <= 0) {
             throw new StrException($length.'必须大于0');
@@ -179,7 +179,7 @@ class Str
         // strnatcmp("4", "14")     按自然排序比较字符串
         // strnatcasecmp()       同上，（区分大小写）
     }
-    
+
     public static function countWords(string $string) : int {
        return str_word_count($string);
     }

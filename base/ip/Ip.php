@@ -3,6 +3,7 @@ namespace msqphp\base\ip;
 
 class Ip
 {
+    use base\Base;
     private static $ip = '';
     private static $intip = 0;
     /**
@@ -43,7 +44,6 @@ class Ip
             }
         }
         return static::$ip;
-        
     }
     public static function getInt() : int
     {

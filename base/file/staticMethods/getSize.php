@@ -22,7 +22,7 @@ return function (string $file, bool $round = true, bool $unit = true)
     }
     //获得字节大小
     $size = filesize($path);
-    
+
     $round && $size = round($size);
 
     $unit  && $size = base\number\Number::byte($size);

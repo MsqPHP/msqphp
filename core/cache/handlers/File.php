@@ -53,7 +53,7 @@ class File implements CacheHandlerInterface
                     return true;
                 }
             } catch(base\file\FileException $e) {
-                return false;        
+                return false;
             }
         } else {
             return false;
@@ -72,7 +72,7 @@ class File implements CacheHandlerInterface
         try {
             $value = base\file\File::get($file);
         } catch(base\file\FileException $e) {
-            throw new CacheHandlerException($e->getMessage());        
+            throw new CacheHandlerException($e->getMessage());
         }
         //是否解压
         if ($this->config['compress'] && function_exists('gzuncompress')) {
@@ -92,7 +92,7 @@ class File implements CacheHandlerInterface
         //获得文件路径
         $file     = $this->filename($key);
         //值:过期时间 . 转义后的值
-        
+
         $value = (string)(time() + $expire) . serialize($value);
         //是否压缩
         if ($this->config['compress'] && function_exists('gzcompress')) {
@@ -107,7 +107,7 @@ class File implements CacheHandlerInterface
             $this->config['length'] > 0 && $this->queue($key);
 
         } catch(base\file\FileException $e) {
-            throw new CacheHandlerException($e->getMessage());        
+            throw new CacheHandlerException($e->getMessage());
         }
     }
     /**
@@ -171,7 +171,7 @@ class File implements CacheHandlerInterface
         try {
             base\file\File::delete($this->filename($key), true);
         } catch(base\file\FileException $e) {
-            throw new CacheHandlerException($e->getMessage());        
+            throw new CacheHandlerException($e->getMessage());
         }
     }
     /**
@@ -184,7 +184,7 @@ class File implements CacheHandlerInterface
         try {
             base\dir\Dir::deleteAllFileByType($this->config['path'], $this->config['extension'], $this->config['prefix']);
         } catch(base\file\FileException $e) {
-            throw new CacheHandlerException($e->getMessage());        
+            throw new CacheHandlerException($e->getMessage());
         }
     }
     /**
@@ -239,4 +239,4 @@ class File implements CacheHandlerInterface
         //目录.md5后键.扩展名
         return $dir.$name.$this->config['extension'];
     }
-}    
+}

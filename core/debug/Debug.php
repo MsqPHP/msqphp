@@ -8,49 +8,48 @@ class Debug
 {
     public static function start()
     {
-        switch (APP_DEBUG) {
-            case 0:
-                //设置错误级别最低
-                error_reporting(0);
-                //错误不显示
-                ini_set('display_errors', 'Off');
-                //开启日志记录
-                ini_set('log_errors', 'On');
-                break;
-            case 5:
-                require \msqphp\Environment::getPath('resources').DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.'503.html';
-                exit;
-            case 4:
-            case 3:
-                define('NO_CACHE', true);
-            case 2:
-                define('NO_VIEW', true);
-            case 1:
-                //设置错误级别最高
-                error_reporting(E_ALL);
-                //错误显示
-                ini_set('display_errors', 'On');
-                //取消日志记录
-                ini_set('log_errors', 'Off');
-                //错误处理
-                set_exception_handler(['msqphp\\core\\exception\\Exception','handler']);
-                set_error_handler(['msqphp\\core\\error\\Error','handler'], E_ALL);
-                function_exists('getrusage') && strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && define('PHP_START_CPU', getrusage());
-                function_exists('memory_get_usage') && define('PHP_START_MEM' , memory_get_usage());
-                define('NO_STATIC', true);
-                break;
-            default:
-                throw new DebugException('未知的访问模式');
-        }
-        if (4=== APP_DEBUG) {
-            require \msqphp\Environment::getPath('framework').'Test.php';
+        if (5 === APP_DEBUG) {
+            require \msqphp\Environment::getPath('resources').DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.'503.html';
             exit;
+        } elseif (0 === APP_DEBUG) {
+            //设置错误级别最低
+            error_reporting(0);
+            //错误不显示
+            ini_set('display_errors', 'Off');
+            //开启日志记录
+            ini_set('log_errors', 'On');
+        } else {
+            //设置错误级别最高
+            error_reporting(E_ALL);
+            //错误显示
+            ini_set('display_errors', 'On');
+            //取消日志记录
+            ini_set('log_errors', 'Off');
+            switch (APP_DEBUG) {
+                case 4:
+                    require \msqphp\Environment::getPath('framework').'Test.php';
+                    exit;
+                case 3:
+                    define('NO_CACHE', true);
+                case 2:
+                    define('NO_VIEW', true);
+                case 1:
+                    //错误处理
+                    define('NO_STATIC', true);
+                    break;
+                default:
+                    throw new DebugException('未知的访问模式');
+            }
         }
+        set_exception_handler(['msqphp\\core\\exception\\Exception','handler']);
+        set_error_handler(['msqphp\\core\\error\\Error','handler'], E_ALL);
+        function_exists('getrusage') && strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && define('PHP_START_CPU', getrusage());
+        function_exists('memory_get_usage') && define('PHP_START_MEM' , memory_get_usage());
     }
     public static function end()
     {
         if (APP_DEBUG > 0) {
-            
+
             if (defined('PHP_START_CPU')) {
                 $end_cpu = getrusage();
             }

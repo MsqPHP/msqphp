@@ -105,7 +105,7 @@ class Validator
         return strlen(strip_tags($html)) < strlen($html);
     }
     /**
-     * 是否全部为字母和(或)数字字符。 
+     * 是否全部为字母和(或)数字字符。
      * @param  string $alnum 字符串
      * @return bool
      */
@@ -150,7 +150,7 @@ class Validator
         return ctype_graph($graph);
     }
     /**
-     * 检查提供的 string 和 text 里面的字符是不是都是可以打印出来。 
+     * 检查提供的 string 和 text 里面的字符是不是都是可以打印出来。
      * @param  string $print 字符串
      * @return bool
      */

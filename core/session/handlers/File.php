@@ -61,7 +61,7 @@ class File  implements \SessionHandlerInterface {
     public function write ($session_id , $session_data)
     {
         try {
-            base\file\File::write($this->getFilePath($session_id), $session_data);   
+            base\file\File::write($this->getFilePath($session_id), $session_data);
             return true;
         } catch (base\file\FileException $e) {
             throw new SessionHandlerException($e->getMessage());

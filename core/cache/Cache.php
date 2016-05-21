@@ -255,7 +255,7 @@ class Cache
         } else {
             $handler_key = md5(serialize($config).$handler);
         }
-        
+
         //如果不存在, 那么初始化
         if (!isset(static::$handlers[$handler_key])) {
             static::$handler = static::$handlers[$handler_key] = static::initHandler($handler, $config);

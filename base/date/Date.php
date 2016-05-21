@@ -127,7 +127,6 @@ class Date
     }
     public static function before(int $time) : string
     {
-        
         $today = static::today();
         if ($time > $today) {
             $limit = time() - $time;

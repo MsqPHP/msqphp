@@ -25,47 +25,39 @@ class Upload
             return false;
         }
 
-        if($file['error'] != 0 ) {
+        if($file['error'] !== 0 ) {
             //文件上传错误
             switch ($file['error']) {
                 case 1:
-                    $this->error_info = '文件过大，超出php.ini设置';
-                    break;
+                    throw new UploadException('文件过大，超出php.ini设置');
                 case 2:
-                    $this->error_info = '文件过大，超出表单最大设置';
-                    break;
+                    throw new UploadException('文件过大，超出表单最大设置');
                 case 3:
-                    $this->error_info = '文件没有上传完成';
-                    break;
+                    throw new UploadException('文件没有上传完成');
                 case 4:
-                    $this->error_info = '没有上传文件';
-                    break;
+                    throw new UploadException('没有上传文件');
                 case 6:
                 case 7:
-                    $this->error_info = '临时文件错误';
-                    break;
+                    throw new UploadException('临时文件错误');
+                default :
+                    throw new UploadException('未知错误');
             }
-            return false;
         }
-        
+
         //判断类型
         if(!in_array($file['type'], $this->allow_types)) {
-            $this->error_info = '类型不对';
-            return false;
+            throw new UploadException('类型不对');
         }
 
         //判断大小
         if($file['size'] > $this->max_size) {
-            $this->error_info = '文件过大';
-            return false;
+            throw new UploadException('文件过大');
         }
 
         //移动
         if(!is_uploaded_file($file['tmp_name'])) {
-            $this->error_info = '上传文件可疑';
-            return false;
+            throw new UploadException('上传文件可疑');
         }
-
     }
     public function move($key, $to)
     {

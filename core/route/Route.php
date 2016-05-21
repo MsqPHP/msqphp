@@ -33,7 +33,7 @@ class Route
     }
 
     public static function parseUrl()
-    {        
+    {
         //所有参数
         static::$params_handle = static::getParams();
         //判断当前方法
@@ -43,7 +43,7 @@ class Route
     public static function run()
     {
         define('PHP_CONT_START', microtime(true));
-        
+
         try {
             require \msqphp\Environment::getPath('application').'route.php';
         } catch (RouteException $e) {
@@ -204,13 +204,13 @@ class Route
                     $args = array_map(
                         function($key) {
                             return $_GET[$key];
-                        }, 
+                        },
                         $args
                     );
                 } else {
                     $args = [];
                 }
-                
+
                 $namespace = static::$namespace . $class;
                 $cont = new $namespace();
                 call_user_func_array([$cont, $method], $args);
@@ -301,7 +301,7 @@ class Route
      */
     public static function isSsl() : bool
     {
-        return 
+        return
         isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS']))
         ||
         isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT'];

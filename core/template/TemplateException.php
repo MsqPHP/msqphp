@@ -3,5 +3,4 @@ namespace msqphp\core\template;
 
 class TemplateException extends \Exception
 {
-    
 }

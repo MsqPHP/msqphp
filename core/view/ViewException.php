@@ -3,5 +3,4 @@ namespace msqphp\core\view;
 
 class ViewException extends \Exception
 {
-    
 }

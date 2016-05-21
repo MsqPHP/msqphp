@@ -3,5 +3,5 @@ namespace msqphp\base\dom;
 
 class DomException extends \Exception
 {
-    
+
 }

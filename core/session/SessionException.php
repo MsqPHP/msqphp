@@ -3,5 +3,5 @@ namespace msqphp\core\Session;
 
 class SessionException extends \Exception
 {
-    
+
 }

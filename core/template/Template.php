@@ -83,7 +83,7 @@ class Template
     {
         if (!static::$inited) {
             static::init();
-        };
+        }
 
 
         $left = static::$left;
@@ -154,8 +154,7 @@ class Template
         $content = static::parConstant($content);
         $content = static::parLanguae($content, $language);
         $content = static::parVar($content, $data);
-        $content = static::parArray($content,$data);
-        return $content;
+        return static::parArray($content,$data);
     }
     private static function parFor(string $content, array $data) : string
     {
@@ -180,7 +179,7 @@ class Template
                 } else {
                     throw new TemplateException($file.'模版文件不存在');
                 }
-            }, 
+            },
             $content
         );
     }
@@ -194,14 +193,14 @@ class Template
             [
                 static::$pattern['constant_a']['pattern'],
                 static::$pattern['constant_b']['pattern']
-            ], 
+            ],
             function($matches) {
                 if (defined($matches[1])) {
                     return constant($matches[1]);
                 } else {
                     throw new TemplateException($matches[1].'常量未定义');
                 }
-            }, 
+            },
             $content
         );
     }
@@ -215,13 +214,13 @@ class Template
             [
                 static::$pattern['language_a']['pattern'],
                 static::$pattern['language_b']['pattern']
-            ], 
+            ],
             function($matches) use ($language) {
                 if (!isset($language[$matches[1]])) {
                     throw new TemplateException($matches[1].'对应语言不存在');
                 }
                 return $language[$matches[1]];
-            }, 
+            },
             $content
         );
     }
@@ -256,7 +255,7 @@ class Template
                 $key = $matches[1];
                 $val = $matches[2];
                 if (isset($data[$key]) && $data[$key]['cache']) {
-                    
+
                     $arr_key = array_map(
                                     function ($value) {
                                         if (0 !== preg_match('/^\d+$/', $value)) {
@@ -306,7 +305,7 @@ class Template
                 } else {
                     return '<?php echo $'.$key.$val.';?>';
                 }
-            }, 
+            },
             $content
         );
     }
@@ -317,9 +316,9 @@ class Template
      *              <{$v}>                     -->       <?php echo $v;?>
      *          <{endforeach}>                 -->       <?php endforeach;?>
      * @example <{foreach $array as $value}>   -->       ''
-     *              <{$v}>                     -->       
+     *              <{$v}>                     -->
      *          <{endforeach}>                 -->       <?php endforeach;?>
-     * 
+     *
      */
     private static function parForeach(string $content, array $data, array $language) : string
     {
@@ -364,7 +363,7 @@ class Template
         } else {
             switch ($type) {
                 case 'a':
-                    return str_replace($tag, '<?php foreach $'.$array_key.' as '.$foreach[2].': ?>', 
+                    return str_replace($tag, '<?php foreach $'.$array_key.' as '.$foreach[2].': ?>',
                             str_replace($endforeach_content, '', $content)
                         );
                 case 'b':
@@ -378,7 +377,7 @@ class Template
     }
     private static function parIf(string $content, array $data) : string
     {
-        
+
         if (0 !== preg_match(static::$pattern['endif']['pattern'], $content)){
             $content = preg_replace(static::$pattern['if_a']['pattern'], static::$pattern['if_a']['replace'], $content);
             $content = preg_replace(static::$pattern['if_b']['pattern'], static::$pattern['if_b']['replace'], $content);
