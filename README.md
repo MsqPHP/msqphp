@@ -39,7 +39,9 @@ git : https://github.com/msqphp/msqphp
 + 极轻量级(羽毛级别)的框架
 
     > 在带注释,10k左右配置或更多,20k左右composer或更多,一个4k有一定逻辑的route类的情况下运行
+
     > 最小化空框架运行等于composer自动加载类的3倍较多,加载不到60kb大小
+
     > 测试运行空框架等于composer自动加载类的4倍较多,加载不到50kb大小
 
 + 命名空间, 闭包函数一堆
