@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
-namespace msqphp\vendor\Collect;
+namespace msqphp\vendor\collect;
 
 class Collect
 {
-    
 }

@@ -2,10 +2,11 @@
 namespace msqphp\base\filter;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Filter
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * html过滤, 输出纯html文本
      * @param  string|array $value 值

@@ -1,9 +1,12 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\ip;
 
+use msqphp\base;
+use msqphp\traits;
+
 class Ip
 {
-    use base\Base;
+    use traits\CallStatic;
     private static $ip = '';
     private static $intip = 0;
     /**
@@ -51,6 +54,17 @@ class Ip
             static::$intip = static::toInt(static::get());
         }
         return static::$intip;
+    }
+    public static function address() : array
+    {
+        $ip = static::$ip ?? static::get();
+        $data = file_get_contents('http://int.dpool.sina.com.cn/iplookup/iplookup.php?ip=' . $ip);
+        if (false === $data ){
+            throw new IpException('无法获取对应地址');
+        }
+        $address = explode("\t", mb_convert_encoding($data, 'utf-8', 'gbk'));
+        //国 省 市
+        return [$address[3],$address[4],$address[5]];
     }
     public static function toInt(string $ip) : int
     {

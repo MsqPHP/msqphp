@@ -2,10 +2,11 @@
 namespace msqphp\base\validator;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Validator
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * Ip验证, 要求为合法的IPv4/v6 IP
      * @param   string  $ip 待验证IP

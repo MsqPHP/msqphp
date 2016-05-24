@@ -3,5 +3,5 @@ namespace msqphp\base\html;
 
 class Html
 {
-    use base\Base;
+    use traits\CallStatic;
 }

@@ -2,10 +2,11 @@
 namespace msqphp\base\arr;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Arr
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 冒泡排序
      * @param  array  $arr 待排序数组

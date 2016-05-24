@@ -3,5 +3,5 @@ namespace msqphp\base\json;
 
 class Json
 {
-    use base\Base;
+    use traits\CallStatic;
 }

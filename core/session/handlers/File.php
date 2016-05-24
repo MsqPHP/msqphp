@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\session\handlers;
 
-use msqphp\base;
+use msqphp\base;use msqphp\traits;
 
 class File  implements \SessionHandlerInterface {
     private $path = '';

@@ -2,10 +2,11 @@
 namespace msqphp\base\str;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Str
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 得到指定类型随机字符
      * @param  int $length 字符长度

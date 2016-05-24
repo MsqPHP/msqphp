@@ -2,6 +2,7 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
+use msqphp\traits;
 
 /**
  * 移动目录, 文件

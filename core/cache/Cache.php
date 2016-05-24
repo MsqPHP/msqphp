@@ -3,11 +3,11 @@ namespace msqphp\core\cache;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Cache
 {
-    //当前实例
-    private static $instance   = null;
+    use traits\Instance;
     //当前处理类
     private static $handler    = null;
     //所有处理类
@@ -24,18 +24,6 @@ class Cache
     ];
     //当前处理类的指针
     private $pointer             = [];
-
-    /**
-     * 得到缓存实例
-     * @return self
-     */
-    public static function getInstance() : self
-    {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-        return static::$instance;
-    }
     /**
      * 构造方法 $config
      * @param array $config [description]

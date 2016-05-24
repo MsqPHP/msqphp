@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cache\handlers;
 
-use msqphp\base;
+use msqphp\base;use msqphp\traits;
 use msqphp\core;
 
 class File implements CacheHandlerInterface

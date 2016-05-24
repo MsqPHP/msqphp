@@ -3,19 +3,15 @@ namespace msqphp\core\model;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 abstract class Model
 {
-    //db处理类
-    static protected $db = null;
-
     protected $sql = [];
 
     public function __construct()
     {
-        if (null === static::$db) {
-            static::$db = core\database\Database::getInstance();
-        }
+        core\database\Database::contect();
     }
 
     public function init() : self
@@ -51,7 +47,7 @@ abstract class Model
     }
     public function exists() : bool
     {
-        return '' === static::$db::getColumn($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
+        return '' === core\database\Database::getColumn($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
     }
     public function where()
     {
@@ -100,7 +96,6 @@ abstract class Model
     }
     public function count() : self
     {
-        $count = $this->sql['count'] ?? [];
         foreach (func_get_args() as $field) {
             if ($field !== '*') {
                 $field = '`'.$field.'`';
@@ -127,19 +122,19 @@ abstract class Model
 
     public function getOne()
     {
-        return static::$db::getOne($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
+        return core\database\Database::getOne($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
     }
     public function getColumn()
     {
-        return static::$db::getColumn($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
+        return core\database\Database::getColumn($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
     }
     public function get()
     {
-        return static::$db::get($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
+        return core\database\Database::get($this->getSelectQuery(), ($this->sql['prepare'] ?? []));
     }
     public function add()
     {
-        return static::$db::exec($this->getInsertQuery(), ($this->sql['prepare'] ?? []));
+        return core\database\Database::exec($this->getInsertQuery(), ($this->sql['prepare'] ?? []));
     }
     public function set()
     {
@@ -160,31 +155,31 @@ abstract class Model
 
     public function begin()
     {
-        static::$db::beginTransaction();
+        core\database\Database::beginTransaction();
     }
     public function beginTransaction()
     {
-        static::$db::beginTransaction();
+        core\database\Database::beginTransaction();
     }
     public function commit()
     {
-        static::$db::commit();
+        core\database\Database::commit();
     }
     public function rollBack()
     {
-        static::$db::rollBack();
+        core\database\Database::rollBack();
     }
     public function cancel()
     {
-        static::$db::rollBack();
+        core\database\Database::rollBack();
     }
     public function end()
     {
-        static::$db::commit();
+        core\database\Database::commit();
     }
     public function lastInsertId() : int
     {
-        return static::$db::lastInsertId();
+        return core\database\Database::lastInsertId();
     }
     private function getInsertQuery() : string
     {
@@ -251,13 +246,6 @@ abstract class Model
                 $query .= '`'.$value[0].'` '.$value[1].' ';
             }
         }
-        return $query;
-    }
-    public function getQuery() : string
-    {
-        $sql = $this->sql;
-        show($sql);
-
         return $query;
     }
 }

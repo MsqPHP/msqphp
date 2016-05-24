@@ -25,6 +25,7 @@ class Config
                 base\file\File::write($cache_path, '<?php return '.var_export(static::$config, true).';', true);
             }
         }
+        date_default_timezone_set(static::get('framework.timezone'));
     }
     /**
      * 得到配置

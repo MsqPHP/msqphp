@@ -1,12 +1,14 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cookie;
 
+use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Cookie
 {
-    //当前cookie实例
-    private static $instance = null;
+    use traits\Instance;
+
     private static $config   = [
         //前缀
         'prefix'      =>'',
@@ -31,7 +33,6 @@ class Cookie
     private static $cookies   = [];
     //当前编辑的cookie
     private $pointer          = [];
-
     /**
      * cookie构建函数
      * @param array $config Config, 可以为空, 但不可以不传数组
@@ -51,18 +52,6 @@ class Cookie
             );
         }
         static::$cookies = & $_COOKIE;
-    }
-
-    /**
-     * 获得当前对象
-     * @return self
-     */
-    public static function getInstance() : self
-    {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-        return static::$instance;
     }
     /**
      * 初始化当前操作cookie

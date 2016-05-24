@@ -2,10 +2,11 @@
 namespace msqphp\base\number;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Number
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 数字转换文件大小格式
      * @param  int     $size  数字

@@ -2,10 +2,11 @@
 namespace msqphp\base\date;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Date
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 年月日合法检测
      * @param  int    $year  年

@@ -29,7 +29,7 @@ function show()
  */
 define('PHP_INIT_TIME', microtime(true));
 
-defined('APP_DEBUG') or define('APP_DEBUG',1);
+defined('APP_DEBUG') || define('APP_DEBUG',1);
 
 
 //根目录

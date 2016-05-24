@@ -2,6 +2,7 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
+use msqphp\traits;
 
 /**
  * 根据搜索内容查找所有文件

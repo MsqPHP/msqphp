@@ -1,10 +1,12 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\Session;
 
+use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Session{
-    private static $instance = null;
+    use traits\Instance;
 
     private static $config = [
         //处理器
@@ -51,13 +53,6 @@ class Session{
         session_start();
 
         static::$sessions = & $_SESSION;
-    }
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-        return static::$instance;
     }
     /**
      * 初始化当前操作session

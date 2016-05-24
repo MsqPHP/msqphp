@@ -2,10 +2,11 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Dir
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 创建目录
      * @param  string $dir    路径

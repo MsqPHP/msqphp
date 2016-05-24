@@ -2,10 +2,11 @@
 namespace msqphp\base\xml;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Xml
 {
-    use base\Base;
+    use traits\CallStatic;
 
     public static function encode(array $data, string $tag = 'item', bool $id = false) : string
     {

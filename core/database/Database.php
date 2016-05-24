@@ -3,25 +3,21 @@ namespace msqphp\core\database;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Database
 {
+    private static $config = [];
     private static $pdo = null;
-    private static $instance = null;
     private static $sqls = [];
-    private function __construct()
+
+    public static function connect()
     {
         if (null === static::$pdo) {
-            $config = core\config\Config::get('database');
-            switch ($config['type']) {
-                case 'mysql':
-                    $dns = $config['type'].':host='.$config['host'].';port='.$config['port'].';dbname='.$config['name'].';charset='.$config['charset'].';';
-                    break;
-                default:
-                    throw new DatabaseException('未知的数据库类型', 1);
-            }
+            static::$config = core\config\Config::get('database');
             try {
-                static::$pdo = new \PDO($dns, $config['username'], $config['password'], $config['params']);
+                $connect_info = static::getConnectInfo();
+                static::$pdo = new \PDO($connect_info['dsn'], $connect_info['username'], $connect_info['password'], $params);
                 static::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             } catch (\PDOException $e) {
                 throw new DatabaseException($e->getMessage());
@@ -29,16 +25,26 @@ class Database
             static::$pdo->exec('SET NAMES '.$config['charset']);
         }
     }
-    /**
-     * 得到database实例
-     * @return self
-     */
-    public static function getInstance() : self
+    private static function getConnectInfo() : array
     {
-        if (null === static::$instance) {
-            static::$instance = new self();
+        $config = static::$config;
+        switch ($config['type']) {
+                case 'mysql':
+                    $dsn = $config['type'].':host='.$config['host'].';port='.$config['port'].';dbname='.$config['name'].';charset='.$config['charset'].';';
+                    return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
+                case 'pgsql':
+                    $dsn = $config['type'].':host='.$config['host'].' port='.$config['port'].' dbname='.$config['name'].' user='.$config['username'].' password='.$config['password'];
+                    return ['dsn'=>$dsn,'username'=>'',$password=>''];
+                case 'sqllite':
+                    $dsn = 'sqlite:' . $config['name'];
+                    return ['dsn'=>$dsn,'username'=>'',$password=>''];
+                case 'oci':
+                case 'oracle':
+                    $dsn = 'oci:dbname=' . $config['database'].';charset='.$config['charset'];
+                    return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
+                default:
+                    throw new DatabaseException('未知的数据库类型', 1);
         }
-        return static::$instance;
     }
     public static function get(string $sql, array $prepare)
     {

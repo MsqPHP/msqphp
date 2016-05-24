@@ -2,6 +2,7 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
+use msqphp\traits;
 
 
 /**

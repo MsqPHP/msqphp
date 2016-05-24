@@ -2,6 +2,7 @@
 namespace msqphp\base\file;
 
 use msqphp\base;
+use msqphp\traits;
 /**
  * 得到文件大小
  * @func_name     getFileSize

@@ -3,6 +3,7 @@ namespace msqphp\core\view;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 abstract class View
 {
@@ -30,7 +31,7 @@ abstract class View
         //是否支持多主题
         if ($config['theme']) {
             $this->theme = true;
-            $options['theme'] = $config['default_theme'];
+            $options['theme'] = core\route\Route::$info['themt'] ?? $config['default_theme'];
         }
         //获得app_info
         $group_info = core\route\Route::$group;

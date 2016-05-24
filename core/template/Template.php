@@ -3,6 +3,7 @@ namespace msqphp\core\template;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Template
 {
@@ -26,8 +27,6 @@ class Template
         $may_blank = '\s*';
         $var       = '\$([A-Za-z_][A-Za-z0-9_]*)';
         $compare   = '(\<\=|\>=|\<|\>|\<\>|\!\=|\=\=|\=\=\=|\!\=\=)';
-        $string    = '(\'[^\']*\'|\"[^""]*\")';
-        $num       = '([0-9]*)';
 
         static::$pattern = [
             'include'     => [ 'pattern' => $left.'include'.$blank.'([\w\/\.:-]+)'.$right ],
@@ -86,11 +85,8 @@ class Template
         }
 
 
-        $left = static::$left;
-        $right = static::$right;
         $left_delim = static::$left_delim;
         $right_delim = static::$right_delim;
-        $left_delim_len = strlen($left_delim);
         $right_delim_len = strlen($right_delim);
 
 
@@ -121,7 +117,7 @@ class Template
                         if (base\str\Str::startsWith($content_arr[$i],$left_delim.'foreach')) {
                             ++$deep;
                         }
-                        if (base\str\Str::startsWith($content_arr[$i],$left_delim.'endforeach')) {
+                        if (base\str\Str::startsWith($content_arr[$i],[$left_delim.'endforeach', $left_delim.'/endforeach'])) {
                             --$deep;
                         }
                         $foreach_content .= $content_arr[$i];

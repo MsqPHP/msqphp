@@ -2,10 +2,11 @@
 namespace msqphp\base\file;
 
 use msqphp\base;
+use msqphp\traits;
 
 class File
 {
-    use base\Base;
+    use traits\CallStatic;
     /**
      * 删除文件
      * @param  string       $file  文件路径

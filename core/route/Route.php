@@ -3,6 +3,7 @@ namespace msqphp\core\route;
 
 use msqphp\base;
 use msqphp\core;
+use msqphp\traits;
 
 class Route
 {
@@ -63,7 +64,7 @@ class Route
         static::$roule[$key] = $func;
     }
     /**
-     * 多余支持
+     * 多语支持
      * @param array $info 语言信息
      * @return void
      */
@@ -80,6 +81,25 @@ class Route
             }
         }
         static::$info['language'] = $value ?? $info['default'];
+    }
+    /**
+     * 多主题支持
+     * @param array $info 语言信息
+     * @return void
+     */
+    public static function addTheme(array $info)
+    {
+        if (static::$matched) {
+            return;
+        }
+        if (isset(static::$params_handle[0])) {
+            $may = static::$params_handle[0];
+            if (static::check($may, $info['allowed'])) {
+                $value = $may;
+                array_shift(static::$params_handle);
+            }
+        }
+        static::$info['theme'] = $value ?? $info['default'];
     }
     /**
      * 增加一个url参数信息, 将获取第一个参数, 如果在列表中, 则取值, 删除, 否则取默认值
@@ -309,9 +329,12 @@ class Route
      */
     public static function isSsl() : bool
     {
-        return
-        isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS']))
-        ||
-        isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT'];
+        if (isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS']))) {
+            return true;
+        } elseif (isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT']) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

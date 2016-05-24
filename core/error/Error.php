@@ -1,8 +1,9 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\error;
 
-use msqphp\core;
 use msqphp\base;
+use msqphp\core;
+use msqphp\traits;
 
 class Error
 {

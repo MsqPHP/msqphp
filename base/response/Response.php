@@ -1,9 +1,11 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\response;
 
+use msqphp\base;
+use msqphp\traits;
+
 class Response
 {
-    private static $type = '';
     /**
      * 页面重定向
      * @param  string  $url  跳转地址
@@ -13,6 +15,7 @@ class Response
     public static function redirect(string $url, int $code = 301)
     {
         header('location:'.$url, true, $code);
+        exit;
     }
     /**
      * 页面跳转
@@ -30,32 +33,36 @@ class Response
         } else {
             header('location:'.$url, true, 301);
         }
+        exit;
     }
     /**
      * 错误信息显示
      */
     public static function error(string $msg, int $time = 3, string $url = '')
     {
-        $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.'500.html';
-        if (!is_file($view)) {
-            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.'500.html';
-            if (!is_file($view)) {
-                throw new ResponseException($view.'文件不存在');
-            }
-        }
-        require $view;
+        include static::getViewPath('500');
         exit;
     }
     public static function success(string $msg, int $time = 3, string $url = '')
     {
-        $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.'200.html';
+        include static::getViewPath('200');
+        exit;
+    }
+    public static function unavailable()
+    {
+        include static::getViewPath('503');
+        exit;
+    }
+    private static function getViewPath(string $filename) : string
+    {
+        $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.$filename.'html';
         if (!is_file($view)) {
-            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.'200.html';
+            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.$filename.'html';
             if (!is_file($view)) {
                 throw new ResponseException($view.'文件不存在');
             }
         }
-        exit;
+        return $view;
     }
     /**
      * JS窗口提示并跳转
@@ -64,16 +71,16 @@ class Response
      * @param  string $charset 页面编码
      * @return void
      */
-    public static function alert(string $msg, string $url = '', $charset='utf-8')
+    public static function alert(string $msg, string $url = '', string $charset='utf-8')
     {
         base\header\Header::type('html');
+
         $alert_msg = 'alert("'.$msg.'");';
-        if( empty($url) ) {
-            $go_url = 'history.go(-1);';
-        }else{
-            $go_url = 'window.location.href = "'.$url.'";';
-        }
-        echo '<script type="text/javascript">'.$alert_msg.$go_url.'</script>';
+
+        $go_url = empty($url) ? 'history.go(-1);' : 'window.location.href = "'.$url.'";';
+
+        echo '<meta charset="',$charset,'"><script type="text/javascript">',$alert_msg,$go_url,'</script>';
+
         exit;
     }
     /**

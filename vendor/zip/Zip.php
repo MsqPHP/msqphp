@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\vendor\zip;
 
-use msqphp\base;
+use msqphp\base;use msqphp\traits;
 
 class Zip
 {
@@ -13,7 +13,7 @@ class Zip
     }
     public function dir(string $dir)
     {
-        $this->zip['dir'][] = $file;
+        $this->zip['dir'][] = $dir;
         return $this;
     }
     public function to(string $to)
@@ -28,7 +28,7 @@ class Zip
     }
     public function zip()
     {
-        
+
     }
     public function unzip()
     {

@@ -3,5 +3,5 @@ namespace msqphp\base\dom;
 
 class Dom
 {
-    use base\Base;
+    use traits\CallStatic;
 }

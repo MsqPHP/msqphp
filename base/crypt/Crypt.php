@@ -2,10 +2,11 @@
 namespace msqphp\base\crypt;
 
 use msqphp\base;
+use msqphp\traits;
 
 class Crypt
 {
-    use base\Base;
+    use traits\CallStatic;
 
     public static function base64_encode(string $str) : string
     {

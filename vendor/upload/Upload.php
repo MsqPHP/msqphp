@@ -1,21 +1,20 @@
 <?php declare(strict_types = 1);
 namespace msqphp\vendor\upload;
 
+use msqphp\base;
+use msqphp\core;
+use msqphp\traits;
+
 class Upload
 {
-    private static $instance = null;
+    use traits\Instance;
+
     private $pointer = [];
     private function __construct()
     {
 
     }
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            static::$instance = new Upload();
-        }
-        return static::$instance;
-    }
+
     public function init() : self
     {
         $this->pointer = [];
