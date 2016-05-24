@@ -18,7 +18,7 @@ class Config
             static::loadAllConfig();
         } else {
             $cache_path = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'Config.php';
-            if (is_file($cache_path)) {
+            if (is_writable($cache_path)) {
                 static::$config = require $cache_path;
             } else {
                 static::loadAllConfig();
@@ -79,11 +79,30 @@ class Config
      */
     private static function loadAllConfig()
     {
-        $config_path = \msqphp\Environment::getPath('config');
-        //加载配置目录下所有配置,键为文件名,值为对应文件返回数组
-        foreach (base\dir\Dir::getFileList($config_path, false) as $file) {
-            $key = substr($file, 0, strlen($file)-4);
-            static::$config[$key] = require $config_path.$file;
+        //加载所有
+        array_map('static::loadConfig', base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
+    }
+    private static function loadConfig(string $file)
+    {
+        if (!is_writable($file)) {
+            throw new ConfigException('配置文件不存在或不可读');
+        }
+        $file_info = pathinfo($file);
+        switch ($file_info['extension']) {
+            case 'php':
+                static::$config[$file_info['filename']] = require $file;
+                break;
+            case 'txt':
+                static::$config[$file_info['filename']] = unserialize(base\file\File::get($file));
+                break;
+            case 'xml':
+                static::$config[$file_info['filename']] = base\xml\Xml::decode(base\file\File::get($file));
+                break;
+            case 'ini':
+                static::$config[$file_info['filename']] = base\ini\Ini::decode(base\file\File::get($file));
+                break;
+            default:
+                throw new ConfigException($file_info['extension'].'未知类型的config文件');
         }
     }
 }

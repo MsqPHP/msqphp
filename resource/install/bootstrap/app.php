@@ -1,23 +1,4 @@
 <?php declare(strict_types = 1);
-//两个自定义的展示函数
-function show_bug()
-{
-    $array = func_get_args();
-    echo '<pre>';
-    foreach ($array as $v) {
-        var_dump($v);
-    }
-    echo '</pre><hr/>';
-}
-function show()
-{
-    $array = func_get_args();
-    echo '<pre>';
-    foreach ($array as $v) {
-        var_export($v);
-    }
-    echo '</pre><hr/>';
-}
 /**
  * APP_DEBUG
  * 0:生产模式

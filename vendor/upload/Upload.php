@@ -110,6 +110,10 @@ class Upload
 
         return $this;
     }
+    public function moveTo(string $to) : self
+    {
+        return $this->to($to)->move();
+    }
     public function move() : self
     {
         $pointer = $this->pointer;
@@ -125,7 +129,7 @@ class Upload
 
         $file = $_FILES[$pointer['file']];
 
-        $ext = $pointer['extension'] ?? strrchr($file['name'], '.');
+        $this->pointer['extension'] = $ext = $pointer['extension'] ?? strrchr($file['name'], '.');
 
         $this->pointer['path'] = $file_path = $to.$name.$ext;
         if (false === move_uploaded_file($file['tmp_name'], $file_path)) {
@@ -139,6 +143,13 @@ class Upload
             throw new UploadException('文件未移动');
         }
         return $this->pointer['name'];
+    }
+    public function getExtension()
+    {
+        if (!isset($this->pointer['extension'])) {
+            throw new UploadException('文件未移动');
+        }
+        return $this->pointer['extension'];
     }
     public function getPath()
     {

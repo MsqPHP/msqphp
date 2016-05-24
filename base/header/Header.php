@@ -218,9 +218,12 @@ class Header
             throw new HeaderException($type.'暂未支持');
         }
     }
-    public static function download(string $type, string $filepath, string $filename = '')
+    public static function download(string $filepath, string $filename = '', string $type = '')
     {
-        static::type($type);
+        if (!is_file($file) || !is_writable($file)) {
+            throw new HeaderException($file.'不存在或不可读');
+        }
+        static::type($type ?: pathinfo($filepath, PATHINFO_EXTENSION));
         header('Accept-Ranges:bytes');
         header('Accept-Length:'.filesize($filepath));
         header('Content-Disposition:attachment;filename='.($filename ?: pathinfo($filepath, PATHINFO_FILENAME)));

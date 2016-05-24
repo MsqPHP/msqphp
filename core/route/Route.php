@@ -16,6 +16,13 @@ class Route
     private static $roule         = [];
 
 
+    public static function init()
+    {
+        //所有参数
+        static::$params_handle = static::getParams();
+        //判断当前方法
+        static::$info['method'] = static::$info['method'] ?? strtolower(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $_SERVER['REQUEST_METHOD']);
+    }
     private static function getParams() : array
     {
         //获得参数字符串
@@ -33,25 +40,17 @@ class Route
         return explode('/', trim(strtr($params_str, '=&?', '///'), '/'));
     }
 
-    public static function parseUrl()
-    {
-        //所有参数
-        static::$params_handle = static::getParams();
-        //判断当前方法
-        static::$method = strtolower(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $_SERVER['REQUEST_METHOD']);
-    }
 
     public static function run()
     {
-        define('PHP_CONT_START', microtime(true));
-
         try {
             require \msqphp\Environment::getPath('application').'route.php';
         } catch (RouteException $e) {
             throw new RouteException($e->getMessage());
+        } catch(\Exception $e)
+        {
+            throw new RouteException($e->getMessage());
         }
-
-        define('PHP_CONT_END', microtime(true));
     }
     /**
      * 添加一条规则
@@ -73,14 +72,22 @@ class Route
         if (static::$matched) {
             return;
         }
+        static::$info['language'] = static::getAllowedValue($info);
+    }
+
+    private static function getAllowedValue(array $info) : string
+    {
         if (isset(static::$params_handle[0])) {
             $may = static::$params_handle[0];
             if (static::check($may, $info['allowed'])) {
-                $value = $may;
                 array_shift(static::$params_handle);
+                return $may;
+            } else {
+                return $info['default'];
             }
+        } else {
+            return $info['default'];
         }
-        static::$info['language'] = $value ?? $info['default'];
     }
     /**
      * 多主题支持
@@ -92,14 +99,7 @@ class Route
         if (static::$matched) {
             return;
         }
-        if (isset(static::$params_handle[0])) {
-            $may = static::$params_handle[0];
-            if (static::check($may, $info['allowed'])) {
-                $value = $may;
-                array_shift(static::$params_handle);
-            }
-        }
-        static::$info['theme'] = $value ?? $info['default'];
+        static::$info['theme'] = static::getAllowedValue($info);
     }
     /**
      * 增加一个url参数信息, 将获取第一个参数, 如果在列表中, 则取值, 删除, 否则取默认值
@@ -119,36 +119,20 @@ class Route
                 array_shift(static::$params_handle);
             }
         }
-
+        $group_name = static::getAllowedValue($group);
         //赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
-        static::$group[] = static::$group[$group['name']] = $value ?? $group['default'];
+        static::$group[] = static::$group[$group['name']] = $group_name;
 
         //如果命名空间存在, 取其值
         if (isset($group['namespace'])) {
             if (is_bool($group['namespace'])) {
-                $namespace = $value ?? $group['default'];
+                $namespace = $group_name;
             } elseif (is_string($group['namespace'])) {
                 $namespace = $group['namespace'];
             } else {
                 throw new RouteException('未知的命名空间类型');
             }
             static::$namespace .= trim($namespace, '\\').'\\';
-        }
-    }
-    private static function check(string $may, $value) : bool
-    {
-        //如果是个字符串, 表明调用对应规则
-        if (is_string($value)) {
-            if (isset(static::$roule[$value])) {
-                return static::$roule[$value]($may);
-            } else {
-                throw new RouteException($value.'路由规则不存在');
-            }
-        } elseif (is_array($value)) {
-        //如果是个数组, 判断是否是数组中的某个值
-            return in_array($may, $value);
-        } else {
-            throw new RouteException($may.'未知的检测类型'.$value);
         }
     }
     /**
@@ -189,6 +173,30 @@ class Route
             call_user_func_array($func, $args);
         }
     }
+    /**
+     * 是否是SSL协议, 即https
+     * @return bool
+     */
+    public static function ssl($func, array $args = []) : bool
+    {
+        if (static::$matched) {
+            return;
+        }
+        static::$info['ssl'] = static::$info['ssl'] ?? static::isSsl();
+        if (static::$info['ssl']) {
+            call_user_func_array($func, $args);
+        }
+    }
+    private static function isSsl() : bool
+    {
+        if (isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS']))) {
+            return true;
+        } elseif (isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT']) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     public static function port( $port, $func, array $args = [])
     {
         if (static::$matched) {
@@ -199,122 +207,154 @@ class Route
             call_user_func_array($func, $args);
         }
     }
-    public static function get(string $param, $func)
+    private static function check(string $may, $value) : bool
     {
-        if (static::$matched || 'get' !== static::$method) {
-            return;
+        //如果是个字符串, 表明调用对应规则
+        if (is_string($value)) {
+            return static::checkRoule($may, $value);
+        } elseif (is_array($value)) {
+        //如果是个数组, 判断是否是数组中的某个值
+            return in_array($may, $value);
+        } else {
+            throw new RouteException($may.'未知的检测类型'.$value);
         }
-        $params = explode('/', $param);
-
+    }
+    private static function checkRoule(string $value, string $roule) : bool
+    {
+        if (!isset(static::$roule[$roule])) {
+            return false;
+        }
+        if (is_string(static::$roule[$roule])) {
+            return 0 !== preg_match(static::$roule[$roule], $value);
+        } else {
+            return static::$roule[$roule]($value);
+        }
+    }
+    private static function checkParam(array $params) : bool
+    {
         $params_handle = static::$params_handle;
-        if (count($params) !== count($params_handle)) {
-            return;
-        } else {
-            $get = [];
-            foreach ($params as $key => $value) {
-                //遍历, 如果三等, 或者符合对应规则
-                if ($value === $params_handle[$key] || isset(static::$roule[$value]) && static::$roule[$value]($params_handle[$key])) {
-                    //$_GET重新生成;
-                    if ($key !== 0 && ($key % 2 === 0)) {
-                        $_GET[$params[$key-1]] = $params_handle[$key];
-                        $get[] = $params_handle[$key];
-                    }
-                //否则返回
-                } else {
-                    return;
+        $get = [];
+        foreach ($params as $key => $value) {
+            //遍历, 如果三等, 或者符合对应规则
+            if ($value === $params_handle[$key] || static::checkRoule($params_handle[$key], $value)) {
+                //$_GET重新生成;
+                if ($key !== 0 && ($key % 2 === 0)) {
+                    $get[$params[$key-1]] = $params_handle[$key];
                 }
-            }
-            static::$matched = true;
-            if (is_string($func)) {
-                list($class , $method) = explode('@', $func);
-                if (false !== strpos($method, '?')) {
-                    list($method, $arg) = explode('?', $method);
-                    $args = explode('&', $arg);
-                    $args = array_map(
-                        function($key) {
-                            return $_GET[$key];
-                        },
-                        $args
-                    );
-                } else {
-                    $args = [];
-                }
-
-                $namespace = static::$namespace . $class;
-                $cont = new $namespace();
-                call_user_func_array([$cont, $method], $args);
-                unset($cont);
+            //否则返回
             } else {
-                call_user_func_array($func, $get);
+                return false;
             }
         }
+        $_GET = $get;
+        return true;
     }
-    public static function ajax(string $param, $func)
+    public static function get($param, $func, array $args = [])
     {
-        if (static::$matched || 'ajax' !== static::$method) {
+        static::method(['get'], $param, $func);
+    }
+    public static function ajax($param, $func, array $args = [])
+    {
+        static::method(['ajax'], $param, $func);
+    }
+    public static function post($param, $func, array $args = [])
+    {
+        static::method(['post'], $param, $func);
+    }
+    public static function method($method, $param, $func, array $args = [])
+    {
+        if (static::$matched) {
+            return;
+        }
+        if (!in_array(static::$info['method'], (array)$method)) {
             return;
         }
 
-        if ($param !== static::$module[0]) {
-            return;
+        foreach ((array)$param as $value) {
+
+            $params = explode('/', $value);
+
+            if (count($params) !== count(static::$params_handle)) {
+                return;
+            }
+
+            if (!static::checkParam($params)) {
+                return;
+            }
+        }
+
+        static::$matched = true;
+        if (is_string($func)) {
+            static::callUserClassFunc($func);
         } else {
-            static::$matched = true;
-            call_user_func_array($func, []);
+            call_user_func_array($func, $args);
         }
     }
-    public static function post(string $param, $func)
+    private static function callUserClassFunc(string $func)
     {
-        if (static::$matched || 'post' !== static::$method) {
-            return;
-        }
-
-        $params = explode('/', $param);
-
-        $params_handle = static::$params_handle ?: [0=>''];
-
-        if (count($params) === count($params_handle)) {
-            $get = [];
-            foreach ($params as $key => $value) {
-                //遍历, 如果三等, 或者符合对应规则
-                if ($value === $params_handle[$key] || isset(static::$roule[$value]) && static::$roule[$value]($params_handle[$key])) {
-                    //$_GET重新生成;
-                    if ($key !== 0 && ($key % 2 === 0)) {
-                        $_GET[$params[$key-1]] = $params_handle[$key];
-                        $get[] = $params_handle[$key];
-                    }
-                //否则返回
-                } else {
-                    return;
-                }
-            }
-            static::$matched = true;
-            if (is_string($func)) {
-                list($class , $method) = explode('@', $func);
-                $args = [];
-                if (false !== strpos($method, '?')) {
-                    list($method, $arg) = explode('?', $method);
-                    $get = explode('&', $arg);
-                    foreach ($get as $key) {
+        list($class , $method) = explode('@', $func);
+        $get_pos = strpos($method, '?');
+        $post_pos = strpos($method, '#');
+        $args = [];
+        if (false !== $get_pos && false !== $post_pos) {
+            if ($get_pos > $post_pos) {
+                list($method, $args_str) = explode('?', $method);
+                list($get_args, $post_args) = explode('#', $args_str);
+                foreach ($get_args as $key) {
+                    if (!isset($_GET[$key])) {
+                        throw new RouteException($key.' get值不存在');
+                    } else {
                         $args[] = $_GET[$key];
                     }
                 }
-                if (false !== strpos($method, '#')) {
-                    list($method, $arg) = explode('#', $method);
-                    $post = explode('&', $arg);
-                    foreach ($post as $key) {
+                foreach ($post_args as $key) {
+                    if (!isset($_POST[$key])) {
+                        throw new RouteException($key.' post值不存在');
+                    } else {
                         $args[] = $_POST[$key];
                     }
                 }
-                $namespace = static::$namespace . $class;
-                $cont = new $namespace();
-                call_user_func_array([$cont, $method], $args);
-                unset($cont);
             } else {
-                call_user_func_array($func);
+                list($method, $args_str) = explode('#', $method);
+                list($get_args, $post_args) = explode('?', $args_str);
+                foreach ($post_args as $key) {
+                    if (!isset($_POST[$key])) {
+                        throw new RouteException($key.' post值不存在');
+                    } else {
+                        $args[] = $_POST[$key];
+                    }
+                }
+                foreach ($get_args as $key) {
+                    if (!isset($_GET[$key])) {
+                        throw new RouteException($key.' get值不存在');
+                    } else {
+                        $args[] = $_GET[$key];
+                    }
+                }
             }
-        } else {
-            return;
+        } elseif (false !== $get_pos) {
+            list($method, $get_args) = explode('?', $method);
+            foreach ($get_args as $key) {
+                if (!isset($_GET[$key])) {
+                    throw new RouteException($key.' get值不存在');
+                } else {
+                    $args[] = $_GET[$key];
+                }
+            }
+        } elseif (false !== $post_pos) {
+            list($method, $post_args) = explode('#', $method);
+            foreach ($post_args as $key) {
+                if (!isset($_POST[$key])) {
+                    throw new RouteException($key.' post值不存在');
+                } else {
+                    $args[] = $_POST[$key];
+                }
+            }
         }
+        $class_name = static::$namespace . $class;
+        $cont = new $class_name();
+        call_user_func_array([$cont, $method], $args);
+        unset($cont);
     }
     public static function error($func, array $args = [])
     {
@@ -322,19 +362,5 @@ class Route
             return;
         }
         call_user_func_array($func, $args);
-    }
-    /**
-     * 是否是SSL协议, 即https
-     * @return bool
-     */
-    public static function isSsl() : bool
-    {
-        if (isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS']))) {
-            return true;
-        } elseif (isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT']) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }

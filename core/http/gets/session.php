@@ -3,4 +3,4 @@ namespace msqphp\core\controller;
 
 use msqphp\core;
 
-return core\cookie\Cookie::getInstance();
+return core\session\Session::getInstance();

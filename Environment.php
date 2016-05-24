@@ -5,6 +5,8 @@ class Environment
 {
     //所有目录存放
     private static $path = [];
+
+    private static $sapi = '';
     /**
      * 框架配置
      *
@@ -13,6 +15,7 @@ class Environment
     public static function init(array $path_config)
     {
         define('FRAMEWORK_INIT_START', microtime(true));
+        static::$sapi = PHP_SAPI === 'cli' ? 'cli' : (false !== strpos(PHP_SAPI, 'apache') ? 'apche' : '');
         //初始化路径
         static::$path = array_map(
             function($path) {
@@ -24,6 +27,7 @@ class Environment
             },
             $path_config
         );
+        unset($path_config);
         //debug配置
         try {
             require __DIR__.'/core/debug/Debug.php';
@@ -39,6 +43,7 @@ class Environment
         } catch(core\config\ConfigException $e) {
             base\response\Response::error($e->getMessage());
         }
+
         define('FRAMEWORK_INIT_END', microtime(true));
     }
     /**
@@ -49,12 +54,23 @@ class Environment
     public static function start()
     {
         define('FRAMEWORK_START_START', microtime(true));
-        try {
-            //得到路由信息
-            require __DIR__.'/core/route/Route.php';
-            core\route\Route::parseUrl();
-        } catch(core\route\RouteException $e) {
-            static::$error($e->getMessage());
+
+        if ('cli' === static::$sapi) {
+            try {
+                //得到路由信息
+                require __DIR__.'/core/cli/Cli.php';
+                core\cli\Cli::init();
+            } catch(core\cli\CliException $e) {
+                static::$error($e->getMessage());
+            }
+        } else {
+            try {
+                //得到路由信息
+                require __DIR__.'/core/route/Route.php';
+                core\route\Route::init();
+            } catch(core\route\RouteException $e) {
+                static::$error($e->getMessage());
+            }
         }
         define('FRAMEWORK_START_END', microtime(true));
     }
@@ -66,10 +82,18 @@ class Environment
     public static function run()
     {
         define('FRAMEWORK_RUN_START', microtime(true));
-        try {
-            core\route\Route::run();
-        } catch(core\route\RouteException $e) {
-            base\response\Response::error($e->getMessage());
+        if ('cli' === static::$sapi) {
+            try {
+                core\cli\Cli::run();
+            } catch(core\cli\CliException $e) {
+                static::$error($e->getMessage());
+            }
+        } else {
+            try {
+                core\route\Route::run();
+            } catch(core\route\RouteException $e) {
+                base\response\Response::error($e->getMessage());
+            }
         }
         define('FRAMEWORK_RUN_END', microtime(true));
     }
@@ -90,47 +114,45 @@ class Environment
             if (defined('PHP_INIT_TIME')) {
                 $end_time = microtime(true);
             }
-            $blank = "\t";
             if (isset($end_time)) {
-                show('时间信息:');
-                show($blank . '总共时间  :'     . $blank . ($end_time - PHP_INIT_TIME )   . '秒');
-                show($blank . '初始化时间:'     . $blank . (PHP_START_TIME-PHP_INIT_TIME) . '秒');
-                show($blank . '控制器用时:'     . $blank . (PHP_CONT_END-PHP_CONT_START)  . '秒');
-                show($blank . '框架总用时  :'   . $blank . ($end_time-PHP_START_TIME-(PHP_CONT_END-PHP_CONT_START)) . '秒');
-                show($blank . '环境搭建用时:'   . $blank . (FRAMEWORK_INIT_END-FRAMEWORK_INIT_START)   .'秒');
-                show($blank . '环境开始用时:'   . $blank . (FRAMEWORK_START_END-FRAMEWORK_START_START) .'秒');
-                show($blank . '环境运行用时:'   . $blank . (FRAMEWORK_RUN_END-FRAMEWORK_RUN_START-(PHP_CONT_END-PHP_CONT_START))     .'秒');
+                base\response\Response::dump('时间信息:');
+                base\response\Response::dump("\t总共时间    :" . ($end_time          - PHP_INIT_TIME         ) . '秒');
+                base\response\Response::dump("\t初始化时间  :" . (PHP_START_TIME     - PHP_INIT_TIME         ) . '秒');
+                base\response\Response::dump("\t框架总用时  :" . ($end_time          - PHP_START_TIME        ) . '秒');
+                base\response\Response::dump("\t环境搭建用时:" . (FRAMEWORK_INIT_END - FRAMEWORK_INIT_START  ) . '秒');
+                base\response\Response::dump("\t环境开始用时:" . (FRAMEWORK_START_END- FRAMEWORK_START_START ) . '秒');
+                base\response\Response::dump("\t环境运行用时:" . (FRAMEWORK_RUN_END  - FRAMEWORK_RUN_START   ) . '秒');
             }
             if (isset($end_mem)) {
-                show('内存信息:');
-                show($blank . '开始内存:'  . $blank . base\number\Number::byte(PHP_START_MEM, false));
-                show($blank . '结束内存:'  . $blank . base\number\Number::byte($end_mem, false));
-                show($blank . '内存差值:'  . $blank . base\number\Number::byte($end_mem-PHP_START_MEM, false));
-                show($blank . '内存峰值:'  . $blank . base\number\Number::byte(memory_get_peak_usage(), false));
+                base\response\Response::dump('内存信息:');
+                base\response\Response::dump("\t开始内存:" . base\number\Number::byte(PHP_START_MEM, false));
+                base\response\Response::dump("\t结束内存:" . base\number\Number::byte($end_mem, false));
+                base\response\Response::dump("\t内存差值:" . base\number\Number::byte($end_mem-PHP_START_MEM, false));
+                base\response\Response::dump("\t内存峰值:" . base\number\Number::byte(memory_get_peak_usage(), false));
             }
             if (isset($end_cpu)) {
-                show('cpu信息:');
+                base\response\Response::dump('cpu信息:');
+                base\response\Response::dump("\t块输出操作    :开始:".PHP_START_CPU['ru_oublock']. ", \t结束:" . $end_cpu['ru_oublock']);
+                base\response\Response::dump("\t块输入操作    :开始:".PHP_START_CPU['ru_inblock']. ", \t结束:" . $end_cpu['ru_inblock']);
+                base\response\Response::dump("\t最大驻留集大小:开始:".PHP_START_CPU['ru_maxrss'] . ", \t结束:" . $end_cpu['ru_maxrss']);
+                base\response\Response::dump("\t主动上下文切换:开始:".PHP_START_CPU['ru_nvcsw']  . ", \t结束:" . $end_cpu['ru_nvcsw']);
+                base\response\Response::dump("\t被动上下文切换:开始:".PHP_START_CPU['ru_nivcsw'] . ", \t结束:" . $end_cpu['ru_nivcsw']);
+                base\response\Response::dump("\t页回收        :开始:".PHP_START_CPU['ru_minflt'] . ", \t结束:" . $end_cpu['ru_minflt']);
+                base\response\Response::dump("\t页失效        :开始:".PHP_START_CPU['ru_majflt'] . ", \t结束:" . $end_cpu['ru_majflt']);
                 $cpu_utime = ($end_cpu['ru_utime.tv_sec'] - PHP_START_CPU['ru_utime.tv_sec']) + (($end_cpu['ru_utime.tv_usec'] - PHP_START_CPU['ru_utime.tv_usec'])/ 1000000);
+                base\response\Response::dump("\t用户操作时间  :" . $cpu_utime.'秒');
                 $cpu_stime = ($end_cpu['ru_stime.tv_sec'] - PHP_START_CPU['ru_stime.tv_sec']) + (($end_cpu['ru_stime.tv_usec'] - PHP_START_CPU['ru_stime.tv_usec'])/ 1000000);
-                show($blank . '块输出操作    :' . $blank . '开始:'.PHP_START_CPU['ru_oublock']. ', 结束:' . $end_cpu['ru_oublock']);
-                show($blank . '块输入操作    :' . $blank . '开始:'.PHP_START_CPU['ru_inblock']. ', 结束:' . $end_cpu['ru_inblock']);
-                show($blank . '最大驻留集大小:' . $blank . '开始:'.PHP_START_CPU['ru_maxrss'] . ', 结束:' . $end_cpu['ru_maxrss']);
-                show($blank . '主动上下文切换:' . $blank . '开始:'.PHP_START_CPU['ru_nvcsw']  . ', 结束:' . $end_cpu['ru_nvcsw']);
-                show($blank . '被动上下文切换:' . $blank . '开始:'.PHP_START_CPU['ru_nivcsw'] . ', 结束:' . $end_cpu['ru_nivcsw']);
-                show($blank . '页回收        :' . $blank . '开始:'.PHP_START_CPU['ru_minflt'] . ', 结束:' . $end_cpu['ru_minflt']);
-                show($blank . '页失效        :' . $blank . '开始:'.PHP_START_CPU['ru_majflt'] . ', 结束:' . $end_cpu['ru_majflt']);
-                show($blank . '用户操作时间  :' . $blank . $cpu_utime.'秒');
-                show($blank . '系统操作时间  :' . $blank . $cpu_stime.'秒');
+                base\response\Response::dump("\t系统操作时间  :" . $cpu_stime.'秒');
             }
             if (function_exists('get_required_files')) {
-                show('加载信息:');
+                base\response\Response::dump('加载信息:');
                 $files = get_required_files();
                 $all_size = 0;
                 foreach ($files as $file) {
                     $all_size += filesize($file);
                 }
-                show('总共加载文件:'.count($files).'个, 大小:'.base\number\Number::byte($all_size, false));
-                show($files);
+                base\response\Response::dump('总共加载文件:'.count($files).'个, 大小:'.base\number\Number::byte($all_size, false));
+                base\response\Response::dump($files);
             }
         }
     }
@@ -158,5 +180,10 @@ class Environment
         } else {
             base\response\Response::error($path.'不存在');
         }
+    }
+
+    public static function getSapi()
+    {
+        return static::$sapi;
     }
 }

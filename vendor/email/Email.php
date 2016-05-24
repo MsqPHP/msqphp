@@ -38,6 +38,6 @@ class Email
     {
         $pointer = $this->pointer;
         $from = 'From:'.$pointer['from'];
-        show(mail($pointer['to'], $pointer['title'], $pointer['content'], $from));
+        mail($pointer['to'], $pointer['title'], $pointer['content'], $from);
     }
 }

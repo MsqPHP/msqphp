@@ -98,4 +98,20 @@ class Response
 
         $end && exit;
     }
+
+    public static function dump()
+    {
+        if (\msqphp\Environment::getSapi() === 'cli') {
+            foreach (func_get_args() as $v) {
+                var_export($v);
+            }
+            echo "\n";
+        } else {
+            echo '<pre>';
+            foreach (func_get_args() as $v) {
+                var_export($v);
+            }
+            echo '</pre><hr/>';
+        }
+    }
 }

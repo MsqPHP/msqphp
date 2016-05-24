@@ -15,8 +15,8 @@ trait CallStatic
         static $func = [];
         if (!isset($func[$method])) {
             $framework_path = \msqphp\Environment::getPath('framework');
-            $class = explode('\\', __CLASS__);
-            $file = $framework_path . $class[1] . DIRECTORY_SEPARATOR . $class[2] . DIRECTORY_SEPARATOR.'staticMethods'.DIRECTORY_SEPARATOR.$method.'.php';
+            $namespace = strtr(substr(__CLASS__, 7, strrpos(__CLASS__, '\\') - 7), '\\', DIRECTORY_SEPARATOR);
+            $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'staticMethods'.DIRECTORY_SEPARATOR.$method.'.php';
             if (!is_file($file)) {
                 $file = str_replace(\msqphp\Environment::getPath('library'), $framework_path, $file);
                 if (!is_file($file)) {

@@ -45,7 +45,7 @@ abstract class View
         $this->all_view_file = $file = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.$group.'view.php';
         $now = time();
         $this->all_view = array_filter(
-                            is_file($file) ? include $file : [],
+                            is_file($file) ? unserialize(base\file\File::get($file)) : [],
                             function ($value) use ($now) {
                                 if ($value['expire'] > $now) {
                                     base\file\File::delete($value['file'], true);
@@ -271,10 +271,14 @@ abstract class View
     }
     /**
      * 拼装并生成最终的tpl文件
-     * @param  string $file_name 储存名称
+     *
+     * @param  string      $file_name 文件名
+     * @param  int|integer $expire    过期时间
+     * @param  boolean     $last      是否为最终缓存
+     *
      * @return self
      */
-    public function assemble(string $file_name, int $expire = 86400, $last = true)
+    public function assemble(string $file_name, int $expire = 86400, $last = true) : self
     {
 
         $content = '';
@@ -376,7 +380,7 @@ abstract class View
     public function __destruct() {
         $this->static && base\file\File::write($this->options['static_path'], $this->options['static_content'], true);
         if ($this->all_changed) {
-            base\file\File::write($this->all_view_file, '<?php return '.var_export($this->all_view, true).';', true);
+            base\file\File::write($this->all_view_file, serialize($this->all_view), true);
         }
     }
 }
