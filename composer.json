@@ -1,8 +1,7 @@
 {
     "name": "msqphp/framework",
     "type":"framework",
-    "description": "msqphp is a simple but perfect framework.
-msqphp是一个简单但是完美的框架(至少我认为是).",
+    "description": "msqphp is a simple but perfect framework.",
     "keywords": ["msqphp", "framework"],
     "version": "1.1.0",
     "authors":[
