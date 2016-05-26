@@ -3,8 +3,6 @@ msqphp beta -2.0(注意是负)
 
 msqphp is a simple but perfect framework.
 
-msqphp是一个简单但是完美的框架(至少我认为是).
-
 ####################################################
 
 ##使用须知
