@@ -1,19 +1,20 @@
 {
-    "name": "msqphp/framework", 
-    "type":"framework", 
-    "description": "a very simple but perfect framework", 
-    "keywords": ["msqphp", "framework"], 
-    "version": "1.1.0", 
+    "name": "msqphp/framework",
+    "type":"framework",
+    "description": "msqphp is a simple but perfect framework.
+msqphp是一个简单但是完美的框架(至少我认为是).",
+    "keywords": ["msqphp", "framework"],
+    "version": "1.1.0",
     "authors":[
         {
-            "name":"Msq", 
+            "name":"Msq",
             "email":"714896324@qq.com"
         }
-    ], 
-    "license": "MIT", 
+    ],
+    "license": "MIT",
     "require": {
         "php": ">=7.0.0"
-    }, 
+    },
     "autoload": {
         "psr-4": {
             "msqphp\\": ""
