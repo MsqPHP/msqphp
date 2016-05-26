@@ -6,6 +6,5 @@ namespace msqphp\base\str;
  * @return string 颜色
  */
 return function () : string {
-    static $c = '0123456789ABCDEF';
-    return '#'.$c[rand(0, 15)].$c[rand(0, 15)].$c[rand(0, 15)].$c[rand(0, 15)].$c[rand(0, 15)].$c[rand(0, 15)];
+    return '#'.substr(str_shuffle('0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF'), 0, 6);
 };

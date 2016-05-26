@@ -4,7 +4,7 @@ namespace msqphp\base\date;
 use msqphp\base;
 use msqphp\traits;
 
-class Date
+final class Date
 {
     use traits\CallStatic;
     /**

@@ -4,7 +4,7 @@ namespace msqphp\base\dir;
 use msqphp\base;
 use msqphp\traits;
 
-class Dir
+final class Dir
 {
     use traits\CallStatic;
     /**

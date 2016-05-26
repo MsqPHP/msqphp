@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Safe
+final class Safe
 {
     public static function maliciousRefresh()
     {

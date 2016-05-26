@@ -4,7 +4,7 @@ namespace msqphp\core\debug;
 use msqphp\base;
 use msqphp\core;
 
-class Debug
+final class Debug
 {
     public static function init()
     {

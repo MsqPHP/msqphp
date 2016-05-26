@@ -4,7 +4,7 @@ namespace msqphp\base\ip;
 use msqphp\base;
 use msqphp\traits;
 
-class Ip
+final class Ip
 {
     use traits\CallStatic;
     private static $ip = '';

@@ -4,9 +4,122 @@ namespace msqphp\base\arr;
 use msqphp\base;
 use msqphp\traits;
 
-class Arr
+final class Arr
 {
     use traits\CallStatic;
+    public static function set(array & $array, string $arr_key, $arr_value)
+    {
+        if ('' === $arr_key) {
+            $array = $value;
+            return;
+        }
+        $key = explode('.', $arr_key);
+        switch (count($key)) {
+            case 1:
+                $array[$key[0]] = $value;
+                break;
+            case 2:
+                $array[$key[0]][$key[1]] = $value;
+                break;
+            case 3:
+                $array[$key[0]][$key[1]][$key[2]] = $value;
+                break;
+            case 4:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]] = $value;
+                break;
+            case 5:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]] = $value;
+                break;
+            case 6:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]] = $value;
+                break;
+            case 7:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]] = $value;
+                break;
+            case 8:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]] = $value;
+                break;
+            case 9:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]] = $value;
+                break;
+            case 10:
+                $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]][$key[9]] = $value;
+                break;
+            default:
+                throw new ArrException(var_export($arr_key, true).'数组键过无法设置');
+        }
+    }
+    public static function get(array & $array, string $arr_key)
+    {
+        if ('' === $arr_key) {
+            return $array;
+        }
+        $key = explode('.', $arr_key);
+        switch (count($key)) {
+            case 1:
+                if (!isset($array[$key[0]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]];
+                }
+            case 2:
+                if (!isset($array[$key[0]][$key[1]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]];
+                }
+            case 3:
+                if (!isset($array[$key[0]][$key[1]][$key[2]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]];
+                }
+            case 4:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]];
+                }
+            case 5:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]];
+                }
+            case 6:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]];
+                }
+            case 7:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]];
+                }
+            case 8:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]];
+                }
+            case 9:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]];
+                }
+            case 10:
+                if (!isset($array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]][$key[9]])) {
+                    throw new ArrException($arr_key.'不存在');
+                } else {
+                    return $array[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]][$key[5]][$key[6]][$key[7]][$key[8]][$key[9]];
+                }
+            default:
+                throw new ArrException(var_export($arr_key, true).'数组键过无法获取');
+        }
+    }
     /**
      * 冒泡排序
      * @param  array  $arr 待排序数组
@@ -87,13 +200,9 @@ class Arr
             $count = min($count, count($array));
             $index = array_rand($array, $count);
 
-            return array_filter(
-                $array,
-                function ($key) use ($index) {
+            return array_filter($array, function ($key) use ($index) {
                     return in_array($key, $index);
-                },
-                ARRAY_FILTER_USE_KEY
-            );
+            }, ARRAY_FILTER_USE_KEY);
         }
     }
 }

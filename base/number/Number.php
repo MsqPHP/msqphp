@@ -4,7 +4,7 @@ namespace msqphp\base\number;
 use msqphp\base;
 use msqphp\traits;
 
-class Number
+final class Number
 {
     use traits\CallStatic;
     /**

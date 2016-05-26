@@ -5,6 +5,6 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Log
+final class Log
 {
 }

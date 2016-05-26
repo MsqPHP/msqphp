@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Http
+final class Http
 {
     use traits\get;
 

@@ -4,7 +4,7 @@ namespace msqphp\base\response;
 use msqphp\base;
 use msqphp\traits;
 
-class Response
+final class Response
 {
     /**
      * 页面重定向
@@ -40,6 +40,7 @@ class Response
      */
     public static function error(string $msg, int $time = 3, string $url = '')
     {
+        show(debug_backtrace());
         include static::getViewPath('500');
         exit;
     }
@@ -55,9 +56,9 @@ class Response
     }
     private static function getViewPath(string $filename) : string
     {
-        $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.$filename.'html';
+        $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.$filename.'.html';
         if (!is_file($view)) {
-            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.$filename.'html';
+            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.$filename.'.html';
             if (!is_file($view)) {
                 throw new ResponseException($view.'文件不存在');
             }

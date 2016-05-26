@@ -35,7 +35,6 @@ class Environment
         } catch(core\debug\DebugException $e) {
             base\response\Response::error($e->getMessage());
         }
-
         //初始化配置
         try {
             require __DIR__.'/core/config/Config.php';
@@ -44,6 +43,7 @@ class Environment
             base\response\Response::error($e->getMessage());
         }
 
+        register_shutdown_function('\msqphp\Environment::end');
         define('FRAMEWORK_INIT_END', microtime(true));
     }
     /**
@@ -82,6 +82,7 @@ class Environment
     public static function run()
     {
         define('FRAMEWORK_RUN_START', microtime(true));
+
         if ('cli' === static::$sapi) {
             try {
                 core\cli\Cli::run();
@@ -89,9 +90,17 @@ class Environment
                 static::$error($e->getMessage());
             }
         } else {
+            if (core\config\Config::get('framework.cron')) {
+                $path = static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron'.DIRECTORY_SEPARATOR.'cron.log';
+                if (is_file($path) && time() - core\config\Config::get('framework.cron_intervals') > filemtime($path)) {
+                    core\cron\Cron::getInstance();
+                }
+            }
             try {
                 core\route\Route::run();
             } catch(core\route\RouteException $e) {
+                base\response\Response::error($e->getMessage());
+            } catch(\Exception $e) {
                 base\response\Response::error($e->getMessage());
             }
         }
@@ -116,6 +125,8 @@ class Environment
             }
             if (isset($end_time)) {
                 base\response\Response::dump('时间信息:');
+                base\response\Response::dump("\t现在时间戳  :" . time());
+                base\response\Response::dump("\t现在时间    :" . date('Y-m-d H:i:s'));
                 base\response\Response::dump("\t总共时间    :" . ($end_time          - PHP_INIT_TIME         ) . '秒');
                 base\response\Response::dump("\t初始化时间  :" . (PHP_START_TIME     - PHP_INIT_TIME         ) . '秒');
                 base\response\Response::dump("\t框架总用时  :" . ($end_time          - PHP_START_TIME        ) . '秒');

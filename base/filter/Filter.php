@@ -4,7 +4,7 @@ namespace msqphp\base\filter;
 use msqphp\base;
 use msqphp\traits;
 
-class Filter
+final class Filter
 {
     use traits\CallStatic;
     /**
@@ -42,15 +42,5 @@ class Filter
         } else {
                 return $value;
         }
-    }
-    /**
-     * sql特殊字符过滤
-     * @param  string $value 值
-     * @return string        过滤后的值
-     */
-    public static function sql(string $str) : string {
-        throw new Exception('未实现', 1);
-        // $sql = ['select', 'insert', 'update', 'delete', 'union', 'into', 'load_file', 'outfile', '\'', '\/\*', '\.\.\/', '\.\/'];
-        // return str_replace($sql, '', $str);
     }
 }

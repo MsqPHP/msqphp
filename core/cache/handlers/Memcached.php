@@ -1,10 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cache\handlers;
 
-use msqphp\base;use msqphp\traits;
-use msqphp\core;
-
-class Memcached implements CacheHandlerInterface
+final class Memcached implements CacheHandlerInterface
 {
     //处理类
     private $handler = null;
@@ -13,8 +10,6 @@ class Memcached implements CacheHandlerInterface
     private $config  = [
         'length'  => 0,
     ];
-    //队列长度
-    private $length  = 0;
     //构造函数
     public function __construct(array $config)
     {
@@ -24,7 +19,6 @@ class Memcached implements CacheHandlerInterface
         //获得实例
         $this->handler = $memcached = new \Memcached($config['name']);
 
-        $this->length = $config['length'] ?? 0;
         //是否是原始的
         if ($memcached->isPristine()) {
             if(!empty($config['options'])) {
@@ -99,7 +93,7 @@ class Memcached implements CacheHandlerInterface
             //如果未找到则添加
             false === array_search($key, $queue) && array_push($queue, $key);
             //如果队列长度大于配置长度
-            if (count($queue) > $this->length) {
+            if (count($queue) > $this->config['length']) {
                 //移除第一个
                 $old_key = array_shift($queue);
                 //删除对应文件

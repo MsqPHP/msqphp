@@ -4,7 +4,7 @@ namespace msqphp\base\crypt;
 use msqphp\base;
 use msqphp\traits;
 
-class Crypt
+final class Crypt
 {
     use traits\CallStatic;
 

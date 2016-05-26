@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\vender\header;
 
-class HeaderException extends \Exception
+final class HeaderException extends \Exception
 {
 }

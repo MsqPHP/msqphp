@@ -1,10 +1,9 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cache\handlers;
 
-use msqphp\base;use msqphp\traits;
-use msqphp\core;
+use msqphp\base;
 
-class File implements CacheHandlerInterface
+final class File implements CacheHandlerInterface
 {
     //配置参数
     private $config = [

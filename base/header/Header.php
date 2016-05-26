@@ -4,7 +4,7 @@ namespace msqphp\base\header;
 use msqphp\base;
 use msqphp\traits;
 
-class Header
+final class Header
 {
     use traits\CallStatic;
 
@@ -82,7 +82,7 @@ class Header
             'lha'     => 'application/octet-stream',
             'lzh'     => 'application/octet-stream',
             'exe'     => 'application/octet-stream',
-            'class'   => 'application/octet-stream',
+            'final class'   => 'application/octet-stream',
             'so'      => 'application/octet-stream',
             'dll'     => 'application/octet-stream',
             'oda'     => 'application/oda',

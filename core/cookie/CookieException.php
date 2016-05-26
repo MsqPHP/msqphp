@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cookie;
 
-class CookieException extends \Exception
+final class CookieException extends \Exception
 {
 }

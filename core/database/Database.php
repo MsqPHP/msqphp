@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Database
+final class Database
 {
     private static $config = [];
     private static $pdo = null;

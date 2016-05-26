@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\config;
 
-class ConfigException extends \Exception
+final class ConfigException extends \Exception
 {
 
 }

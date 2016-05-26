@@ -4,7 +4,7 @@ namespace msqphp\base\str;
 use msqphp\base;
 use msqphp\traits;
 
-class Str
+final class Str
 {
     use traits\CallStatic;
     /**
@@ -173,14 +173,6 @@ class Str
     {
         return levenshtein($a, $b);
     }
-    public static function strcmp(string $a, string $b) : int
-    {
-        // strcmp($str1, $str2):     $str1>=<$str2分别为正1, 0, -1（字符串比较）
-        // strcasecmp()         同上（不分大小写）
-        // strnatcmp("4", "14")     按自然排序比较字符串
-        // strnatcasecmp()       同上，（区分大小写）
-    }
-
     public static function countWords(string $string) : int {
        return str_word_count($string);
     }

@@ -6,7 +6,7 @@ return function (string $content) :string {
         $js = $matches[2];
         $pattern = [
             '/\/\/([^\n\r]*)/', '/\/\*([\s\S]*)\*\//', '/^\s*/', '/
-/', 
+/',
         ];
         $js = preg_replace($pattern, '', $js);
         $js = preg_replace('/([\{\}\;])\s+/', '\\1', $js);

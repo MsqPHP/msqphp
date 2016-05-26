@@ -4,7 +4,7 @@ namespace msqphp\base\validator;
 use msqphp\base;
 use msqphp\traits;
 
-class Validator
+final class Validator
 {
     use traits\CallStatic;
     /**

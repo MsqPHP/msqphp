@@ -4,7 +4,7 @@ namespace msqphp\base\xml;
 use msqphp\base;
 use msqphp\traits;
 
-class Xml
+final class Xml
 {
     use traits\CallStatic;
 

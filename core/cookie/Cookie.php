@@ -5,11 +5,10 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Cookie
+final class Cookie
 {
     use traits\Instance;
-
-    private static $config   = [
+    private $config   = [
         //前缀
         'prefix'      =>'',
         //过期时间
@@ -30,28 +29,26 @@ class Cookie
         'encode'      =>false,
     ];
     //当前脚本所有的cookie
-    private static $cookies   = [];
+    private $cookies   = [];
     //当前编辑的cookie
     private $pointer          = [];
+
     /**
      * cookie构建函数
      * @param array $config Config, 可以为空, 但不可以不传数组
      */
     private function __construct()
     {
-        static::$config = $config = array_merge(static::$config, core\config\Config::get('cookie'));
+        $this->config = $config = array_merge($this->config, core\config\Config::get('cookie'));
         //是否过滤cookie
         if ($config['filter']) {
-            $len = strlen($config['prefix']);
-            $_COOKIE = array_filter(
-                $_COOKIE,
-                function($key) use ($len, $prefix) {
+            $prefix  = $config['prefix'];
+            $len     = strlen($prefix);
+            $_COOKIE = array_filter($_COOKIE, function($key) use ($len, $prefix) {
                     return substr($key, 0, $len) === $prefix;
-                },
-                ARRAY_FILTER_USE_KEY
-            );
+            }, ARRAY_FILTER_USE_KEY);
         }
-        static::$cookies = & $_COOKIE;
+        $this->cookies = & $_COOKIE;
     }
     /**
      * 初始化当前操作cookie
@@ -190,7 +187,7 @@ class Cookie
      */
     public function exists() : bool
     {
-        return isset(static::$cookies[$this->getKey()]);
+        return isset($this->cookies[$this->getKey()]);
     }
     /**
      * 得到当前操作cookie值 或者 得到全部cookie值
@@ -198,7 +195,7 @@ class Cookie
      */
     public function get()
     {
-        return isset($this->pointer['key']) ? $this->pointer['value'] : static::$cookies;
+        return isset($this->pointer['key']) ? $this->pointer['value'] : $this->cookies;
     }
     /**
      * 设置cookie值
@@ -208,7 +205,7 @@ class Cookie
     public function set()
     {
         //默认加密
-        $this->encode(static::$config['encode']);
+        $this->encode($this->config['encode']);
 
         //获得cookie信息
         $cookie   = $this->pointer;
@@ -217,18 +214,18 @@ class Cookie
         $this->isSetValue();
 
         $value    = (string) $cookie['value'];
-        $expire   = time() + ( $cookie['expire'] ?? static::$config['expire'] );
-        $path     = $cookie['path']     ?? static::$config['path'];
-        $domain   = $cookie['domain']   ?? static::$config['domain'];
-        $secure   = $cookie['secure']   ?? static::$config['secure'];
-        $httponly = $cookie['httponly'] ?? static::$config['httponly'];
+        $expire   = time() + ( $cookie['expire'] ?? $this->config['expire'] );
+        $path     = $cookie['path']     ?? $this->config['path'];
+        $domain   = $cookie['domain']   ?? $this->config['domain'];
+        $secure   = $cookie['secure']   ?? $this->config['secure'];
+        $httponly = $cookie['httponly'] ?? $this->config['httponly'];
 
-        $func     = ( $cookie['transcoding'] ?? static::$config['transcoding'] ) ? 'setcookie' : 'setrawcookie';
+        $func     = ( $cookie['transcoding'] ?? $this->config['transcoding'] ) ? 'setcookie' : 'setrawcookie';
 
         if (!$func($key, $value, $expire, $path, $domain, $secure, $httponly)) {
             throw new CookieException('未知错误, 无法定义cookie');
         }
-        static::$cookies[$key] = $value;
+        $this->cookies[$key] = $value;
     }
     /**
      * 删除cookie
@@ -247,10 +244,10 @@ class Cookie
     public function clear()
     {
         //遍历
-        foreach (static::$cookies as $key => $value) {
+        foreach ($this->cookies as $key => $value) {
             setcookie($key, '', 0);
         }
-        static::$cookies = [];
+        $this->cookies = [];
     }
     /**
      * 得到当前操作cookie正确键值
@@ -260,7 +257,7 @@ class Cookie
     private function getKey() : string
     {
         if (isset($this->pointer['key'])) {
-            return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
+            return ($this->pointer['prefix'] ?? $this->config['prefix']).$this->pointer['key'];
         } else {
             throw new CookieException('未选定任意cookie');
         }
@@ -272,8 +269,8 @@ class Cookie
     private function setValue()
     {
         $key = $this->getKey();
-        if (isset(static::$cookies[$key])) {
-            $this->pointer['value'] = static::$cookies[$key];
+        if (isset($this->cookies[$key])) {
+            $this->pointer['value'] = $this->cookies[$key];
         }
     }
     /**

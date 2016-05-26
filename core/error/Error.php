@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Error
+final class Error
 {
     public static function handler(int $errno , string $errstr, string $errfile , int $errline)
     {

@@ -5,7 +5,9 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Session{
+final class Session
+{
+
     use traits\Instance;
 
     private static $config = [
@@ -23,7 +25,7 @@ class Session{
 
 
     //当前操作session(所有操作型函数以此为基础)
-    private $session   = [];
+    private $pointer   = [];
 
 
     private function __construct()
@@ -60,22 +62,22 @@ class Session{
      */
     public function init() : self
     {
-        $this->session = [];
+        $this->pointer = [];
         return $this;
     }
     public function key(string $key)
     {
-        $this->session['key'] = $key;
+        $this->pointer['key'] = $key;
         return $this;
     }
     public function prefix(string $prefix)
     {
-        $this->session['prefix'] = $prefix;
+        $this->pointer['prefix'] = $prefix;
         return $this;
     }
     public function value($value)
     {
-        $this->session['value'] = $value;
+        $this->pointer['value'] = $value;
         return $this;
     }
     public function exists()
@@ -84,14 +86,14 @@ class Session{
     }
     public function get()
     {
-        if (isset($this->session['key'])) {
+        if (isset($this->pointer['key'])) {
             return static::$sessions[$this->getKey()];
         }
         return static::$sessions;
     }
     public function set() : bool
     {
-        static::$sessions[$this->getKey()] = $this->session['value'];
+        static::$sessions[$this->getKey()] = $this->pointer['value'];
         return true;
     }
     public function delete() : bool
@@ -111,6 +113,6 @@ class Session{
     }
     private function getKey() : string
     {
-        return ($this->session['prefix'] ?? static::$config['prefix']).$this->session['key'];
+        return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
     }
 }

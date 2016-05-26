@@ -1,13 +1,15 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\file;
 
-function mime(string $file) : string
-{
+/**
+ * 获得文件mime
+ * @func_name  mime
+ * @param   string $file 文件名
+ * @return  string
+ */
+return function (string $file) : string {
     if (!is_file($file)) {
-        throw new FileException($file.'不存在');
-    }
-    if (!is_readable($file)) {
-        throw new FileException($file.'不可读');
+        throw new FileException($file.'文件不存在');
     }
     if (!function_exists('finfo_open')) {
         throw new FileException('需要php_fileinfo扩展');
@@ -17,4 +19,4 @@ function mime(string $file) : string
     finfo_close($finfo);
 
     return $mime;
-}
+};

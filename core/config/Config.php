@@ -2,9 +2,8 @@
 namespace msqphp\core\config;
 
 use msqphp\base;
-use msqphp\core;
 
-class Config
+final class Config
 {
     //配置
     private static $config = [];
@@ -18,7 +17,7 @@ class Config
             static::loadAllConfig();
         } else {
             $cache_path = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'Config.php';
-            if (is_writable($cache_path)) {
+            if (is_file($cache_path)) {
                 static::$config = require $cache_path;
             } else {
                 static::loadAllConfig();
@@ -34,20 +33,10 @@ class Config
      */
     public static function get(string $key = '')
     {
-        if ('' === $key) {
-            return static::$config;
-        } else {
-            $key = explode('.', $key);
-            switch (count($key)) {
-                case 1:
-                    return static::$config[$key[0]];
-                case 2:
-                    return static::$config[$key[0]][$key[1]];
-                case 3:
-                    return static::$config[$key[0]][$key[1]][$key[2]];
-                default:
-                    throw new CacheException(var_export($key, true).'未知的config键', 1);
-            }
+        try {
+            return base\arr\Arr::get(static::$config, $key);
+        } catch (base\arr\ArrException $e) {
+            throw new ConfigException($key.'无法获取');
         }
     }
     /**
@@ -58,19 +47,10 @@ class Config
      */
     public static function set(string $key, $value)
     {
-        $key = explode('.', $key);
-        switch (count($key)) {
-            case 1:
-                static::$config[$key[0]] = $value;
-                break;
-            case 2:
-                static::$config[$key[0]][$key[1]] = $value;
-                break;
-            case 3:
-                static::$config[$key[0]][$key[1]][$key[2]] = $value;
-                break;
-            default:
-                throw new CacheException(var_export($key, true).'未知的config键', 1);
+        try {
+            base\arr\Arr::set(static::$config, $key, $value);
+        } catch (base\arr\ArrException $e) {
+            throw new ConfigException($key.'无法设置');
         }
     }
     /**

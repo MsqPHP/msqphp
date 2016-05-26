@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Exception
+final class Exception
 {
     public static function handler($e)
     {

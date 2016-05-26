@@ -5,7 +5,7 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Template
+final class Template
 {
     private static $left = '';
     private static $right = '';

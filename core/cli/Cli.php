@@ -3,7 +3,7 @@ namespace msqphp\core\cli;
 
 use msqphp\base;
 
-class Cli
+final class Cli
 {
     private $args = [];
     public static function init()
@@ -17,7 +17,10 @@ class Cli
             \msqphp\Framework::install(dirname($args[0]));
         } elseif ('update' === $args[1]) {
             \msqphp\Framework::update(dirname($args[0]));
+        } elseif ('cron' === $args[1]) {
+            core\cron\Cron::getInstance();
+        } else {
+            throw new CliException('未知的cli命令');
         }
-        return;
     }
 }

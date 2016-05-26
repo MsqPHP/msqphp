@@ -5,13 +5,12 @@ use msqphp\base;
 use msqphp\core;
 use msqphp\traits;
 
-class Route
+final class Route
 {
     public static  $info          = [];
     public static  $group         = [];
     private static $params_handle = [];
     private static $namespace     = '\\app\\';
-    private static $method        = '';
     private static $matched       = false;
     private static $roule         = [];
 
@@ -111,17 +110,8 @@ class Route
         if (static::$matched) {
             return;
         }
-        //是否还有待处理的参数
-        if (isset(static::$params_handle[0])) {
-            $may = static::$params_handle[0];
-            if (static::check($may, $group['allowed'])) {
-                $value = $may;
-                array_shift(static::$params_handle);
-            }
-        }
-        $group_name = static::getAllowedValue($group);
         //赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
-        static::$group[] = static::$group[$group['name']] = $group_name;
+        static::$group[] = static::$group[$group['name']] = $group_name = static::getAllowedValue($group);
 
         //如果命名空间存在, 取其值
         if (isset($group['namespace'])) {

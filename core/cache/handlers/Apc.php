@@ -1,10 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cache\handlers;
 
-use msqphp\base;use msqphp\traits;
-use msqphp\core;
-
-class Apc implements CacheHandlerInterface
+final class Apc implements CacheHandlerInterface
 {
     private $config = [
         'length' => 0

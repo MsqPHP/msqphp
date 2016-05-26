@@ -4,7 +4,7 @@ namespace msqphp\base\ini;
 use msqphp\base;
 use msqphp\traits;
 
-class Ini
+final class Ini
 {
     use traits\CallStatic;
 

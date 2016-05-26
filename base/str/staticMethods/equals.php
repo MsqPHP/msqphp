@@ -8,5 +8,5 @@ namespace msqphp\base\str;
  * @return bool
  */
 return function (string $string, string $target) : bool {
-        return $string === $target && hash_equals($string, $target);
+    return $string === $target && hash_equals($string, $target);
 };

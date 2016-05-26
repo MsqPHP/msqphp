@@ -9,10 +9,6 @@ abstract class View
 {
     //二维数组，一维存放模版变量键，二维存放对应值，缓存，类型
     protected $data     = [];
-    //所有缓存过的视图
-    protected $all_view      = [];
-    protected $all_view_file = '';
-    protected $all_changed   = false;
     //当前参数
     protected $theme    = false;
     protected $language = false;
@@ -41,22 +37,6 @@ abstract class View
             $group .=  $group_info[$i] . DIRECTORY_SEPARATOR;
         }
         $options['group'] = $group;
-
-        $this->all_view_file = $file = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.$group.'view.php';
-        $now = time();
-        $this->all_view = array_filter(
-                            is_file($file) ? unserialize(base\file\File::get($file)) : [],
-                            function ($value) use ($now) {
-                                if ($value['expire'] > $now) {
-                                    base\file\File::delete($value['file'], true);
-                                    return false;
-                                } else {
-                                    return true;
-                                }
-                            }
-                        );
-        $this->all_changed = false;
-
 
         if ($config['language']) {
             $this->language = true;
@@ -255,9 +235,9 @@ abstract class View
             base\file\File::write($tpl_cache_file, $result, true);
 
             if (0 !== $expire) {
-                $this->all_view[$tpl_cache_file] = ['expire'=>time()+$expire,'file'=>$tpl_cache_file];
-                $this->all_changed = true;
+                core\cron\Cron::getInstance()->set($tpl_cache_file, [core\cron\Cron::DELETE_FILE, $tpl_cache_file], time()+$expire);
             }
+
             return $this;
         }
     }
@@ -266,7 +246,7 @@ abstract class View
         if (defined('NO_VIEW')) {
             return false;
         } else {
-            return isset($this->all_view[$this->getTplCacheFilePath($file_name)]);
+            return is_file($this->getTplCacheFilePath($file_name));
         }
     }
     /**
@@ -301,12 +281,9 @@ abstract class View
         base\file\File::write($tpl_cache_file, $content, true);
 
         unset($content);
-
         if (0 !== $expire) {
-            $this->all_view[$tpl_cache_file] = ['expire'=>time()+$expire,'file'=>$tpl_cache_file];
-            $this->all_changed = true;
+            core\cron\Cron::getInstance()->set($tpl_cache_file, [core\cron\Cron::DELETE_FILE, $tpl_cache_file], time()+$expire);
         }
-
         return $this;
     }
     /**
@@ -325,18 +302,19 @@ abstract class View
         //静态
         $this->static = true;
         //拼接静态文件路径
-        $param = empty($_SERVER['QUERY_STRING']) ? '' : strtr(trim($_SERVER['QUERY_STRING'], '/'), '/', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $param = empty($_SERVER['QUERY_STRING']) ? '' : trim(strtr($_SERVER['QUERY_STRING'], '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
 
+        $path = \msqphp\Environment::getPath('public') . $param . DIRECTORY_SEPARATOR . 'index.php';
 
-        $path = \msqphp\Environment::getPath('public').$param.'index.php';
         $this->options['static_path'] = $path;
 
-        if (0 !== $expire) {
-            $this->all_view[$path] = ['expire'=>time()+3600, 'file'=> $path];
-            //过期则引入入口文件, 重新处理
-            $this->options['static_content'] ='<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('bootstrap').'app.php\';exit;}?>';
-        } else {
+        if (0 === $expire) {
             $this->options['static_content'] = '';
+        } else {
+            $this->options['static_content'] = '<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('bootstrap').'app.php\';exit;}?>';
+        }
+        if (0 !== $expire) {
+            core\cron\Cron::getInstance()->set($path, [core\cron\Cron::DELETE_FILE, $path], time()+$expire);
         }
         return $this;
     }
@@ -374,13 +352,10 @@ abstract class View
         if (defined('NO_VIEW')) {
             return false;
         } else {
-            return isset($this->all_view[$this->getTplLastFilePath($file_name)]);
+            return is_file($this->getTplLastFilePath($file_name));
         }
     }
     public function __destruct() {
         $this->static && base\file\File::write($this->options['static_path'], $this->options['static_content'], true);
-        if ($this->all_changed) {
-            base\file\File::write($this->all_view_file, serialize($this->all_view), true);
-        }
     }
 }
