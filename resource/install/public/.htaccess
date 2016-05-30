@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteRule ^(.*)$ server.php?/$1 [L]
+
+DirectoryIndex index.html index.php server.php
