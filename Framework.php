@@ -21,6 +21,7 @@ class Framework
         $path_config = [
             'root'        => $root,
             'application' => $root . 'application',
+            'applicationtest' => $root . 'applicationtest',
             'resources'   => $root . 'resources',
             'bootstrap'   => $root . 'bootstrap',
             'config'      => $root . 'config',
@@ -28,7 +29,6 @@ class Framework
             'storage'     => $root . 'storage',
             'library'     => $lib_path,
         ];
-
         //复制
         foreach ($path_config as $key => $path) {
             base\dir\Dir::make($path, true);

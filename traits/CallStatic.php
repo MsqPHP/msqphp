@@ -14,7 +14,7 @@ trait CallStatic
     {
         static $func = [];
         if (!isset($func[$method])) {
-            $framework_path = \msqphp\Environment::getPath('framework');
+            $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;
             $namespace = strtr(substr(__CLASS__, 7, strrpos(__CLASS__, '\\') - 7), '\\', DIRECTORY_SEPARATOR);
             $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'staticMethods'.DIRECTORY_SEPARATOR.$method.'.php';
             if (!is_file($file)) {

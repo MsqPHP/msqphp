@@ -180,10 +180,10 @@ final class File
             throw new FileException($from.static::ERROR['NotExists'].','.static::ERROR['CanNotCopy']);
         }
 
-        //是否可操作
-        if (!is_executable($from) || !is_writable($from)) {
-            throw new FileException($from.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
-        }
+        // //是否可操作
+        // if (!is_executable($from) || !is_writable($from)) {
+        //     throw new FileException($from.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
+        // }
 
         //对应文件是否存在
         if (is_file($to)) {
@@ -197,9 +197,9 @@ final class File
         //对应文件父目录是否可操作
         $to_dir = dirname($to);
 
-        if (!is_writable($to_dir) || !is_executable($to_dir)) {
-            throw new FileException($to.static::ERROR['ParentDir'].static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
-        }
+        // if (!is_writable($to_dir) || !is_executable($to_dir)) {
+        //     throw new FileException($to.static::ERROR['ParentDir'].static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
+        // }
 
         //复制
         if (!copy($from, $to)) {

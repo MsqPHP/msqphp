@@ -90,6 +90,8 @@ msqphp beta 1.1
 
 ##安装
 
+**windows下好像不行,请人工复制vendor/msqphp/framework/resource/install/下文件到web目录**
+
 + composer.json:
 ~~~
 {
