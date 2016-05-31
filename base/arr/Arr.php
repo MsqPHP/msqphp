@@ -29,15 +29,24 @@ final class Arr
      */
     public static function set(array & $array, string $arr_key, $arr_value)
     {
+        //如果键为空
         if ('' === $arr_key) {
             $array = $arr_value;
             return;
         }
+
+        //以点分割
         $key = explode('.', $arr_key);
-        $result = $array;
+
+        //结果
+        $result = & $array;
+
+        //递归
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             $result = & $result[$key[$i]];
         }
+
+        //赋值
         $result = $arr_value;
     }
     /**
@@ -53,16 +62,23 @@ final class Arr
      * @throws ArrException
      * @return miexd
      */
-    public static function get(array $array, string $arr_key)
+    public static function get(array & $array, string $arr_key)
     {
+        //键为空
         if ('' === $arr_key) {
             return $array;
         }
+        //以点分割
         $key = explode('.', $arr_key);
-        $result = $array;
+
+        //结果
+        $result = & $array;
+        //递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
-            $result = $result[$key[$i]];
+            $result = & $result[$key[$i]];
         }
+
+        //返回
         return $result;
     }
 
@@ -159,7 +175,10 @@ final class Arr
         if ($count === 1) {
             return $array[array_rand($array , 1)];
         } else {
+            //取最小
             $count = min($count, count($array));
+
+            //随机获得键
             $index = array_rand($array, $count);
 
             return array_filter($array, function ($key) use ($index) {

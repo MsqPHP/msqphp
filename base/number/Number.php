@@ -62,22 +62,4 @@ final class Number
         }
         return $result;
     }
-    /**
-     * 绝对值
-     * @param int|float $number  数字
-     * @return miexd
-     */
-    public static function abs($number)
-    {
-        return $number > 0 ? $number : -$number;
-    }
-    /**
-     * 平方根
-     * @param int|float $number  数字
-     * @return miexd
-     */
-    public static function sqrt($number)
-    {
-        return sqrt($number);
-    }
 }

@@ -13,18 +13,24 @@ trait CallStatic
     public static function __callStatic(string $method, array $args)
     {
         static $func = [];
+
         if (!isset($func[$method])) {
+
             $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;
-            $namespace = strtr(substr(__CLASS__, 7, strrpos(__CLASS__, '\\') - 7), '\\', DIRECTORY_SEPARATOR);
+
+            $namespace = strtr(str_replace([strrchr(__CLASS__, '\\'),'msqphp\\'],'',__CLASS__), '\\', DIRECTORY_SEPARATOR);
+
             $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'staticMethods'.DIRECTORY_SEPARATOR.$method.'.php';
+
+            !is_file($file) && $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
+
             if (!is_file($file)) {
-                $file = str_replace(\msqphp\Environment::getPath('library'), $framework_path, $file);
-                if (!is_file($file)) {
-                    throw new TraitsException(__CLASS__.'类的'.$method.'不存在');
-                }
+                throw new TraitsException(__CLASS__.'类的'.$method.'不存在');
             }
+
             $func[$method] = require $file;
         }
+
         return call_user_func_array($func[$method], $args);
     }
 }

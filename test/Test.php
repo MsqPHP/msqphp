@@ -3,18 +3,22 @@ namespace msqphp\test;
 
 use msqphp\base;
 
-class Test
+abstract class Test
 {
     protected $not_test = ['test', 'testProperty', 'testStaticProperty', 'testStart', 'testFunc', 'testMethod', 'testAll', 'testThis', 'testStaticMethod', 'testFunction'];
 
     public $pointer = [];
-    public function init() : self
+
+###
+#  指针操作
+###
+    final public function init() : self
     {
         $this->pointer = [];
 
         return $this;
     }
-    public function clear() : self
+    final public function clear() : self
     {
         if (isset($this->pointer['class'])) {
             $this->pointer= ['class'=>$this->pointer['class']];
@@ -25,37 +29,37 @@ class Test
         }
         return $this;
     }
-    public function class(string $class) : self
+    final public function class(string $class) : self
     {
         $this->pointer['class'] = $class;
         return $this;
     }
-    public function obj($obj) : self
+    final public function obj($obj) : self
     {
         $this->pointer['obj'] = $obj;
         return $this;
     }
-    public function args() : self
+    final public function args() : self
     {
         $this->pointer['args'] = func_get_args();
         return $this;
     }
-    public function func($func) : self
+    final public function func($func) : self
     {
         $this->pointer['func'] = $func;
         return $this;
     }
-    public function method(string $method) : self
+    final public function method(string $method) : self
     {
         $this->pointer['method'] = $method;
         return $this;
     }
-    public function result($result) : self
+    final public function result($result) : self
     {
         $this->pointer['result'] = $result;
         return $this;
     }
-    public function test()
+    final public function test()
     {
         $pointer = $this->pointer;
         if (isset($pointer['class'])) {
@@ -71,7 +75,9 @@ class Test
     }
 
 
-
+###
+#  测试函数
+###
     public function testStart()
     {
         echo '测试文件正常运行，但未定义测试函数';
@@ -87,10 +93,10 @@ class Test
     protected function testThis()
     {
         foreach ($this->getMethods($this) as $method) {
-            static::testMethod($this, $method, null, null);
+            static::testMethod($this, $method, [], null);
         }
     }
-    protected static function testFunc($func, $args=null, $result=null)
+    protected static function testFunc($func, array $args = [], $result=null)
     {
 
         if (is_object($func[0])) {
@@ -141,7 +147,7 @@ class Test
             throw new TestException("测试失败", 500);
         }
     }
-    protected static function testFunction($function, $args, $result)
+    protected static function testFunction($function, array $args, $result)
     {
         return static::testFunc($function, $args, $result);
     }
@@ -190,8 +196,8 @@ class Test
 
         array_map(function($class) {
             $obj = new $class;
-            $obj->init();
             if (is_subclass_of($obj, '\\msqphp\\test\\Test')) {
+                $obj->init();
                 $obj->testStart();
             }
             $obj = null;

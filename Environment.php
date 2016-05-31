@@ -32,10 +32,8 @@ class Environment
         static::initPath($path_config);
 
         //获得运行环境
-        static::$sapi = PHP_SAPI === 'cli' ? 'cli' : (false !== strpos(PHP_SAPI, 'apache') ? 'apche' : '');
+        static::$sapi = PHP_SAPI === 'cli' ? 'cli' : 'apache';
 
-        //维护模式,直接返回不可用页面并退出
-        5 === APP_DEBUG && base\response\Response::unavailable();
 
         //引用composer加载文件数组(需要自己修改代码实现)
         static::$autoload_classes = & $GLOBALS['autoloader_class'];
@@ -57,15 +55,19 @@ class Environment
 
         //分情况运行
         if ('cli' === static::$sapi) {
-            require __DIR__.'/Cli.php';
             //命令行模式
+            require __DIR__.'/Cli.php';
             Cli::run();
         } elseif (4 === APP_DEBUG) {
             //测试模式
-            require static::getPath('framework').'Test.php';
+            require __DIR__.'/Test.php';
+            Test::run();
+        } elseif (5 === APP_DEBUG) {
+            //维护模式,直接返回不可用页面并退出
+            base\response\Response::unavailable();
         } else {
-            require __DIR__.'/App.php';
             //正常应用模式
+            require __DIR__.'/App.php';
             App::run();
         }
     }
@@ -108,7 +110,6 @@ class Environment
     {
         //文件不存在,自动加载信息为空,直接返回
         if (!is_file($autoload_info_file)) {
-            static::$autoload_info = [];
             return;
         }
         //载入文件
@@ -122,19 +123,21 @@ class Environment
             return;
         }
 
+
         //需要加载的文件
         $needful = [];
         //整理过后的列表
         $tidied  = [];
+        //载入整理过文件的函数
+        $require_tidied_file = function (string $file) use (& $tidied) {
+            require $file;
+            $tidied[] = $file;
+        };
         //如果有最终缓存的话,重新加载放入整理层中
-        if (isset($autoload_info['last'])) {
-            foreach ($autoload_info['last'] as $file) {
-                $tidied[] = $file;
-                require $file;
-            }
-        }
+        isset($autoload_info['last']) && array_map($require_tidied_file, $autoload_info['last']);
+
         //颠倒needful,并加载
-        foreach (array_reverse($autoload_info['needful']) as $file) {
+        array_map(function($file) use(& $tidied, & $needful) {
             //如果已经加载过,再次放入needful
             if (in_array($file, static::$autoload_classes)) {
                 $needful[] = $file;
@@ -143,14 +146,10 @@ class Environment
                 $tidied[] = $file;
                 require $file;
             }
-        }
-        //如果tidied
-        if (isset($autoload_info['tidied'])) {
-            foreach ($autoload_info['tidied'] as $file) {
-                $tidied[] = $file;
-                require $file;
-            }
-        }
+        }, array_reverse($autoload_info['needful']));
+
+        isset($autoload_info['tidied']) && array_map($require_tidied_file, $autoload_info['tidied']);
+
         //如果needful为空,则表示得到最终加载顺序
         static::$autoload_info = empty($needful) ? ['last'=>$tidied] : ['needful'=>$needful,'tidied'=>$tidied];
         //加载信息改变过
@@ -215,10 +214,10 @@ class Environment
         set_error_handler(['msqphp\\core\\error\\Error','handler'], E_ALL);
 
         //辅助常量在测试模式时使用
-        if (APP_DEBUG > 0 && APP_DEBUG < 4) {
+        if (0 < APP_DEBUG && 4 > APP_DEBUG) {
             define('NO_STATIC', true);
-            APP_DEBUG > 1 && define('NO_VIEW', true);
-            APP_DEBUG > 2 && define('NO_CACHE', true);
+            1 < APP_DEBUG && define('NO_VIEW', true);
+            2 < APP_DEBUG && define('NO_CACHE', true);
         }
     }
     /**
@@ -231,8 +230,8 @@ class Environment
      */
     private static function endAutoload(string $autoload_info_file)
     {
-        //取当前信息
-        $autoload_info = static::$autoload_info;
+        //取当前信息,并将将当前的自动加载信息至空
+        list($autoload_info, static::$autoload_info) = [static::$autoload_info, []];
 
         //如果加载文件不为空,即加载了新的文件
         if (!empty(static::$autoload_classes)) {
@@ -268,8 +267,6 @@ class Environment
         }
 
         unset($autoload_info);
-        //将当前的自动加载信息至空
-        static::$autoload_info = [];
     }
     /**
      * 获得路径

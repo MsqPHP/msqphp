@@ -6,6 +6,7 @@ use msqphp\traits;
 
 final class Response
 {
+    use traits\CallStatic;
     /**
      * 页面重定向
      *
@@ -33,7 +34,7 @@ final class Response
         $msg = $msg ?: '系统将在'.$time.'秒之后自动跳转到<a href="'.$url.'">'.$url.'</a>！';
         if($time > 0) {
             header('refresh:'.$time.';url='.$url);
-            echo $msg;
+            include static::getViewPath('jump');
         } else {
             header('location:'.$url, true, 301);
         }
@@ -51,7 +52,7 @@ final class Response
     public static function error(string $msg, int $time = 3, string $url = '')
     {
         // show(debug_backtrace());
-        include static::getViewPath('500');
+        include static::getViewPath('error');
         exit;
     }
     /**
@@ -65,7 +66,7 @@ final class Response
      */
     public static function success(string $msg, int $time = 3, string $url = '')
     {
-        include static::getViewPath('200');
+        include static::getViewPath('success');
         exit;
     }
     /**
@@ -75,7 +76,7 @@ final class Response
      */
     public static function unavailable()
     {
-        include static::getViewPath('503');
+        include static::getViewPath('unavailable');
         exit;
     }
     private static function getViewPath(string $filename) : string

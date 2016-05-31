@@ -32,20 +32,18 @@ class Framework
         //复制
         foreach ($path_config as $key => $path) {
             base\dir\Dir::make($path, true);
-            if ($key === 'public' || base\dir\Dir::isEmpty($path, true))
-            {
+            if ('public' === $key || base\dir\Dir::isEmpty($path, true)) {
                 base\dir\Dir::copy($install_path.$key, $path, true);
             }
         }
 
 
         //lib目录对应目录创建
-        $dir_list = base\dir\Dir::getAllDir(__DIR__);
-        foreach ($dir_list as $dir) {
+        array_map(function ($file) {
             if (base\str\Str::endsWith($dir, ['methods', 'gets', 'staticMethods', 'handlers', 'drivers'])) {
-                $dir = str_replace(__DIR__, $lib_path, $dir);
+                $dir = str_replace(__DIR__.DIRECTORY_SEPARATOR, $lib_path, $dir);
                 base\dir\Dir::make($dir, true);
             }
-        }
+        }, base\dir\Dir::getAllDir(__DIR__));
     }
 }

@@ -21,18 +21,22 @@ final class File implements CacheHandlerInterface
 
     public function __construct(array $config)
     {
-        $this->config = array_merge($this->config, $config);
+        $config = array_merge($this->config, $config);
 
-        $path = $this->config['path'];
-        if (!is_dir($path)) {
-            base\dir\Dir::make($path , true);
+        if (!is_dir($config['path'])) {
+            base\dir\Dir::make($path , true, 0755);
         }
-        $this->config['path'] = realpath($path) . DIRECTORY_SEPARATOR;
+
+        $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
+
+        $this->config = $config;
     }
     /**
      * cache是否存在
+     *
      * @param  string $key cache键
-     * @return boolen      是否存在
+     *
+     * @return bool
      */
     public function available(string $key) : bool
     {
@@ -59,8 +63,10 @@ final class File implements CacheHandlerInterface
     }
     /**
      * 得到cache
+     *
      * @param  string $key 键
-     * @return string      值
+     *
+     * @return miexd
      */
     public function get(string $key)
     {
@@ -81,9 +87,13 @@ final class File implements CacheHandlerInterface
     }
     /**
      * 设置缓存
+     *
      * @param string      $key    键
      * @param string      $value  值
      * @param int         $expire 存在时间
+     *
+     * @throws  CacheHandlerException
+     * @return  void
      */
     public function set(string $key, $value, int $expire)
     {
@@ -110,25 +120,23 @@ final class File implements CacheHandlerInterface
     }
     /**
      * 递增
+     *
      * @param  string $key  键
      * @param  int    $step 偏移量
-     * @return [type]
+     *
+     * @throws  CacheHandlerException
+     * @return  int
      */
-    public function increment(string $key, int $offset)
+    public function increment(string $key, int $offset) : int
     {
-        $file = $this->filename($key);
         try {
-            clearstatcache(true, $file);
-            if (is_file($file)) {
-                $expire = (int) base\file\File::read($file, 10);
+            if ($this->available($key)) {
+                $expire = (int) base\file\File::read($this->filename($key), 10);
                 $now = time();
-                if ($expire < $now) {
-                    throw new CacheHandlerException($key.'已过期,无法自增');
-                } else {
-                    $num = $this->get($key);
-                    $num += $offset;
-                    $this->set($key, $num, $expire - $now);
-                }
+                $num = (int) $this->get($key);
+                $num += $offset;
+                $this->set($key, $num, $expire - $now);
+                return $num;
             } else {
                 throw new CacheHandlerException($key.'不存在,无法自增');
             }
@@ -136,21 +144,25 @@ final class File implements CacheHandlerInterface
             throw new CacheHandlerException($e->getMessage());
         }
     }
-    public function decrement(string $key, int $offset)
+    /**
+     * 递减
+     *
+     * @param  string $key  键
+     * @param  int    $step 偏移量
+     *
+     * @throws  CacheHandlerException
+     * @return  int
+     */
+    public function decrement(string $key, int $offset) : int
     {
-        $file = $this->filename($key);
         try {
-            clearstatcache(true, $file);
-            if (is_file($file)) {
-                $expire = (int) base\file\File::read($file, 10);
+            if ($this->available($key)) {
+                $expire = (int) base\file\File::read($this->filename($key), 10);
                 $now = time();
-                if ($expire < $now) {
-                    throw new CacheHandlerException($key.'已过期,无法自增');
-                } else {
-                    $num = $this->get($key);
-                    $num -= $offset;
-                    $this->set($key, $num, $expire - $now);
-                }
+                $num = (int) $this->get($key);
+                $num -= $offset;
+                $this->set($key, $num, $expire - $now);
+                return $num;
             } else {
                 throw new CacheHandlerException($key.'不存在,无法自增');
             }
@@ -160,8 +172,11 @@ final class File implements CacheHandlerInterface
     }
     /**
      * 删除指定缓存
+     *
      * @param  string $key 键
-     * @return boolen      是否成功
+     *
+     * @throws  CacheHandlerException
+     * @return  void
      */
     public function delete(string $key)
     {
@@ -174,8 +189,11 @@ final class File implements CacheHandlerInterface
     }
     /**
      * 清空所有缓存
+     *
      * @throws FileException
-     * @return void
+     *
+     * @throws  CacheHandlerException
+     * @return  void
      */
     public function clear()
     {
@@ -188,7 +206,9 @@ final class File implements CacheHandlerInterface
     /**
      * 缓存队列整理
      * @throws FileException
-     * @return void
+     *
+     * @throws  CacheHandlerException
+     * @return  void
      */
     private function queue($key)
     {

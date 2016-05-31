@@ -17,7 +17,7 @@ final class Header
     }
     public static function status(int $code)
     {
-        $status_info = [
+        static $status_info = [
             // Informational 1xx
             100 => 'Continue',
             101 => 'Switching Protocols',
@@ -75,7 +75,7 @@ final class Header
     }
     public static function type(string $type)
     {
-        $headers = [
+        static $headers = [
             'ez'      => 'application/andrew-inset',
             'hqx'     => 'application/mac-binhex40',
             'cpt'     => 'application/mac-compactpro',
@@ -227,9 +227,13 @@ final class Header
         if (!is_file($file) || !is_writable($file)) {
             throw new HeaderException($file.'不存在或不可读');
         }
+
         static::type($type ?: pathinfo($filepath, PATHINFO_EXTENSION));
+
         header('Accept-Ranges:bytes');
+
         header('Accept-Length:'.filesize($filepath));
+
         header('Content-Disposition:attachment;filename='.($filename ?: pathinfo($filepath, PATHINFO_FILENAME)));
     }
 

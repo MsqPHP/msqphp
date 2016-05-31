@@ -14,7 +14,7 @@ final class Filter
      */
     public static function html($value) {
         if (is_array($value)) {
-            return array_map('\msqphp\base\filter\Filter::html', $value);
+            return array_map('static::html', $value);
         } elseif(is_string($value)) {
             return htmlspecialchars($value, ENT_QUOTES);
         } else {
@@ -28,7 +28,7 @@ final class Filter
      */
     public static function slashes($value) {
         if(is_array($value)) {
-            return array_map('\msqphp\base\filter\Filter::slashes', $value);
+            return array_map('static::slashes', $value);
         } elseif(is_string($value)) {
             return addslashes($value);
         } else {

@@ -39,6 +39,7 @@ class CacheTest extends msqphp\test\Test
                     ],
                 ],
         ]);
+        msqphp\base\dir\Dir::empty(__DIR__.'/storage/cache');
         $this->obj(\msqphp\core\cache\Cache::getInstance());
         $this->testThis($this);
     }
@@ -52,13 +53,13 @@ class CacheTest extends msqphp\test\Test
         $this->method('set')->args()->result(null)->test();
         $this->method('exists')->args()->result(true)->test();
         $this->method('get')->args()->result(1)->test();
-        $this->method('increment')->args()->result(null)->test();
+        $this->method('increment')->args()->result(2)->test();
         $this->method('get')->args()->result(2)->test();
-        $this->method('decrement')->args()->result(null)->test();
+        $this->method('decrement')->args()->result(1)->test();
         $this->method('get')->args()->result(1)->test();
-        $this->method('inc')->args()->result(null)->test();
+        $this->method('inc')->args()->result(2)->test();
         $this->method('get')->args()->result(2)->test();
-        $this->method('dec')->args()->result(null)->test();
+        $this->method('dec')->args()->result(1)->test();
         $this->method('exists')->args()->result(true)->test();
         $this->method('delete')->args()->result(null)->test();
         $this->method('exists')->args()->result(false)->test();

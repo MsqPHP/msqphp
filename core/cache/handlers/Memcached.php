@@ -57,13 +57,13 @@ final class Memcached implements CacheHandlerInterface
             return $this->handler->get($key);
         }
     }
-    public function increment(string $key, int $offset)
+    public function increment(string $key, int $offset) : int
     {
-        $this->handler->increment($key, $offset);
+        return $this->handler->increment($key, $offset);
     }
-    public function decrement(string $key, int $offset)
+    public function decrement(string $key, int $offset) : int
     {
-        $this->handler->decrement($key, $offset);
+        return $this->handler->decrement($key, $offset);
     }
     //设置缓存
     public function set(string $key, $value, int $expire)

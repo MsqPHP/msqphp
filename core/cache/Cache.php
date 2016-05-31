@@ -6,9 +6,12 @@ use msqphp\traits;
 
 final class Cache
 {
+    //单例模式
     use traits\Instance;
+
     //所有处理类
     private $handlers   = [];
+
     //缓存配置
     private $config     = [
         'multi'                =>  false,
@@ -19,11 +22,14 @@ final class Cache
         //处理类配置
         'handlers_config'      =>  [],
     ];
+
     //当前处理类的指针
     private $pointer             = [];
+
     /**
      * 构造方法 $config
-     * @param array $config [description]
+     *
+     * @return  void
      */
     private function __construct()
     {
@@ -31,25 +37,40 @@ final class Cache
         $config           = array_merge($this->config, core\config\Config::get('cache'));
         //处理类支持列表
         $config['sports'] = $config['multi'] ? $config['sports'] : [ $config['default_handler'] ];
+        //赋值配置
         $this->config     = $config;
         //缓存处理类接口文件
         require __DIR__.DIRECTORY_SEPARATOR.'handlers'.DIRECTORY_SEPARATOR.'CacheHandlerInterface.php';
         //设置处理类
         $this->setHandler($config['default_handler']);
     }
+
+###
+#  指针操作
+###
     /**
-     * 初始化本对象, 并告知所用那一种处理类
-     * @param  string $handler [description]
+     * 初始化指针,并告知处理类种类及配置
+     *
+     * @param  string $type   处理类种类
+     * @param  array  $config 处理类配置
+     *
      * @return self
      */
-    public function init(string $handler = '', array $config=[]) : self
+    public function init(string $type = '', array $config=[]) : self
     {
         //将当前操作cache初始化
         $this->pointer = [];
         //设置处理类
-        $this->setHandler($handler, $config);
+        $this->setHandler($type, $config);
         return $this;
     }
+    /**
+     * 设置处理类
+     *
+     * @param  handlers\CacheHandlerInterface $handler 处理类对象
+     *
+     * @return self
+     */
     public function handler(handlers\CacheHandlerInterface $handler) : self
     {
         $this->pointer['handler'] = $handler;
@@ -57,7 +78,9 @@ final class Cache
     }
     /**
      * 设置当前缓存处理键前缀
+     *
      * @param  string $prefix 前缀
+     *
      * @return self
      */
     public function prefix(string $prefix) : self
@@ -67,7 +90,9 @@ final class Cache
     }
     /**
      * 设置当前处理缓存键
+     *
      * @param  string $key 键
+     *
      * @return self
      */
     public function key(string $key) : self
@@ -77,7 +102,9 @@ final class Cache
     }
     /**
      * 当前处理缓存值
+     *
      * @param  miexd $value 值
+     *
      * @return self
      */
     public function value($value) : self
@@ -87,7 +114,9 @@ final class Cache
     }
     /**
      * 当前处理缓存偏移量
+     *
      * @param  int $offset 偏移量
+     *
      * @return self
      */
     public function offset(int $offset) : self
@@ -97,18 +126,23 @@ final class Cache
     }
     /**
      * 设置当前处理缓存过期时间
+     *
      * @param  int    $expire 过期时间
-     * @return bool
+     *
+     * @return self
      */
     public function expire(int $expire) : self
     {
         $this->pointer['expire'] = $expire;
         return $this;
     }
-
+###
+#  操作
+###
 
     /**
      * 当前处理缓存键是否存在
+     *
      * @return bool
      */
     public function exists() : bool
@@ -125,6 +159,8 @@ final class Cache
     }
     /**
      * 得到当前处理缓存键对应值
+     *
+     * @throws CacheException
      * @return miexd
      */
     public function get()
@@ -137,36 +173,39 @@ final class Cache
     }
     /**
      * 自增
+     *
      * @throws CacheException
-     * @return void
+     *
+     * @return int
      */
-    public function inc()
+    public function inc() : int
     {
-        $this->increment();
+        return $this->increment();
     }
-    public function increment()
+    public function increment() : int
     {
         try {
             return $this->pointer['handler']->increment($this->getKey(), $this->pointer['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
-            throw new CacheException($e->getMessage());
+            throw new CacheException($this->getKey().'缓存无法自增');
         }
     }
     /**
      * 自减
+     *
      * @throws CacheException
-     * @return void
+     * @return int
      */
     public function dec()
     {
-        $this->decrement();
+        return $this->decrement();
     }
     public function decrement()
     {
         try {
-            $this->pointer['handler']->decrement($this->getKey(), $this->pointer['offset'] ?? 1);
+            return $this->pointer['handler']->decrement($this->getKey(), $this->pointer['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
-            throw new CacheException($e->getMessage());
+            throw new CacheException($this->getKey().'缓存无法自减');
         }
     }
     /**
@@ -180,7 +219,7 @@ final class Cache
             try {
                 $this->pointer['handler']->set($this->getKey(), $this->pointer['value'], $this->pointer['expire'] ?? $this->config['expire']);
             } catch(handlers\CacheHandlerException $e) {
-                throw new CacheException($e->getMessage());
+                throw new CacheException($this->getKey().'缓存无法赋值');
             }
         }
     }
@@ -194,7 +233,7 @@ final class Cache
         try {
             $this->pointer['handler']->delete($this->getKey());
         } catch(handlers\CacheHandlerException $e) {
-            throw new CacheException($e->getMessage());
+            throw new CacheException($this->getKey().'缓存无法删除');
         }
     }
     /**
@@ -207,7 +246,7 @@ final class Cache
         try {
             $this->pointer['handler']->clear();
         } catch(handlers\CacheHandlerException $e) {
-            throw new CacheException($e->getMessage());
+            throw new CacheException('缓存无法清空');
         }
     }
 
@@ -223,14 +262,19 @@ final class Cache
             throw new CacheException('未选择任意缓存键');
         }
     }
+###
+#  处理类设置
+###
     /**
      * 设置对应的处理类
+     *
      * @param  string $type    处理类类型
      * @param  array  $config  处理类配置
+     *
      * @throws CacheException
-     * @return void
+     * @return self
      */
-    private function setHandler(string $type = '', array $config = [])
+    private function setHandler(string $type = '', array $config = []) : self
     {
         //为空取默认
         $type = $type ?: $this->config['default_handler'];
@@ -239,39 +283,42 @@ final class Cache
             throw new CacheException($type . ' 缓存处理器不支持');
         }
 
-        if (empty($config)) {
-            $config      = $this->config['handlers_config'][$type];
-            $key         = md5($type);
-        } else {
-            $config      = array_merge($this->config['handlers_config'][$type], $config);
-            $key         = md5(serialize($config).$type);
-        }
+        //获得键
+        $key                  = empty($config) ? md5($type) : md5(serialize($config).$type);
+        //配置
+        $config               = array_merge($this->config['handlers_config'][$type], $config);
 
         $this->handlers[$key] = $this->pointer['handler'] = $this->handlers[$key] ?? $this->initHandler($type, $config);
+
+        return $this;
     }
     /**
      * 加载并返回处理类
+     *
      * @param  string $type    处理类类型
      * @param  array  $config  处理类配置
+     *
      * @throws CacheException
-     * @return 处理类
+     * @return handlers\CacheHandlerInterface
      */
     private function initHandler(string $type, array $config) : handlers\CacheHandlerInterface
     {
         static $files  = [];
+
         if (!isset($files[$type])) {
             //载入cache处理类文件
             $file = __DIR__.DIRECTORY_SEPARATOR.'handlers'.DIRECTORY_SEPARATOR.$type.'.php';
             //如果不存在查找lib目录下是否存在
+            is_file($file) || $file = str_replace(\msqphp\Environment::getPath('library'), \msqphp\Environment::getPath('framework'), $file);
+
             if (!is_file($file)) {
-                $file = str_replace(\msqphp\Environment::getPath('library'), \msqphp\Environment::getPath('framework'), $file);
-                if (!is_file($file)) {
-                    throw new CacheException($type.'缓存处理类不存在');
-                }
+                throw new CacheException($type.'缓存处理类不存在');
             }
+
             require $file;
             $files[$type] = true;
         }
+
         //拼接类名
         $class = __NAMESPACE__.'\\handlers\\'.$type;
         //创建类

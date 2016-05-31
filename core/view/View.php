@@ -301,6 +301,14 @@ abstract class View
             return $this;
         }
     }
+    public function need(string $file_name, int $expire = 86400) : self
+    {
+        return $this->display($file_name, $expire);
+    }
+    public function assembled(string $file_name) : bool
+    {
+        return $this->displayed($file_name);
+    }
     public function displayed(string $file_name) : bool
     {
         if (defined('NO_VIEW')) {

@@ -19,8 +19,8 @@ final class Dir
     {
         //是否目录已存在
         if (is_dir($dir)) {
+            //目录已存在
             if (!$force) {
-                //目录已存在
                 throw new DirException($dir.' 目录已存在');
             }
         } else {
@@ -28,7 +28,6 @@ final class Dir
             $parent_dir = dirname($dir);
 
             if (!is_dir($parent_dir)) {
-
                 if ($force) {
                     //创建
                     Dir::make($parent_dir, true, $code);
@@ -44,9 +43,10 @@ final class Dir
             }
 
             //创建目录
-            if (!mkdir($dir, $code)) {
+            if (!mkdir($dir, $code) || !chmod($dir, $code)) {
                 throw new DirException($dir.'未知错误, 无法创建');
             }
+
         }
     }
     /**
@@ -79,7 +79,9 @@ final class Dir
         } else {
             Dir::make($to);
         }
+
         $to_parent = dirname($to);
+
         //目标父目录是否可操作
         if (!is_writable($to_parent) || !is_executable($to_parent)) {
             throw new DirException($to.' 父目录无法操作');

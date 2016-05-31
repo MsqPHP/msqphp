@@ -20,9 +20,9 @@ Interface CacheHandlerInterface
     //得到缓存信息
     public function get(string $key);
     //递增
-    public function increment(string $key, int $offset);
+    public function increment(string $key, int $offset) : int;
     //递减
-    public function decrement(string $key, int $offset);
+    public function decrement(string $key, int $offset) : int;
     //设置缓存
     public function set(string $key, $value, int $expire);
     //清除缓存

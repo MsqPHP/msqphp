@@ -59,7 +59,7 @@ final class Route
 
         } catch(\msqphp\core\exception\Exception $e) {
 
-            throw new RouteException($e->getMessage());
+            throw $e;
         }
     }
 

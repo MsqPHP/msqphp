@@ -7,4 +7,12 @@ use msqphp\traits;
 
 class Exception extends \Exception
 {
+    public function __construct(string $message = '', int $code = 0, \Exception $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
+    public function toString()
+    {
+        // core\log\Log::getInstance()->message($this->getMessage())->type('Exception')->record();
+    }
 }

@@ -26,7 +26,7 @@ final class Template
 
         $blank     = '\\s+';
         $may_blank = '\\s*';
-        $name      = '([A-Za-z_][A-Za-z0-9_]*)';
+        $name      = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
         $var       = '\\$'.$name;
         $compare   = '(\\<\\=|\\>=|\\<|\\<\\>|\\>|\\<\\>|\\!\\=|\\=\\=|\\=\\=\\=|\\!\\=\\=)';
 

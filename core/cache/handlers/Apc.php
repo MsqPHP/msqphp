@@ -9,7 +9,7 @@ final class Apc implements CacheHandlerInterface
 
     public function __construct(array $config)
     {
-        if (!function_exists('apc_cache_info')) {
+        if (!function_exists('apc_cache_info') || !ini_get('apc.enabled')) {
             throw new CacheHandlerException('require Apc support');
         }
 
@@ -36,16 +36,20 @@ final class Apc implements CacheHandlerInterface
             throw new CacheHandlerException($key.'缓存键不存在');
         }
     }
-    public function increment(string $key, int $offset)
+    public function increment(string $key, int $offset) : int
     {
-        if (false === apc_inc($key, $offset)) {
+        if (false === $num = apc_inc($key, $offset)) {
             throw new CacheHandlerException($key.'缓存值无法自增');
+        } else {
+            return $num;
         }
     }
-    public function decrement(string $key, int $offset)
+    public function decrement(string $key, int $offset) : int
     {
-        if (false === apc_dec($key, $offset)) {
+        if (false === $num = apc_dec($key, $offset)) {
             throw new CacheHandlerException($key.'缓存值无法自减');
+        } else {
+            return $num;
         }
     }
     //设置缓存

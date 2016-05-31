@@ -32,9 +32,13 @@ final class Log
         $this->pointer = [];
         return $this;
     }
-    public function message(string $msg) : self
+    public function msg(string $message) : self
     {
-        $this->pointet['message'] = $msg;
+        return $this->message($message);
+    }
+    public function message(string $message) : self
+    {
+        $this->pointet['message'] = $message;
         return $this;
     }
     public function level(string $level) : self
@@ -48,6 +52,12 @@ final class Log
     }
     public function record()
     {
+        $pointer = $this->pointer;
+        $level = $pointer['level'] ?? '';
+        $message = $pointer['message'] ?? '';
+        if (in_array(strtolower($level, $this->config, 'level')) {
+            $this->handler->log($level, $message, $content);
+        }
     }
     private function initHandler(string $type, array $config)
     {
