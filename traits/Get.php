@@ -34,7 +34,7 @@ trait Get
             if (is_file($file)) {
                 $gets[$property] = require $file;
             } else {
-                throw new TraitsException(__CLASS__.'类的'.$property.'不存在');
+                throw new TraitsException(__CLASS__.'类的'.$property.'属性不存在');
             }
 
         }

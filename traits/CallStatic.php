@@ -25,7 +25,7 @@ trait CallStatic
             !is_file($file) && $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
 
             if (!is_file($file)) {
-                throw new TraitsException(__CLASS__.'类的'.$method.'不存在');
+                throw new TraitsException(__CLASS__.'类的'.$method.'静态方法不存在');
             }
 
             $func[$method] = require $file;

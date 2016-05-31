@@ -7,7 +7,7 @@ use msqphp\traits;
 
 final class Http
 {
-    use traits\get;
+    use traits\Get;
 
     public static function download(string $file)
     {

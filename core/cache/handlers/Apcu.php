@@ -70,7 +70,7 @@ final class Apcu implements CacheHandlerInterface
     //清除指定前缀的所有过期的缓存
     public function clear()
     {
-        if (false === apcu_clear_cache()) {
+        if (false === apcu_clear_cache('user')) {
             throw new CacheHandlerException('缓存无法清空');
         }
     }

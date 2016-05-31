@@ -15,8 +15,6 @@ final class File implements CacheHandlerInterface
         'deep'       => 1,
         //最大文件缓存数
         'length'     => 0,
-        //数据是否压缩
-        'compress'   => false,
     ];
 
     public function __construct(array $config)
@@ -24,7 +22,9 @@ final class File implements CacheHandlerInterface
         $config = array_merge($this->config, $config);
 
         if (!is_dir($config['path'])) {
-            base\dir\Dir::make($path , true, 0755);
+            throw new CacheHandlerException('缓存路径不存在');
+        } elseif (!is_writable($config['path'])) {
+            throw new CacheHandlerException('缓存路径不可写');
         }
 
         $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
@@ -40,24 +40,22 @@ final class File implements CacheHandlerInterface
      */
     public function available(string $key) : bool
     {
-        $now  = time();
         //获得文件路径
         $file = $this->filename($key);
         //文件不存在返回false
-        if (is_file($file)) {
-            //读取前十个字符, 如果大于现在时间, 则过期
-            try {
-                //是否为空
-                if ((int)base\file\File::read($file, 10) < $now) {
-                    base\file\File::delete($file);
-                    return false;
-                } else {
-                    return true;
-                }
-            } catch(base\file\FileException $e) {
+        if (!is_file($file)) {
+            return false;
+        }
+        //读取前十个字符, 如果大于现在时间, 则过期
+        try {
+            //是否为空
+            if ((int)base\file\File::read($file, 10) < time()) {
+                base\file\File::delete($file);
                 return false;
+            } else {
+                return true;
             }
-        } else {
+        } catch(base\file\FileException $e) {
             return false;
         }
     }
@@ -70,17 +68,11 @@ final class File implements CacheHandlerInterface
      */
     public function get(string $key)
     {
-        //获得文件路径
-        $file = $this->filename($key);
         //得到内容
         try {
-            $value = base\file\File::get($file);
+            $value = base\file\File::get($this->filename($key));
         } catch(base\file\FileException $e) {
             throw new CacheHandlerException($e->getMessage());
-        }
-        //是否解压
-        if ($this->config['compress'] && function_exists('gzuncompress')) {
-            $value = gzuncompress($value);
         }
         //去除前十个字符（过期时间）
         return unserialize(substr($value, 10));
@@ -97,19 +89,14 @@ final class File implements CacheHandlerInterface
      */
     public function set(string $key, $value, int $expire)
     {
-        //获得文件路径
-        $file     = $this->filename($key);
         //值:过期时间 . 转义后的值
 
         $value = (string)(time() + $expire) . serialize($value);
-        //是否压缩
-        if ($this->config['compress'] && function_exists('gzcompress')) {
-            $value = gzcompress($value, 3);
-        }
+
         //存储
         try {
 
-            base\file\File::write($file, $value, true);
+            base\file\File::write($this->filename($key), $value, true);
 
             //如果限制了最大储存数, 调用队列
             $this->config['length'] > 0 && $this->queue($key);
@@ -130,16 +117,28 @@ final class File implements CacheHandlerInterface
     public function increment(string $key, int $offset) : int
     {
         try {
-            if ($this->available($key)) {
-                $expire = (int) base\file\File::read($this->filename($key), 10);
-                $now = time();
-                $num = (int) $this->get($key);
-                $num += $offset;
-                $this->set($key, $num, $expire - $now);
-                return $num;
-            } else {
+            //获得文件路径
+            $file = $this->filename($key);
+            if (!is_file($file)) {
                 throw new CacheHandlerException($key.'不存在,无法自增');
             }
+            //获得内容
+            $content = base\file\File::get($file);
+
+            $expire = (int) substr($content, 0, 10);
+
+            $now = time();
+
+            if ($now < $expire) {
+                throw new CacheHandlerException($key.'不存在,无法自增');
+            }
+
+            $num = (int) unserialize(substr($content, 10));
+            $num += $offset;
+
+            base\file\File::write($file, (string) $expire . serialize($num), true);
+
+            return $num;
         } catch(base\file\FileException $e) {
             throw new CacheHandlerException($e->getMessage());
         }
@@ -156,16 +155,28 @@ final class File implements CacheHandlerInterface
     public function decrement(string $key, int $offset) : int
     {
         try {
-            if ($this->available($key)) {
-                $expire = (int) base\file\File::read($this->filename($key), 10);
-                $now = time();
-                $num = (int) $this->get($key);
-                $num -= $offset;
-                $this->set($key, $num, $expire - $now);
-                return $num;
-            } else {
-                throw new CacheHandlerException($key.'不存在,无法自增');
+            //获得文件路径
+            $file = $this->filename($key);
+            if (!is_file($file)) {
+                throw new CacheHandlerException($key.'不存在,无法自减');
             }
+            //获得内容
+            $content = base\file\File::get($file);
+
+            $expire = (int) substr($content, 0, 10);
+
+            $now = time();
+
+            if ($now < $expire) {
+                throw new CacheHandlerException($key.'不存在,无法自减');
+            }
+
+            $num = (int) unserialize(substr($content, 10));
+            $num -= $offset;
+
+            base\file\File::write($file, (string) $expire . serialize($num), true);
+
+            return $num;
         } catch(base\file\FileException $e) {
             throw new CacheHandlerException($e->getMessage());
         }
@@ -198,7 +209,7 @@ final class File implements CacheHandlerInterface
     public function clear()
     {
         try {
-            base\dir\Dir::deleteAllFileByType($this->config['path'], $this->config['extension'], $this->config['prefix']);
+            base\dir\Dir::deleteAllFileByType($this->config['path'], $this->config['extension']);
         } catch(base\file\FileException $e) {
             throw new CacheHandlerException($e->getMessage());
         }
@@ -222,15 +233,19 @@ final class File implements CacheHandlerInterface
         //如果未找到则添加
         false === array_search($key, $queue) && array_push($queue, $key);
 
-        //如果队列长度大于配置长度
-        if (count($queue) > $this->config['length']) {
-            //移除第一个
-            $old_key = array_shift($queue);
-            //删除对应文件
-            base\file\File::delete($this->filename($this->filename($old_key)), true);
+        try {
+            //如果队列长度大于配置长度
+            if (count($queue) > $this->config['length']) {
+                //移除第一个
+                $old_key = array_shift($queue);
+                //删除对应文件
+                base\file\File::delete($this->filename($key), true);
+            }
+            //重新写入
+            base\file\File::write($queue_file, '<?php return '.var_export($queue, true).';', true);
+        } catch (base\file\FileException $e) {
+            throw new CacheHandlerException($e->getMessage());
         }
-        //重新写入
-        base\file\File::write($queue_file, '<?php return '.var_export($queue, true).';', true);
     }
     /**
      * 得到缓存文件名
@@ -239,7 +254,7 @@ final class File implements CacheHandlerInterface
      */
     private function filename(string $key) : string
     {
-        $name = md5($key);
+        $name = sha1($key);
 
         $dir  = $this->config['path'];
         //深度
@@ -254,7 +269,7 @@ final class File implements CacheHandlerInterface
             }
         }
 
-        //目录.md5后键.扩展名
+        //目录.哈希值.扩展名
         return $dir.$name.$this->config['extension'];
     }
 }

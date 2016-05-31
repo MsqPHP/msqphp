@@ -35,7 +35,7 @@ class App
 
             base\response\Response::error($e->getMessage());
 
-        } catch(\msqphp\core\exception\Exception $e) {
+        } catch(core\exception\Exception $e) {
 
             base\response\Response::error($e->getMessage());
         }

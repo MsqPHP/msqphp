@@ -35,12 +35,16 @@ final class Cache
     {
         //缓存配置
         $config           = array_merge($this->config, core\config\Config::get('cache'));
+
         //处理类支持列表
         $config['sports'] = $config['multi'] ? $config['sports'] : [ $config['default_handler'] ];
+
         //赋值配置
         $this->config     = $config;
+
         //缓存处理类接口文件
         require __DIR__.DIRECTORY_SEPARATOR.'handlers'.DIRECTORY_SEPARATOR.'CacheHandlerInterface.php';
+
         //设置处理类
         $this->setHandler($config['default_handler']);
     }

@@ -135,7 +135,7 @@ final class File
      * @throws FileException
      * @return void
      */
-    public static function write(string $file, $content, bool $force = false)
+    public static function write(string $file, $content, bool $force = false, int $code = 0640)
     {
         //父目录
         $parent_dir = dirname($file);
@@ -155,14 +155,14 @@ final class File
             throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
         }
 
-        if (false === file_put_contents($file, (string)$content)) {
+        if (false === file_put_contents($file, (string)$content) || chmod($file, $code)) {
             throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotWrite']);
         }
     }
     //写入文件别名
-    public static function save(string $file, $content, bool $force = false)
+    public static function save(string $file, $content, bool $force = false, int $code = 0640)
     {
-        static::write($file, $content, $force);
+        static::write($file, $content, $force, $code);
     }
 
     /**

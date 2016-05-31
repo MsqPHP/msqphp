@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cache\handlers;
 
-final class Memcached implements CacheHandlerInterface
+final class Memcache implements CacheHandlerInterface
 {
     //处理类
-    private $memcached = null;
+    private $memcache = null;
     //available时获取的值
     private $vaule   = [];
     private $config  = [
@@ -27,23 +27,21 @@ final class Memcached implements CacheHandlerInterface
     //构造函数
     public function __construct(array $config)
     {
-        if (!extension_loaded('memcached')) {
-            throw new CacheHandlerException('require memcached support');
+        if (!extension_loaded('memcache')) {
+            throw new CacheHandlerException('require memcache support');
         }
         $this->config = $config = array_merge($this->config, $config);
         //获得实例
-        $this->memcached = $memcached = new \Memcached($config['name']);
+        $this->memcache = $memcache = new \Memcache;
 
+        $memcache->addServer($config['server'], $config['port'], true, $config['weight']);
         //是否是原始的
-        if ($memcached->isPristine()) {
-            if(!empty($config['options'])) {
-                //参数设置
-                $memcached->setOptions($config['options']);
-            }
-            $memcached->addServer($config['server'], $config['port'], $config['weight']);
-            if ($config['multi']) {
-                $memcached->addServers($config['servers']);
-            }
+        if(!empty($config['options'])) {
+            //参数设置
+            $memcache->setOptions($config['options']);
+        }
+        if ($config['multi']) {
+            $memcache->addServers($config['servers']);
         }
     }
     /**
@@ -56,7 +54,7 @@ final class Memcached implements CacheHandlerInterface
     //是否可用
     public function available(string $key) : bool
     {
-        if (false === $value = $this->memcached->get($key)) {
+        if (false === $value = $this->memcache->get($key)) {
             return false;
         } else {
             $this->value[$key] = $value;
@@ -71,7 +69,7 @@ final class Memcached implements CacheHandlerInterface
             unset($this->value[$key]);
             return $result;
         } else {
-            if (false === $result = $this->memcached->get($key)) {
+            if (false === $result = $this->memcache->get($key)) {
                 return $result;
             } else {
                 throw new CacheHandlerException($key.'缓存值无法获取');
@@ -80,7 +78,7 @@ final class Memcached implements CacheHandlerInterface
     }
     public function increment(string $key, int $offset) : int
     {
-        if (false !== $result = $this->memcached->increment($key, $offset)) {
+        if (false !== $result = $this->memcache->increment($key, $offset)) {
             return $result;
         } else {
             throw new CacheHandlerException($key.'缓存值无法自增');
@@ -88,7 +86,7 @@ final class Memcached implements CacheHandlerInterface
     }
     public function decrement(string $key, int $offset) : int
     {
-        if (false !== $result = $this->memcached->decrement($key, $offset)) {
+        if (false !== $result = $this->memcache->decrement($key, $offset)) {
             return $result;
         } else {
             throw new CacheHandlerException($key.'缓存值无法自减');
@@ -97,7 +95,7 @@ final class Memcached implements CacheHandlerInterface
     //设置缓存
     public function set(string $key, $value, int $expire)
     {
-        if (false === $this->memcached->set($key, $value, $expire)) {
+        if (false === $this->memcache->set($key, $value, 0, $expire)) {
             throw new CacheHandlerException($key.'缓存值无法设置');
         }
         //如果限制了最大储存数, 调用队列
@@ -106,20 +104,20 @@ final class Memcached implements CacheHandlerInterface
     //删除缓存
     public function delete(string $key)
     {
-        if (false === $this->memcached->delete($key)) {
+        if (false === $this->memcache->delete($key)) {
             throw new CacheHandlerException($key.'缓存值无法删除');
         }
     }
     //清空缓存
     public function clear()
     {
-        if (false === $this->memcached->flush()) {
+        if (false === $this->memcache->flush()) {
             throw new CacheHandlerException($key.'缓存值无法清空');
         }
     }
     private function queue($key)
     {
-        $handler = $this->memcached;
+        $handler = $this->memcache;
         $queue_name = '__msq_cache_list__';
         if (false === $queue = $handler->available($queue_name)) {
             $handler->set($queue_name, [$key]);
