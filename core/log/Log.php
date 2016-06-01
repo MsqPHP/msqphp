@@ -55,7 +55,7 @@ final class Log
         $pointer = $this->pointer;
         $level = $pointer['level'] ?? '';
         $message = $pointer['message'] ?? '';
-        if (in_array(strtolower($level, $this->config, 'level')) {
+        if (in_array(strtolower($level), $this->config['level'])) {
             $this->handler->log($level, $message, $content);
         }
     }

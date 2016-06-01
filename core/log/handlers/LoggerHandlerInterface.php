@@ -3,6 +3,7 @@ namespace msqphp\core\log\handlers;
 
 interface LoggerHandlerInterface
 {
+    public function __construct(array $config);
     /**
      * Logs with an arbitrary level.
      *

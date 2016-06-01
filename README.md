@@ -22,10 +22,10 @@ msqphp beta 1.1
 
 **框架为测试版本,除版权外不负责任何责任**
 
+**TAT,写代码去了,成品出来再说**
+
 + git : https://github.com/MsqPHP/msqphp
 + 开发手册 : http://www.kancloud.cn/msqphp/msqphp
-+ 邮箱:msq_mengsheng@163.com(偶尔登录,拒绝骚扰)
-+ qq群:566103528
 
 ## 理念
 
