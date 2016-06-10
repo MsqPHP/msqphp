@@ -32,11 +32,11 @@ final class Crypt
     {
 
     }
-    public static function encrypt(string $str) : string
+    public static function encode(string $str) : string
     {
         return $str;
     }
-    public static function decrypt(string $str) : string
+    public static function decode(string $str) : string
     {
         return $str;
     }

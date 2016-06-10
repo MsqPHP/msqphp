@@ -116,7 +116,7 @@ trait CookieOperateTrait
      */
     private function encodeValue($value) : string
     {
-        return base\crypt\Crypt::encrypt(serialize($value));
+        return base\crypt\Crypt::encode(serialize($value));
     }
     /**
      * 解密当前cookie值
@@ -124,6 +124,6 @@ trait CookieOperateTrait
      */
     private function decodeValue(string $value)
     {
-        return base\crypt\Crypt::decrypt(unserialize($value));
+        return unserialize(base\crypt\Crypt::decode($value));
     }
 }

@@ -8,10 +8,6 @@ class Environment
     private static $path = [];
     //当前运行环境
     private static $sapi = '';
-    //环境类自动加载文件信息
-    private static $autoload_info      = [];
-    //自动加载文件位置
-    private static $autoload_file      = '';
     //环境的自动加载是否有变化,会影响到route的自动加载
     public static $autoload_changed    = false;
     //composer自动加载文件列表
@@ -48,9 +44,10 @@ class Environment
         //如果有缓存,则初始化
         defined('NO_CACHE') || static::initAutoload();
 
-
         //配置配置
         static::initConfig();
+        //时区设置
+        date_default_timezone_set(core\config\Config::get('framework.timezone'));
 
         //如果有缓存,则结束
         defined('NO_CACHE') || static::endAutoload();
@@ -107,57 +104,9 @@ class Environment
      */
     private static function initAutoload()
     {
-        //缓存文件
-        $file = static::$autoload_file = static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload.php';
-
-        //文件不存在,自动加载信息为空,直接返回
-        if (!is_file($file)) {
-            return;
-        }
-
-        //载入文件
-        $info = require $file;
-
-        //如果得到最终结果,直接加载所有文件并返回
-        if (isset($info['last']) && !isset($info['needful'])) {
-            array_map(function ($file) {
-                require $file;
-            }, $info['last']);
-            return;
-        }
-
-
-        //加载信息改变过
-        static::$autoload_changed = true;
-        //需要加载的文件
-        $needful = [];
-        //整理过后的列表
-        $tidied  = [];
-        //载入整理过文件的函数
-        $require_tidied_file = function (string $file) use (& $tidied) {
-            require $file;
-            $tidied[] = $file;
-        };
-
-        //如果有最终缓存的话,重新加载放入整理层中
-        isset($info['last']) && array_map($require_tidied_file, $info['last']);
-
-        //颠倒needful,并加载
-        array_map(function($file) use(& $tidied, & $needful) {
-            //如果已经加载过,再次放入needful
-            if (in_array($file, static::$autoload_classes)) {
-                $needful[] = $file;
-            } else {
-            //添加到整理过的
-                $tidied[] = $file;
-                require $file;
-            }
-        }, array_reverse($info['needful']));
-
-        isset($info['tidied']) && array_map($require_tidied_file, $info['tidied']);
-
-        //如果needful为空,则表示得到最终加载顺序
-        static::$autoload_info = empty($needful) ? ['last'=>$tidied] : ['needful'=>$needful,'tidied'=>$tidied];
+        require __DIR__.'/traits/Instance.php';
+        require __DIR__.'/core/aiload/AiLoad.php';
+        core\aiload\AiLoad::getInstance()->init()->key('environment')->load();
     }
     /**
      * 加载默认配置
@@ -228,35 +177,13 @@ class Environment
      */
     private static function endAutoload()
     {
-        //取当前信息,并将将当前的自动加载信息至空
-        list($info, static::$autoload_info) = [static::$autoload_info, []];
-
-        //如果加载文件不为空,即加载了新的文件
-        if (!empty(static::$autoload_classes)) {
-
-            //添加至必须
-            $info['needful'] = array_merge($info['needful'] ?? [], static::$autoload_classes);
-
-            //清空,避免对其他地方自动加载造成污染;
-            static::$autoload_classes = [];
-
-            //改变过,避免对其他地方自动加载造成污染;
+        $autoload = core\aiload\AiLoad::getInstance();
+        if ($autoload->changed()) {
             static::$autoload_changed = true;
-        }
-
-
-        //若果改变过
-        if (static::$autoload_changed) {
-            //取唯一值,避免重复值
-            isset($info['needful']) && $info['needful'] = array_unique($info['needful']);
-            //取唯一值,避免重复值
-            isset($info['tidied']) && $info['tidied'] = array_unique($info['tidied']);
-            //重新生存自动加载信息
-            base\file\File::write(static::$autoload_file, '<?php'.PHP_EOL.'return '.var_export($info, true).';', true);
-        //随机删除,重新生成
-        } elseif (rand(0,5000) === 1000) {
-
-            base\file\File::delete(static::$autoload_file, true);
+            $autoload->update()->save()->end();
+        } else {
+            rand(0,5000) === 1000 && $autoload->delete();
+            $autoload->end();
         }
     }
     /**

@@ -27,7 +27,7 @@ abstract class View
         //载入配置
         $config = core\config\Config::get('view');
         //目录赋值
-        if (!is_dir($config['tpl_path']) || !is_dir($config['tpl_path']) || !is_dir($config['tpl_last_path'])) {
+        if (!is_dir($config['tpl_path']) || !is_dir($config['tpl_cache_path']) || !is_dir($config['tpl_last_path'])) {
             throw new ViwException('模版路径或模版缓存路径不存在');
         }
         //模版路径
@@ -196,7 +196,7 @@ abstract class View
 
 
         if ($last) {
-            !defined('NO_CACHE') && $content = base\str\Str::formatHtml($content);
+            !defined('NO_VIEW') && $content = base\str\Str::formatHtml($content);
             $tpl_cache_file = $this->getTplLastFilePath($file_name);
         } else {
             $tpl_cache_file = $this->getTplCacheFilePath($file_name);

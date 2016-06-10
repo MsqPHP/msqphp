@@ -29,21 +29,21 @@ final class Database
     {
         $config = static::$config;
         switch ($config['type']) {
-                case 'mysql':
-                    $dsn = $config['type'].':host='.$config['host'].';port='.$config['port'].';dbname='.$config['name'].';charset='.$config['charset'].';';
-                    return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
-                case 'pgsql':
-                    $dsn = $config['type'].':host='.$config['host'].' port='.$config['port'].' dbname='.$config['name'].' user='.$config['username'].' password='.$config['password'];
-                    return ['dsn'=>$dsn,'username'=>'',$password=>''];
-                case 'sqllite':
-                    $dsn = 'sqlite:' . $config['name'];
-                    return ['dsn'=>$dsn,'username'=>'',$password=>''];
-                case 'oci':
-                case 'oracle':
-                    $dsn = 'oci:dbname=' . $config['database'].';charset='.$config['charset'];
-                    return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
-                default:
-                    throw new DatabaseException('未知的数据库类型', 1);
+            case 'mysql':
+                $dsn = $config['type'].':host='.$config['host'].';port='.$config['port'].';dbname='.$config['name'].';charset='.$config['charset'].';';
+                return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
+            case 'pgsql':
+                $dsn = $config['type'].':host='.$config['host'].' port='.$config['port'].' dbname='.$config['name'].' user='.$config['username'].' password='.$config['password'];
+                return ['dsn'=>$dsn,'username'=>'',$password=>''];
+            case 'sqllite':
+                $dsn = 'sqlite:' . $config['name'];
+                return ['dsn'=>$dsn,'username'=>'',$password=>''];
+            case 'oci':
+            case 'oracle':
+                $dsn = 'oci:dbname=' . $config['database'].';charset='.$config['charset'];
+                return ['dsn'=>$dsn,'username'=>$config['username'],'password'=>$config['password']];
+            default:
+                throw new DatabaseException('未知的数据库类型');
         }
     }
     public static function get(string $sql, array $prepare = [])

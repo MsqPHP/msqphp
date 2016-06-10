@@ -193,7 +193,12 @@ trait RouteLimiteTrait
      */
     public static function referer($referer, \Closure $func, array $args = [])
     {
+        if (static::$matched) {
+            return;
+        }
+
         static::$info['referer'] = static::$info['referer'] ?? $_SERVER['HTTP_REFERER'];
+
         if (in_array(static::$info['referer'], (array)$referer)) {
             call_user_func_array($func, $args);
         }

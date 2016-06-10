@@ -218,11 +218,6 @@ final class Template
                     $if_result = '';
                     $if_cached = false;
                     if (0 !== preg_match(static::$pattern['if_a']['pattern'], $begin[0], $if)) {
-                        if (isset($data[$if[1]])) {
-                            if ($data[$if[1]]['cache']) {
-                                $if[1] = $data[$if[1]]['value'];
-                            }
-                        }
                         if (isset($data[$if[1]]) && $data[$if[1]]['cache'] && isset($data[$if[3]]) && $data[$if[3]]['cache']) {
                             $value_a = $data[$if[1]]['value'];
                             $compare = $if[2];

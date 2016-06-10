@@ -43,61 +43,30 @@ trait RouteMethodTrait
             return;
         }
 
-        foreach ((array)$params as $value) {
-
-            $param = explode('/', $value);
-
-            if (count($param) === count(static::$params_handle) && static::checkParam($param)) {
-                $matched_key = md5(implode('/',static::$group).$value);
+        foreach ((array)$params as $param) {
+            if (static::checkParam(explode('/', $param))) {
+                static::$matched = true;
+                $autoload && $matched_key = md5(implode('/',static::$group).$param);
                 break;
             }
-
         }
 
-        if (!isset($matched_key)) {
+        if (!static::$matched) {
             return;
         }
 
-        static::$matched = true;
+        unset($method);
+        unset($params);
 
         if ($autoload && !defined('NO_CACHE')) {
-            $cache = core\cache\Cache::getInstance()->init()->key($matched_key);
-            if ($cache->exists() && false === \msqphp\Environment::$autoload_changed) {
-                $autoload_info = $cache->get();
-                if (!isset($autoload_info['begin']) && isset($autoload_info['last'])) {
-                    array_map(function ($file) {
-                        require $file;
-                    }, $autoload_info['last']);
-                } else {
-                    $begin = [];
-                    $middle = [];
-                    foreach (array_reverse($autoload_info['begin']) as $file) {
-                        if (in_array($file, \msqphp\Environment::$autoload_classes)) {
-                            $begin[] = $file;
-                        } else {
-                            $middle[] = $file;
-                            require $file;
-                        }
-                    }
-                    if (isset($autoload_info['middle'])) {
-                        foreach ($autoload_info['middle'] as $file) {
-                            $middle[] = $file;
-                            require $file;
-                        }
-                    }
-
-                    if (empty($begin)) {
-                        $autoload_info = ['last'=>$middle];
-                    } else {
-                        $autoload_info = ['begin'=>$begin,'middle'=>$middle];
-                    }
-
-                    $autoload_changed = true;
-                }
-            } else {
-                $autoload_info = [];
+            $aiload = core\aiload\AiLoad::getInstance()->init()->key($matched_key);
+            if (\msqphp\Environment::$autoload_changed) {
+                $aiload->delete();
             }
+            $aiload->load();
         }
+
+        unset($matched_key);
 
         if (is_string($func)) {
             static::callUserClassFunc($func);
@@ -105,21 +74,11 @@ trait RouteMethodTrait
             call_user_func_array($func, $args);
         }
         if ($autoload && !defined('NO_CACHE')) {
-            if (!empty(\msqphp\Environment::$autoload_classes)) {
-                $autoload_info['begin'] = array_merge($autoload_info['begin'] ?? [], \msqphp\Environment::$autoload_classes);
-                \msqphp\Environment::$autoload_classes = [];
-                $autoload_changed = true;
-            }
-            if ($autoload_changed) {
-                if (isset($autoload_info['begin']) ) {
-                    $autoload_info['begin'] = array_unique($autoload_info['begin']);
-                }
-                if (isset($autoload_info['middle'])) {
-                  $autoload_info['middle'] = array_unique($autoload_info['middle']);
-                }
-                core\cache\Cache::getInstance()->init()->key($matched_key)->value($autoload_info)->set();
-            } elseif (rand(0,5000) === 1000) {
-                core\cache\Cache::getInstance()->init()->key($matched_key)->delete();
+            if ($aiload->changed()) {
+                $aiload->update()->save()->end();
+            } else {
+                rand(0,5000) === 1000 && $aiload->delete();
+                $aiload->end();
             }
         }
     }
@@ -141,6 +100,11 @@ trait RouteMethodTrait
     private static function checkParam(array $params) : bool
     {
         $params_handle = static::$params_handle;
+
+        if (count($params) !== count(static::$params_handle)) {
+            return false;
+        }
+
         $get = [];
         foreach ($params as $key => $value) {
             //遍历, 如果三等, 或者符合对应规则
@@ -216,7 +180,7 @@ trait RouteMethodTrait
             }
         }
     }
-    private static function addGetArgs(string $post_args, array & $args)
+    private static function addGetArgs(string $get_args, array & $args)
     {
         foreach (explode('&', $get_args) as $key) {
             if (!isset($_GET[$key])) {

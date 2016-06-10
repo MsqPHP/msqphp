@@ -23,7 +23,6 @@ final class Cli
                 break;
             default:
                 throw new CliException('未知的cli命令');
-                break;
         }
     }
 }

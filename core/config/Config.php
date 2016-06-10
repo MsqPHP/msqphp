@@ -24,7 +24,6 @@ final class Config
                 base\file\File::write($cache_path, '<?php return '.var_export(static::$config, true).';', true);
             }
         }
-        date_default_timezone_set(static::get('framework.timezone'));
     }
     /**
      * 得到配置
@@ -33,11 +32,7 @@ final class Config
      */
     public static function get(string $key = '')
     {
-        try {
-            return base\arr\Arr::get(static::$config, $key);
-        } catch (base\arr\ArrException $e) {
-            throw new ConfigException($key.'无法获取');
-        }
+        return base\arr\Arr::get(static::$config, $key);
     }
     /**
      * 设置配置值
@@ -47,11 +42,7 @@ final class Config
      */
     public static function set(string $key, $value)
     {
-        try {
-            base\arr\Arr::set(static::$config, $key, $value);
-        } catch (base\arr\ArrException $e) {
-            throw new ConfigException($key.'无法设置');
-        }
+        base\arr\Arr::set(static::$config, $key, $value);
     }
     /**
      * 加载所有配置
@@ -64,10 +55,12 @@ final class Config
     }
     private static function loadConfig(string $file)
     {
-        if (!is_writable($file)) {
+        if (!is_readable($file)) {
             throw new ConfigException('配置文件不存在或不可读');
         }
+
         $file_info = pathinfo($file);
+
         switch ($file_info['extension']) {
             case 'php':
                 static::$config[$file_info['filename']] = require $file;
