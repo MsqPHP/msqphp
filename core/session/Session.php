@@ -49,6 +49,7 @@ final class Session
         $class_name = __NAMESPACE__.'\\handlers\\'.$handler;
         //注册并传参配置config
         session_set_save_handler(new $class_name($config['handlers_config'][$handler]), true);
+        ini_set('session.cache_expire', $config['expire']);
         //session名设置
         session_name($config['name']);
         //session开始
@@ -98,11 +99,6 @@ final class Session
     public function delete()
     {
         unset($this->sessions[$this->getKey()]);
-    }
-    public function close()
-    {
-        $this->instance = null;
-        return session_write_close();
     }
     private function getKey() : string
     {

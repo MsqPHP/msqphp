@@ -3,25 +3,20 @@ namespace msqphp\core\view;
 
 use msqphp\base;
 use msqphp\core;
-use msqphp\traits;
 
 abstract class View
 {
-    //二维数组，一维存放模版变量键，二维存放对应值，缓存，类型
-    protected $data     = [];
-
-    //主题支持
-    protected $theme    = false;
-
+    //多主题
+    use ViewThemeTrait;
     //多语支持
-    protected $language = false;
-
+    use ViewLanguageTrait;
+    //数据操作
+    use ViewDataTrait;
+    //展示
     //布局是否开启
     protected $layout   = false;
-
     //是否为静态页
     protected $static   = false;
-
     //当前视图选项
     protected $options  = [];
     //当前配置
@@ -117,155 +112,6 @@ abstract class View
         $language = $this->language ? $options['language'] . DIRECTORY_SEPARATOR : '';
         return $this->config['tpl_cache_path'].$theme.$language.$options['group'].$file_name.$this->config['tpl_cache_ext'];
     }
-
-###
-#  多语设置
-###
-    public function language(string $language = '')
-    {
-        if ($this->language) {
-            if ('' === $language) {
-                return $this->getLanguage();
-            } else {
-                return $this->setSanguage($language);
-            }
-        } else {
-            throw new ViewException('不支持多语');
-        }
-    }
-    protected function getLanguage() : string
-    {
-        if ($this->language) {
-            return $this->options['language'];
-        } else {
-            throw new ViwException('未设置多语支持');
-        }
-    }
-    protected function setLanguage(string $language) : self
-    {
-        if ($this->language) {
-            $this->options['language'] = $language;
-            return $this;
-        } else {
-            throw new ViwException('未设置多语支持');
-        }
-    }
-    protected function getLanguageData(string $file_name) : array
-    {
-        if ($this->language) {
-            $file = $this->config['language_path'].$this->options['language'].DIRECTORY_SEPARATOR.$this->options['group'].DIRECTORY_SEPARATOR.$file_name.'.php';
-            if (!is_file($file)) {
-                $file = $this->config['language_path'].$this->config['default_language'].DIRECTORY_SEPARATOR.$this->options['group'].DIRECTORY_SEPARATOR.$file_name.'.php';
-            }
-            return is_file($file) ? require $file : [];
-        } else {
-            return [];
-        }
-    }
-###
-#  主题
-###
-    public function theme(string $theme = '')
-    {
-        if ($this->theme) {
-            if ('' === $theme) {
-                return $this->getTheme();
-            } else {
-                return $this->setTheme($theme);
-            }
-        } else {
-            throw new ViewException('不支持主题');
-        }
-    }
-    protected function getTheme() : string
-    {
-        return $this->options['theme'];
-    }
-    protected function setTheme(string $theme) : self
-    {
-        if (in_array($this->config['theme_sport_list'])) {
-            $this->options['theme'] = $theme;
-            return $this;
-        } else {
-            throw new ViewException('不支持的主题:'.$theme);
-        }
-    }
-###
-#  模版变量操作
-###
-    /**
-     * 模版变量是否存在
-     * @param  string $name 键
-     * @return bool
-     */
-    public function exists(string $name) : bool
-    {
-        return isset($this->data[$name]);
-    }
-    /**
-     * 取得模版变量的值
-     * @param  string $name 变量名称
-     * @return mix
-     */
-    public function get(string $name = '')
-    {
-        if ('' === $name) {
-            return $this->data;
-        }
-        return $this->data[$name];
-    }
-    /**
-     * 模版变量赋值
-     * @param  string|array  $tpl_var  变量名称或对应值
-     * @param  string  $value 变量值
-     * @param  boolen  $cache 是否缓存
-     * @param  boolen  $html  是否仅仅为html文本
-     * @throws ViewException
-     * @return self
-     */
-    public function assign($tpl_var, $value='', bool $cache = false, bool $html = false) :self
-    {
-        //定义一个数组，存放变量数据
-        $tpl_arr = [];
-        //数组
-        if (is_array($tpl_var)) {
-            $tpl_key = $tpl_var['key'] ?? $tpl_var[0] ?? '';
-            $value = $tpl_var['value'] ?? $tpl_var[1] ?? '';
-            $cache = $tpl_var['cache'] ?? $tpl_var[2] ?? false;
-            $html  = $tpl_var['html']  ?? $tpl_var[3] ?? false;
-        } elseif(is_string($tpl_var)) {//字符串
-            $tpl_key = $tpl_var;
-        } else {
-            throw new ViewException($tpl_var.'数据有误');
-        }
-        //转义
-        $html && $value = base\filter\Filter::html($value);
-        //赋值
-        $tpl_arr['value'] = $value;
-        $tpl_arr['cache'] = $cache;
-        //赋值
-        $this->data[$tpl_key] = $tpl_arr;
-
-        return $this;
-    }
-    public function set($tpl_var, $value='', bool $cache = false, bool $html = false) :self
-    {
-        return $this->assign($tpl_var, $value, $cache, $html);
-    }
-    /**
-     * 删除模版变量
-     * @param  string $key [description]
-     * @return self
-     */
-    public function delete(string $key) :self
-    {
-        unset($this->data[$key]);
-        return $this;
-    }
-
-###
-#  模版操作
-###
     public function layout(bool $layout = true) :self
     {
         $this->layout = $layout;
@@ -289,8 +135,8 @@ abstract class View
             if (!is_file($tpl_file)) {
                 throw new ViewException($tpl_file.'模版文件不存在');
             }
-
-            $result = core\template\Template::commpile(base\file\File::get($tpl_file), $this->data, $this->getLanguageData($file_name));
+            $language_data = isset($this->language) && $this->language ? $this->getLanguageData($file_name) : [];
+            $result = core\template\Template::commpile(base\file\File::get($tpl_file), $this->data, $language_data);
 
             base\file\File::write($tpl_cache_file, $result, true);
 

@@ -20,7 +20,7 @@ trait Call
 
             $namespace = strtr(str_replace([strrchr(__CLASS__, '\\'),'msqphp\\'],'',__CLASS__), '\\', DIRECTORY_SEPARATOR);
 
-            $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'staticMethods'.DIRECTORY_SEPARATOR.$method.'.php';
+            $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'methods'.DIRECTORY_SEPARATOR.$method.'.php';
 
             !is_file($file) && $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
 

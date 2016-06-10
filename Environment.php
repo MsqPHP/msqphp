@@ -3,16 +3,20 @@ namespace msqphp;
 
 class Environment
 {
+    const vension = 1.1;
     //所有目录存放
     private static $path = [];
     //当前运行环境
     private static $sapi = '';
+    //环境类自动加载文件信息
+    private static $autoload_info      = [];
+    //自动加载文件位置
+    private static $autoload_file      = '';
     //环境的自动加载是否有变化,会影响到route的自动加载
     public static $autoload_changed    = false;
     //composer自动加载文件列表
     public static $autoload_classes    = [];
-    //环境类自动加载文件信息
-    private static $autoload_info      = [];
+
     /**
      * 运行
      *
@@ -30,28 +34,26 @@ class Environment
 
         //配置路径
         static::initPath($path_config);
+        unset($path_config);
 
         //获得运行环境
-        static::$sapi = PHP_SAPI === 'cli' ? 'cli' : 'apache';
+        static::$sapi = PHP_SAPI === 'cli' ? 'cli' : 'cgi';
 
+        //配置环境
+        static::initDebug();
 
         //引用composer加载文件数组(需要自己修改代码实现)
         static::$autoload_classes = & $GLOBALS['autoloader_class'];
 
-        //防止自动加载文件信息的文件
-        $autoload_info_file = static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload.php';
-
         //如果有缓存,则初始化
-        defined('NO_CACHE') || static::initAutoload($autoload_info_file);
+        defined('NO_CACHE') || static::initAutoload();
 
-        //配置环境
-        static::initDebug();
 
         //配置配置
         static::initConfig();
 
         //如果有缓存,则结束
-        defined('NO_CACHE') || static::endAutoload($autoload_info_file);
+        defined('NO_CACHE') || static::endAutoload();
 
         //分情况运行
         if ('cli' === static::$sapi) {
@@ -59,14 +61,11 @@ class Environment
             require __DIR__.'/Cli.php';
             Cli::run();
         } elseif (4 === APP_DEBUG) {
-            //测试模式
             require __DIR__.'/Test.php';
             Test::run();
         } elseif (5 === APP_DEBUG) {
-            //维护模式,直接返回不可用页面并退出
             base\response\Response::unavailable();
         } else {
-            //正常应用模式
             require __DIR__.'/App.php';
             App::run();
         }
@@ -89,41 +88,47 @@ class Environment
             //报错
                 base\response\Response::error($path.'不存在');
             }
-        }, array_merge(static::$path, $path_config));
+        }, $path_config);
     }
     /**
      * 初始化自动加载
      * 实现原理:
-     * $autoload_info = [
+     * $info = [
      *     'last'     => [],//最终需要加载的文件
      *     'needful'  => [],//需要加载的文件,但不确定依赖关系(加载顺序),
      *     'tidied'   => [],//整理过的文件列表,直接依次加载即可
      * ];
      * 主要逻辑为对数据的处理
-     * 如果$autoload_info不存在,取空,返回
-     * 如果$autoload_info['last']存在并且$autoload_info['needful']不存在,直接加载返回
+     * 如果$info不存在,取空,返回
+     * 如果$info['last']存在并且$info['needful']不存在,直接加载返回
      * 其他情况进行整理
      *
      * @return void
      */
-    private static function initAutoload(string $autoload_info_file)
+    private static function initAutoload()
     {
+        //缓存文件
+        $file = static::$autoload_file = static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload.php';
+
         //文件不存在,自动加载信息为空,直接返回
-        if (!is_file($autoload_info_file)) {
+        if (!is_file($file)) {
             return;
         }
+
         //载入文件
-        $autoload_info = require $autoload_info_file;
+        $info = require $file;
 
         //如果得到最终结果,直接加载所有文件并返回
-        if (!isset($autoload_info['needful']) && isset($autoload_info['last'])) {
+        if (isset($info['last']) && !isset($info['needful'])) {
             array_map(function ($file) {
                 require $file;
-            }, $autoload_info['last']);
+            }, $info['last']);
             return;
         }
 
 
+        //加载信息改变过
+        static::$autoload_changed = true;
         //需要加载的文件
         $needful = [];
         //整理过后的列表
@@ -133,8 +138,9 @@ class Environment
             require $file;
             $tidied[] = $file;
         };
+
         //如果有最终缓存的话,重新加载放入整理层中
-        isset($autoload_info['last']) && array_map($require_tidied_file, $autoload_info['last']);
+        isset($info['last']) && array_map($require_tidied_file, $info['last']);
 
         //颠倒needful,并加载
         array_map(function($file) use(& $tidied, & $needful) {
@@ -146,14 +152,12 @@ class Environment
                 $tidied[] = $file;
                 require $file;
             }
-        }, array_reverse($autoload_info['needful']));
+        }, array_reverse($info['needful']));
 
-        isset($autoload_info['tidied']) && array_map($require_tidied_file, $autoload_info['tidied']);
+        isset($info['tidied']) && array_map($require_tidied_file, $info['tidied']);
 
         //如果needful为空,则表示得到最终加载顺序
         static::$autoload_info = empty($needful) ? ['last'=>$tidied] : ['needful'=>$needful,'tidied'=>$tidied];
-        //加载信息改变过
-        static::$autoload_changed = true;
     }
     /**
      * 加载默认配置
@@ -187,11 +191,6 @@ class Environment
      */
     private static function initDebug()
     {
-        //错误访问模式判断
-        if (0 > APP_DEBUG || 5 < APP_DEBUG) {
-            base\response\Response::error('未知的访问模式');
-        }
-
         //错误处理方式
         if (0 === APP_DEBUG || 5 === APP_DEBUG) {
             //设置错误级别最低
@@ -208,14 +207,13 @@ class Environment
             //取消日志记录
             ini_set('log_errors', 'Off');
         }
-
         //载入错误类,设置错误函数处理方式
         require __DIR__.'/core/error/Error.php';
-        set_error_handler(['msqphp\\core\\error\\Error','handler'], E_ALL);
+        core\error\Error::register();
 
         //辅助常量在测试模式时使用
-        if (0 < APP_DEBUG && 4 > APP_DEBUG) {
-            define('NO_STATIC', true);
+        if (1 === APP_DEBUG || 2 === APP_DEBUG || 3 === APP_DEBUG) {
+            APP_DEBUG && define('NO_STATIC', true);
             1 < APP_DEBUG && define('NO_VIEW', true);
             2 < APP_DEBUG && define('NO_CACHE', true);
         }
@@ -228,16 +226,16 @@ class Environment
      *
      * @return void
      */
-    private static function endAutoload(string $autoload_info_file)
+    private static function endAutoload()
     {
         //取当前信息,并将将当前的自动加载信息至空
-        list($autoload_info, static::$autoload_info) = [static::$autoload_info, []];
+        list($info, static::$autoload_info) = [static::$autoload_info, []];
 
         //如果加载文件不为空,即加载了新的文件
         if (!empty(static::$autoload_classes)) {
 
             //添加至必须
-            $autoload_info['needful'] = array_merge($autoload_info['needful'] ?? [], static::$autoload_classes);
+            $info['needful'] = array_merge($info['needful'] ?? [], static::$autoload_classes);
 
             //清空,避免对其他地方自动加载造成污染;
             static::$autoload_classes = [];
@@ -250,23 +248,16 @@ class Environment
         //若果改变过
         if (static::$autoload_changed) {
             //取唯一值,避免重复值
-            if (isset($autoload_info['needful']) ) {
-                $autoload_info['needful'] = array_unique($autoload_info['needful']);
-            }
+            isset($info['needful']) && $info['needful'] = array_unique($info['needful']);
             //取唯一值,避免重复值
-            if (isset($autoload_info['tidied'])) {
-              $autoload_info['tidied'] = array_unique($autoload_info['tidied']);
-            }
-
+            isset($info['tidied']) && $info['tidied'] = array_unique($info['tidied']);
             //重新生存自动加载信息
-            base\file\File::write($autoload_info_file, '<?php'.PHP_EOL.'return '.var_export($autoload_info, true).';', true);
+            base\file\File::write(static::$autoload_file, '<?php'.PHP_EOL.'return '.var_export($info, true).';', true);
         //随机删除,重新生成
         } elseif (rand(0,5000) === 1000) {
 
-            base\file\File::delete($autoload_info_file, true);
+            base\file\File::delete(static::$autoload_file, true);
         }
-
-        unset($autoload_info);
     }
     /**
      * 获得路径

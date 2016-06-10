@@ -13,7 +13,6 @@ trait CallStatic
     public static function __callStatic(string $method, array $args)
     {
         static $func = [];
-
         if (!isset($func[$method])) {
 
             $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;

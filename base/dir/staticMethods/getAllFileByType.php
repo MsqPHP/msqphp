@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
+use msqphp\base;
+
 /**
  * 根据类型获得指定目录下所有对应文件
  * @func_name     getAllFileByType

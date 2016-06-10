@@ -9,16 +9,16 @@ interface LoggerHandlerInterface
      *
      * @param mixed $level
      * @param string $message
-     * @param array $context
      * @return null
      */
-    public function log(string $level, string $message, array $context = []);
-    public function emergency(string $message, array $context = []);
-    public function alert(string $message, array $context = []);
-    public function critical(string $message, array $context = []);
-    public function error(string $message, array $context = []);
-    public function warning(string $message, array $context = []);
-    public function notice(string $message, array $context = []);
-    public function info(string $message, array $context = []);
-    public function debug(string $message, array $context = []);
+    public function log(string $level, string $message);
+    public function emergency(string $message);
+    public function alert(string $message);
+    public function critical(string $message);
+    public function error(string $message);
+    public function warning(string $message);
+    public function notice(string $message);
+    public function info(string $message);
+    public function debug(string $message);
+    public function exception(string $message);
 }

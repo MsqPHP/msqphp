@@ -51,7 +51,6 @@ final class Response
      */
     public static function error(string $msg, int $time = 3, string $url = '')
     {
-        // show(debug_backtrace());
         include static::getViewPath('error');
         exit;
     }

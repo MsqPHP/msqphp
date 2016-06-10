@@ -17,6 +17,7 @@ final class Log
     const NOTICE    = 'notice';
     const INFO      = 'info';
     const DEBUG     = 'debug';
+    const EXCEPTION = 'exception';
 
     private $handler = null;
     private $config = [
@@ -25,7 +26,7 @@ final class Log
     private function __construct()
     {
         $this->config  = $config = array_merge($this->config,core\config\Config::get('log'));
-        $this->handler = $this->initHandler($config['default_handler'], $config['handlers_config'][$default_handler]);
+        $this->handler = $this->initHandler($config['default_handler'], $config['handlers_config'][$config['default_handler']]);
     }
     public function init() : self
     {
@@ -38,7 +39,7 @@ final class Log
     }
     public function message(string $message) : self
     {
-        $this->pointet['message'] = $message;
+        $this->pointer['message'] = $message;
         return $this;
     }
     public function level(string $level) : self
@@ -50,13 +51,13 @@ final class Log
     {
         return $this->level($type);
     }
-    public function record()
+    public function recode()
     {
         $pointer = $this->pointer;
         $level = $pointer['level'] ?? '';
         $message = $pointer['message'] ?? '';
         if (in_array(strtolower($level), $this->config['level'])) {
-            $this->handler->log($level, $message, $content);
+            $this->handler->log($level, $message);
         }
     }
     private function initHandler(string $type, array $config)

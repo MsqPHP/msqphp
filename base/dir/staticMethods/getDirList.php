@@ -2,7 +2,6 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
-use msqphp\traits;
 
 /**
  * 得到当前目录列表

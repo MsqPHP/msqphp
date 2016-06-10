@@ -2,7 +2,6 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
-use msqphp\traits;
 
 /**
  * 通过文件名称删除文件

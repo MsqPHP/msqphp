@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\log\handlers;
 
+use msqphp\base;
+
 class File implements LoggerHandlerInterface
 {
     private $config = [
@@ -11,18 +13,21 @@ class File implements LoggerHandlerInterface
     ];
     public function __construct(array $config)
     {
-        $this->config = $config = array_merge($this->config, $config);
+        $config = array_merge($this->config, $config);
         if (!is_dir($config['path'])) {
             throw new LoggerHandlerException('日志目录不存在');
+        } else {
+            $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
         }
+        $this->config = $config;
     }
     private function getFilePath(string $level) : string
     {
-        return $this->config['path'].date('Y-m-d').'_'.$level.$this->config['extension'];
+        return $this->config['path'].date('Y-m-d-H-i-s').'_'.$level.$this->config['extension'];
     }
     public function log(string $level, string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('log'), $message . PHP_EOL);
+        base\file\File::append($this->getFilePath($level), $message . PHP_EOL, true);
     }
     public function emergency(string $message, array $context = [])
     {
@@ -55,5 +60,9 @@ class File implements LoggerHandlerInterface
     public function debug(string $message, array $context = [])
     {
         base\file\File::append($this->getFilePath('debug'), $message);
+    }
+    public function exception(string $message, array $context = [])
+    {
+        base\file\File::append($this->getFilePath('exception'), $message);
     }
 }

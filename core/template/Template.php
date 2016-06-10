@@ -13,11 +13,14 @@ final class Template
     private static $right_delim = '';
 
     private static $pattern = [];
-    private static $inited = false;
 
     private static function init()
     {
-        static::$inited      = true;
+        static $inited = false;
+        if ($inited) {
+            return;
+        }
+        $inited      = true;
         $config              = core\config\Config::get('template');
         static::$left_delim  = $config['left_delim'] ?? '<{';
         static::$right_delim = $config['right_delim'] ?? '<{';
@@ -93,9 +96,7 @@ final class Template
      */
     public static function commpile(string $content, array $data = [], array $language = []) : string
     {
-        if (!static::$inited) {
-            static::init();
-        }
+        static::init();
 
 
         $left_delim = static::$left_delim;
@@ -116,7 +117,7 @@ final class Template
             $middle_pos === false && $middle_pos = PHP_INT_MAX;
             while ($end > $middle_pos) {
                 show($content);
-                
+
                 $middle = substr($content, $middle_pos, $end + $right_delim_len);
                 show($middle);
                 $content = str_replace($middle, static::commpile($middle,$data,$language), $content);

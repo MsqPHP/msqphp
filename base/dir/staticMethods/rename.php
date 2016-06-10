@@ -2,8 +2,6 @@
 namespace msqphp\base\dir;
 
 use msqphp\base;
-use msqphp\traits;
-
 /**
  * 目录|文件重命名
  * @func_name     rename
@@ -23,7 +21,7 @@ return function (string $old_path, string $new_path)
     if (!is_writable($old_path) || !is_executable($old_path)) {
         throw new DirException($old_path.'不可操作, 无法重命名');
     }
-    
+
     //目标目录是否存在
     if (is_dir($new_path)) {
         if ($force) {
@@ -31,8 +29,8 @@ return function (string $old_path, string $new_path)
         } else {
             throw new DirException($new_path.'已存在, 无法重命名');
         }
-        
-    }        
+
+    }
     //目标父目录是否存在
     $new_parent_path = dirname($new_path);
     if (!is_dir($new_parent_path)) {

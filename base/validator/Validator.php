@@ -23,7 +23,7 @@ final class Validator
      */
     public static function mobile($phone) : bool
     {
-        return false !== preg_match('/^13[0-9]{1}[0-9]{8}$|15[012356789]{1}[0-9]{8}$|18[012356789]{1}[0-9]{8}$|14[57]{1}[0-9]{8}$/', $phone);
+        return 0 !== preg_match('/^13[0-9]{1}[0-9]{8}$|15[012356789]{1}[0-9]{8}$|18[012356789]{1}[0-9]{8}$|14[57]{1}[0-9]{8}$/', $phone);
     }
     /**
      * 邮箱验证
@@ -40,7 +40,7 @@ final class Validator
      * @return bool
      */
     public static function qq(string $qq) : bool {
-        return false !== preg_match('/^[1-9]\d{4, 12}$/', trim($qq));
+        return 0 !== preg_match('/^[1-9]\d{4, 12}$/', trim($qq));
     }
     /**
      * 邮政编码验证
@@ -49,7 +49,7 @@ final class Validator
      */
     public static function zip(string $zip) : bool
     {
-        return false !== preg_match('/^[1-9]\d{5}$/', trim($zip));
+        return 0 !== preg_match('/^[1-9]\d{5}$/', trim($zip));
     }
     /**
      * url验证

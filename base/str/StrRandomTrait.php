@@ -1,0 +1,91 @@
+<?php declare(strict_types = 1);
+namespace msqphp\base\str;
+
+trait StrRandomTrait
+{
+    /**
+     * 得到指定类型随机字符
+     *
+     * @param  int $length 字符长度
+     * @param  int $type   字符类型
+     *       //type1:0-9
+     *       //type2:0-9a-z
+     *       //type3:0-9a-zA-Z
+     *       //type4:0-9a-zA-Z~!@#$%^&*()_+`-=[]{};'"\|:<>?, ./
+     *
+     * @return string       生成的字符
+     */
+    public static function randomString(int $length = 4, int $type = 3) : string
+    {
+        if ($length < 1) {
+            throw new StrException($length.'必须大于0');
+        }
+        $random = '';
+        switch ($type) {
+            case 4:
+                $random .= '~!@#$%^&*()_+`-=[]{};\'"\\|:<>?, ./';
+            case 3:
+                $random .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            case 2:
+                $random .= 'abcdefghijklmnopqrstuvwxyz';
+            case 1:
+            default:
+                $random .= '0123456789';
+                break;
+        }
+        return substr(str_shuffle(str_repeat($random, $length)), 0, $length);
+        //打乱字符串后截取4个长度
+    }
+    /**
+     * 得到随机的加密字符
+     *
+     * @param  int|integer $length 长度
+     *
+     * @return string
+     */
+    public static  function randomBytes(int $length = 16) : string
+    {
+        if ($length < 1) {
+            throw new StrException($length.'必须大于0');
+        }
+        return str_shuffle(random_bytes($length));
+    }
+    /**
+     * 得到随机字符(高安全)
+     *
+     * @param  int|integer $length 长度
+     *
+     * @return string
+     */
+    public static  function random(int $length = 16) : string
+    {
+        if ($length < 1) {
+            throw new StrException($length.'必须大于0');
+        }
+        $string = '';
+        while ($length > 0) {
+            $size = rand(1, $length);
+
+            $bytes = random_bytes($size);
+
+            $string .= substr(str_shuffle(str_replace(['/', '+', '='], '', base64_encode($bytes))) , 0, $size);
+            $length -= $size;
+        }
+
+        return $string;
+    }
+    /**
+     * 快速得到一个字符串
+     *
+     * @param  integer $length 长度
+     *
+     * @return string
+     */
+    public static  function quickRandom($length = 16) : string
+    {
+        if ($length <= 0) {
+            throw new StrException($length.'必须大于0');
+        }
+        return substr(str_shuffle((str_repeat('7O56JpRkTjPvKNn1S849zuXIYgCFaZ3GrmeUds02yWqcwAhQHfLMDiVlboxtEB', $length))), 0, $length);
+    }
+}

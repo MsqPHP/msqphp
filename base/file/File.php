@@ -11,6 +11,7 @@ final class File
         'NotExists'   => '不存在',
         'CanNotDelete'=>'无法删除',
         'CanNotWrite'=>'无法写入',
+        'CanNotExecutable'=>'无法执行',
         'UnknownErro'=>'未知错误',
         'CanNotCopy'=>'无法复制',
         'CanNotAppend'=>'无法追加内容',
@@ -33,8 +34,14 @@ final class File
     public static function delete(string $file, bool $force = false)
     {
         if (is_file($file)) {
-            if (!is_writable($file)) {
-                throw new FileException($file.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotDelete']);
+
+            $parent_dir = dirname($file);
+
+            if (!is_writable($parent_dir)) {
+                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
+            }
+            if (!is_executable($parent_dir)) {
+                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotExecutable']);
             }
 
             if (!unlink($file)) {
@@ -119,7 +126,7 @@ final class File
         } else {
         //文件存在
             if (!is_writable($file)) {
-                throw new FileException($file.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotAppend']);
+                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
             }
 
             if (false === file_put_contents($file, (string)$content, FILE_APPEND)) {
@@ -135,7 +142,7 @@ final class File
      * @throws FileException
      * @return void
      */
-    public static function write(string $file, $content, bool $force = false, int $code = 0640)
+    public static function write(string $file, $content, bool $force = false, int $code = 0666)
     {
         //父目录
         $parent_dir = dirname($file);
@@ -154,8 +161,10 @@ final class File
         if (!is_writable($parent_dir)) {
             throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
         }
-
-        if (false === file_put_contents($file, (string)$content) || chmod($file, $code)) {
+        if (!is_executable($parent_dir)) {
+            throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotExecutable']);
+        }
+        if (false === file_put_contents($file, (string)$content, LOCK_EX) || false === chmod($file, $code)) {
             throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotWrite']);
         }
     }
@@ -163,47 +172,5 @@ final class File
     public static function save(string $file, $content, bool $force = false, int $code = 0640)
     {
         static::write($file, $content, $force, $code);
-    }
-
-    /**
-     * 复制文件
-     * @param  string $from       文件路径
-     * @param  string $to         文件路径
-     * @param  string $force      不存在则创建, 存在则替换
-     * @throws FileException
-     * @return void
-     */
-    public static function copy(string $from, string $to, bool $force = false)
-    {
-        //是否存在
-        if (!is_file($from)) {
-            throw new FileException($from.static::ERROR['NotExists'].','.static::ERROR['CanNotCopy']);
-        }
-
-        // //是否可操作
-        // if (!is_executable($from) || !is_writable($from)) {
-        //     throw new FileException($from.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
-        // }
-
-        //对应文件是否存在
-        if (is_file($to)) {
-            if ($force) {
-                static::delete($to, true);
-            } else {
-                throw new FileException($to.static::ERROR['AlreadyExists'].','.static::ERROR['CanNotCopy']);
-            }
-        }
-
-        //对应文件父目录是否可操作
-        $to_dir = dirname($to);
-
-        // if (!is_writable($to_dir) || !is_executable($to_dir)) {
-        //     throw new FileException($to.static::ERROR['ParentDir'].static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
-        // }
-
-        //复制
-        if (!copy($from, $to)) {
-            throw new FileException($from.static::ERROR['UnknownErro'].','.static::ERROR['CanNotCopy']);
-        }
     }
 }

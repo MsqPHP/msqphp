@@ -68,6 +68,7 @@ final class Header
         ];
         if (isset($status_info[$code])) {
             header('HTTP/1.1 '.$code.' '.$status_info[$code]);
+            header('Status:'.$code.' '.$status_info[$code]);
             unset($status_info);
         } else {
             throw new HeaderException($code.'暂未支持');
@@ -214,6 +215,7 @@ final class Header
             'avi'     => 'video/x-msvideo',
             'movie'   => 'video/x-sgi-movie',
             'ice'     => 'x-conference/x-cooltalk',
+            'json' => 'application/json',
         ];
         if (isset($headers[$type])) {
             header('Content-Type:' . $headers[$type] . '; charset=utf-8');

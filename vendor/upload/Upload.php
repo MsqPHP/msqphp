@@ -77,9 +77,15 @@ class Upload
             case 'image':
                 $this->allowed('jpg','jpeg','png','bmp','gif');
                 break;
-            default:
-                throw new UploadException('not alloew');
+            case 'video':
+                $this->allowed('mp4','avi','rmvb','rm','mpg','flv','mov','wmv','3gp','mkv');
                 break;
+            case 'music':
+            case 'audio':
+                $this->allowed('mp3','wma','aiff','au','midi','aac','ape');
+                break;
+            default:
+                throw new UploadException('not supported type:'.$type);
         }
     }
     public function maxSize(int $size) : self

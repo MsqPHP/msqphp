@@ -52,12 +52,12 @@ final class Database
 
         try {
             if (empty($prepare)) {
-                return static::$pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                return static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC);
             } else {
                 $stat = static::prepare($sql, $prepare);
                 $result = $stat->fetchAll(\PDO::FETCH_ASSOC);
                 unset($stat);
-                return $result;
+                return $result === false ? null : $result;
             }
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -69,12 +69,12 @@ final class Database
 
         try {
             if (empty($prepare)) {
-                return static::$pdo->query($sql)->fetch(\PDO::FETCH_ASSOC);
+                return static::sqlQuery($sql)->fetch(\PDO::FETCH_ASSOC);
             } else {
                 $stat = static::prepare($sql, $prepare);
                 $result = $stat->fetch(\PDO::FETCH_ASSOC);
                 unset($stat);
-                return $result;
+                return $result === false ? null : $result;
             }
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -85,30 +85,36 @@ final class Database
         static::$sqls[] = $sql;
         try {
             if (empty($prepare)) {
-                return static::$pdo->query($sql)->fetchColumn();
+                return static::sqlQuery($sql)->fetchColumn();
             } else {
                 $stat = static::prepare($sql, $prepare);
                 $result = $stat->fetchColumn();
-                unset($stat);
-                return $result;
+                return $result === false ? null : $result;
             }
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
         }
     }
-
+    private static function sqlQuery(string $sql)
+    {
+        if (false === $stat = static::$pdo->query($sql)) {
+            throw new DatabaseException('错误的query语句:'.$sql);
+        } else {
+            return $stat;
+        }
+    }
     public static function query(string $sql, array $prepare = [])
     {
         static::$sqls[] = $sql;
 
         try {
             if (empty($prepare)) {
-                return static::$pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                return static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC);
             } else {
                 $stat = static::prepare($sql, $prepare);
                 $result = $stat->fetchAll(\PDO::FETCH_ASSOC);
                 unset($stat);
-                return $result;
+                return $result === false ? null : $result;
             }
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -126,7 +132,7 @@ final class Database
                 $stat = static::prepare($sql, $prepare);
                 $result = $stat->rowCount();
                 unset($stat);
-                return $result;
+                return $result === false ? null : $result;
             }
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());

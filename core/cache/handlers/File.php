@@ -27,7 +27,7 @@ final class File implements CacheHandlerInterface
             throw new CacheHandlerException('缓存路径不可写');
         }
 
-        $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
+        $config['path'] = $path = realpath($config['path']) . DIRECTORY_SEPARATOR;
 
         $this->config = $config;
     }
