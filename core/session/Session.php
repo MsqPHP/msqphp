@@ -36,20 +36,18 @@ final class Session
         //当前目录下的Handlers下处理类名称.php
         $file = __DIR__.DIRECTORY_SEPARATOR.'handlers'.DIRECTORY_SEPARATOR.$handler.'.php';
         //不存在, 将框架路径替换为对应的用户图书馆框架扩展路径
+        is_file($file) || $file = str_replace(\msqphp\Environment::$framework_path, \msqphp\Environment::$library_path, $file);
+        //还不存在, 抛出异常
         if (!is_file($file)) {
-            $file = str_replace(\msqphp\Environment::$framework_path, \msqphp\Environment::$library_path, $file);
-            //还不存在, 抛出异常
-            if (!is_file($file)) {
-                throw new SessionException($handler.' 未知的session处理器');
-            }
+            throw new SessionException($handler.' 未知的session处理器');
         }
+        ini_set('session.cache_expire', $config['expire']);
         //加载文件
         require $file;
         //拼接函数类名, 例:\msqphp\core\session\session\handlers\File
         $class_name = __NAMESPACE__.'\\handlers\\'.$handler;
         //注册并传参配置config
         session_set_save_handler(new $class_name($config['handlers_config'][$handler]), true);
-        ini_set('session.cache_expire', $config['expire']);
         //session名设置
         session_name($config['name']);
         //session开始
@@ -81,6 +79,9 @@ final class Session
         $this->pointer['value'] = $value;
         return $this;
     }
+
+
+
     public function exists()
     {
         return isset($this->sessions[$this->getKey()]);
@@ -100,6 +101,7 @@ final class Session
     {
         unset($this->sessions[$this->getKey()]);
     }
+
     private function getKey() : string
     {
         return ($this->pointer['prefix'] ?? $this->config['prefix']).$this->pointer['key'];

@@ -224,4 +224,33 @@ trait RouteLimiteTrait
             return $info['default'];
         }
     }
+
+    /**
+     * 规则检测
+     *
+     * @param  string $may   可能值
+     * @param  array  $value 指定值
+     *
+     * @throws RouteException
+     * @return bool
+     */
+    private static function check(string $may, $value) : bool
+    {
+        //如果是个字符串, 表明调用对应规则
+        if (is_string($value)) {
+            if (!isset(static::$roule[$roule])) {
+                return false;
+            }
+            if (is_string(static::$roule[$roule])) {
+                return 0 !== preg_match(static::$roule[$roule], $value);
+            } else {
+                return static::$roule[$roule]($value);
+            }
+        } elseif (is_array($value)) {
+        //如果是个数组, 判断是否是数组中的某个值
+            return in_array($may, $value);
+        } else {
+            throw new RouteException($may.'未知的检测类型'.$value);
+        }
+    }
 }

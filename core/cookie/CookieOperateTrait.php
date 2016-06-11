@@ -2,7 +2,6 @@
 namespace msqphp\core\cookie;
 
 use msqphp\base;
-use msqphp\core;
 
 trait CookieOperateTrait
 {

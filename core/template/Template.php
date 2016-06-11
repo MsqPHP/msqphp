@@ -29,20 +29,20 @@ final class Template
 
         $blank     = '\\s+';
         $may_blank = '\\s*';
-        $name      = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
+        $name      = '([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)';
         $var       = '\\$'.$name;
         $compare   = '(\\<\\=|\\>=|\\<|\\<\\>|\\>|\\<\\>|\\!\\=|\\=\\=|\\=\\=\\=|\\!\\=\\=)';
 
         static::$pattern = [
-            'include'     => [ 'pattern' => $left.'include'.$blank.'([\\w\\/\\.:-]+)'.$right ],
-            'constant_a'  => [ 'pattern' => $left.'constant\\.([A-Za-z_]+)'.$right ],
-            'constant_b'  => [ 'pattern' => $left.'cont\\.([A-Za-z_]+)'.$right ],
-            'language_a'  => [ 'pattern' => $left.'language\\.([A-Za-z_]+)'.$right ],
-            'language_b'  => [ 'pattern' => $left.'lang\\.([A-Za-z_]+)'.$right ],
-            'var'         => [ 'pattern' => $left.$var.$right ],
-            'array_a'     => [ 'pattern' => $left.$var.'([\\[\\w\'\\"\\]]+)'.$right ],
-            'array_b'     => [ 'pattern' => $left.$var.'([\\.\\w]+)'.$right ],
-            'func'        => [ 'pattern' => $left.$name.'\\('.'([\s\S]*)'.'\\)'.$right ],
+            'include'     => $left.'include'.$blank.'([\\w\\/\\.:-]+)'.$right,
+            'constant_a'  => $left.'constant\\.([A-Za-z_]+)'.$right,
+            'constant_b'  => $left.'cont\\.([A-Za-z_]+)'.$right,
+            'language_a'  => $left.'language\\.([A-Za-z_]+)'.$right,
+            'language_b'  => $left.'lang\\.([A-Za-z_]+)'.$right,
+            'var'         => $left.$var.$right,
+            'array_a'     => $left.$var.'([\\[\\w\'\\"\\]]+)'.$right,
+            'array_b'     => $left.$var.'([\\.\\w]+)'.$right,
+            'func'        => $left.$name.'\\('.'([\s\S]*)'.'\\)'.$right,
             //形式A       foreach $array as $value
             'foreach_a'   => [
                                 'pattern'=>$left.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$right,
@@ -263,7 +263,7 @@ final class Template
                         if (0 !== preg_match(static::$pattern['else']['pattern'], $if_begin, $if)) {
                             $if_result .= static::commpile($middle[$j], $data, $language);
                         } elseif (0 !== preg_match(static::$pattern['elseif_a']['pattern'], $if_begin, $if)) {
-
+                            
                         } elseif(0 !== preg_match(static::$pattern['elseif_b']['pattern'], $if_begin, $if)) {
                             if (isset( $data[$if[1]] ) && $data[$if[1]]['cache']) {
                                 $if_result.= static::commpile($middle[$j], $data, $language);
@@ -307,7 +307,7 @@ final class Template
     }
     private static function parFunc(string $content, array $data) : string
     {
-        return preg_replace_callback(static::$pattern['func']['pattern'], function($matches) use ($data) {
+        return preg_replace_callback(static::$pattern['func'], function($matches) use ($data) {
             $func_content = substr($matches[0], strlen(static::$left_delim), strlen($matches[0]) - strlen(static::$right_delim) - strlen(static::$left_delim));
             $func_name = $matches[1];
             $cached = [];
@@ -345,7 +345,7 @@ final class Template
      */
     private static function parInclude(string $content, array $data, array $language) : string
     {
-        return preg_replace_callback(static::$pattern['include']['pattern'], function($matches){
+        return preg_replace_callback(static::$pattern['include'], function($matches){
             $file = $matches[1];
             if (is_file($file)) {
                 return static::commpile(base\file\File::get($file), $data, $language);
@@ -361,8 +361,8 @@ final class Template
     private static function parConstant(string $content) : string
     {
         return preg_replace_callback([
-            static::$pattern['constant_a']['pattern'],
-            static::$pattern['constant_b']['pattern']
+            static::$pattern['constant_a'],
+            static::$pattern['constant_b']
         ], function($matches) {
             if (defined($matches[1])) {
                 return constant($matches[1]);
@@ -378,8 +378,8 @@ final class Template
     private static function parLanguae(string $content, array $language) : string
     {
         return preg_replace_callback([
-            static::$pattern['language_a']['pattern'],
-            static::$pattern['language_b']['pattern']
+            static::$pattern['language_a'],
+            static::$pattern['language_b']
         ], function($matches) use ($language) {
             if (isset($language[$matches[1]])) {
                 return $language[$matches[1]];
@@ -395,7 +395,7 @@ final class Template
      */
     private static function parVar(string $content, array $data) : string
     {
-        return preg_replace_callback(static::$pattern['var']['pattern'], function($matches) use ($data) {
+        return preg_replace_callback(static::$pattern['var'], function($matches) use ($data) {
             $key = $matches[1];
             if (isset($data[$key]) && $data[$key]['cache']) {
                 if (is_array($data[$key]['value'])) {
@@ -411,8 +411,8 @@ final class Template
     private static function parArray(string $content, array $data) : string
     {
         return preg_replace_callback([
-            static::$pattern['array_a']['pattern'],
-            static::$pattern['array_b']['pattern']
+            static::$pattern['array_a'],
+            static::$pattern['array_b']
         ], function($matches) use ($data) {
             $key = $matches[1];
             $val = $matches[2];

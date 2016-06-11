@@ -57,10 +57,6 @@ class App
      */
     public static function end()
     {
-        if (0 === APP_DEBUG) {
-            return;
-        }
-
         //结束调用,产生框架运行信息;
         if (defined('PHP_START_CPU')) {
             $end_cpu = getrusage();
@@ -83,8 +79,21 @@ class App
             unset($end_time);
         }
         if (class_exists('\msqphp\core\database\Database', false)) {
-            $end_info[] = 'sql语句:';
-            $end_info[] = core\database\Database::getSqls();
+            $end_info[] = 'sql信息:';
+            $sqls = core\database\Database::getSqls();
+            $times = core\database\Database::getTimes();
+            $total = $times['init'];
+            $end_info[] = "\t".'sql初始化:'.$times['init'];
+            $end_info[] = "\t".'sql语句:'.count($sqls).'条';
+            foreach($times['sqls'] as $info) {
+                $total += $info['time'];
+                $end_info[] = "\t".$info['sql']."\t\t".'用时'.$info['time'];
+            }
+            $end_info[] = "\t".'sql总用时:'.$total;
+            unset($sqls);
+            unset($times);
+            unset($info);
+            unset($total);
         }
         if (isset($end_mem)) {
             $end_info[] = '内存信息:';
@@ -117,6 +126,11 @@ class App
             }
             $end_info[] = "\t".'总共加载文件:'.count($files).'个, 大小:'.base\number\Number::byte($all_size, false);
             $end_info = array_merge($end_info, $file_info);
+            unset($file_info);
+            unset($files);
+            unset($all_size);
+            unset($file);
+            unset($byte);
         }
         if (function_exists('get_defined_constants')) {
             $end_info[] = '常量信息:';
@@ -130,6 +144,10 @@ class App
         foreach (Environment::$autoload_classes as $file) {
             $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
         }
-        empty($end_info) || base\response\Response::dumpArray($end_info, true);
+        if (0 === APP_DEBUG || 5 === APP_DEBUG) {
+            core\log\Log::getInstance()->init()->message(implode(PHP_EOL, $end_info))->type('succes')->recode();
+        } else {
+            base\response\Response::dumpArray($end_info, true);
+        }
     }
 }

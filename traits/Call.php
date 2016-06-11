@@ -3,12 +3,11 @@ namespace msqphp\traits;
 
 trait Call
 {
-
     /**
      * 万能静态call
      * @param  string $method 方法名
      * @param  array  $args   参数
-     * @throws BaseException
+     * @throws TraitsException
      * @return mixed
      */
     public function __call(string $method, array $args)

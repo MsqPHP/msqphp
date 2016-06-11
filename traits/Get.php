@@ -7,7 +7,7 @@ trait Get
      * 万能get
      *
      * @param  string $property 属性
-     *
+     * @throws TraitsException
      * @return miexd
      */
     public function __get(string $property)
@@ -15,14 +15,14 @@ trait Get
         //get集合
         static $gets = [];
 
-        //如果不存在
+        //如果属性不存在
         if (!isset($gets[$property])) {
 
             //框架路径
             $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;
 
             //命名空间转换为目录 msqphp\base\dir\Dir ----> base\dir
-            $namespace = strtr(str_replace([strrchr(__CLASS__, '\\'),'msqphp\\'],'',__CLASS__), '\\', DIRECTORY_SEPARATOR);
+            $namespace = strtr(str_replace([strrchr(__CLASS__, '\\'), 'msqphp\\'], '', __CLASS__), '\\', DIRECTORY_SEPARATOR);
 
             //拼装路径
             $file = $framework_path . $namespace . DIRECTORY_SEPARATOR . 'gets' . DIRECTORY_SEPARATOR . $property . '.php';
@@ -31,11 +31,10 @@ trait Get
             is_file($file) || $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
 
             //存在载入否则报错
-            if (is_file($file)) {
-                $gets[$property] = require $file;
-            } else {
+            if (!is_file($file)) {
                 throw new TraitsException(__CLASS__.'类的'.$property.'属性不存在');
             }
+            $gets[$property] = require $file;
 
         }
 

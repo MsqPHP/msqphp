@@ -9,14 +9,13 @@ final class Safe
 {
     public static function maliciousRefresh()
     {
-        $session = Core\Session\Session::getInstance();
+        $session = core\session\Session::getInstance()->init()->key('refresh');
         //设置session键
-        $session->init()->key('refresh');
         if ($session->exists() && ($session->get() > microtime(true)-0.7)) {
             throw new SafeException('刷新过快');
         } else {
             $session->value(microtime(true))->set();
-            unset($session);
         }
+        unset($session);
     }
 }

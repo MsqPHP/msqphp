@@ -12,7 +12,6 @@ abstract class View
     use ViewLanguageTrait;
     //数据操作
     use ViewDataTrait;
-    //展示
     //布局是否开启
     protected $layout   = false;
     //是否为静态页
@@ -43,7 +42,7 @@ abstract class View
         //是否支持多主题
         if ($config['theme']) {
             $this->theme = true;
-            $options['theme'] = core\route\Route::$info['themt'] ?? $config['default_theme'];
+            $options['theme'] = __THEME__ ?? $config['default_theme'];
         }
 
         //是否支持多语
@@ -51,7 +50,7 @@ abstract class View
             $this->language = true;
             //获得当前语言
             $config['language_path'] = realpath($config['language_path']) . DIRECTORY_SEPARATOR;
-            $options['language'] = core\route\Route::$info['language'] ?? $config['default_language'];
+            $options['language'] = __LANGUAGE__ ?? $config['default_language'];
         }
 
         //是否支持布局

@@ -73,6 +73,7 @@ trait RouteMethodTrait
         } else {
             call_user_func_array($func, $args);
         }
+
         if ($autoload && !defined('NO_CACHE')) {
             if ($aiload->changed()) {
                 $aiload->update()->save()->end();
@@ -83,7 +84,7 @@ trait RouteMethodTrait
         }
     }
 
-    public static function error($func, array $args = [])
+    public static function error(\Closure $func, array $args = [])
     {
         if (static::$matched) {
             return;
@@ -188,6 +189,27 @@ trait RouteMethodTrait
             } else {
                 $args[] = $_GET[$key];
             }
+        }
+    }
+
+    /**
+     * 路由规则检测
+     *
+     * @param  string $value 值
+     * @param  string $roule 规则键
+     *
+     * @throws RouteException
+     * @return bool
+     */
+    private static function checkRoule(string $value, string $roule) : bool
+    {
+        if (!isset(static::$roule[$roule])) {
+            throw new RouteException('路由规则不存在');
+        }
+        if (is_string(static::$roule[$roule])) {
+            return 0 !== preg_match(static::$roule[$roule], $value);
+        } else {
+            return static::$roule[$roule]($value);
         }
     }
 }

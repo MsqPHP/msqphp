@@ -3,13 +3,16 @@ namespace msqphp\core\database;
 
 use msqphp\base;
 use msqphp\core;
-use msqphp\traits;
 
 final class Database
 {
+    use DatabaseTransactionTrait;
+    use DatabaseOperateTrait;
+
     private static $config = [];
     private static $pdo = null;
     private static $sqls = [];
+    private static $times = [];
 
     public static function connect()
     {
@@ -17,12 +20,15 @@ final class Database
             static::$config = $config = core\config\Config::get('database');
             try {
                 $connect_info = static::getConnectInfo();
+                $start = microtime(true);
                 static::$pdo = new \PDO($connect_info['dsn'], $connect_info['username'], $connect_info['password'], $config['params']);
                 static::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                $end = microtime(true);
+                static::$times['init'] = $end-$start;
             } catch (\PDOException $e) {
                 throw new DatabaseException($e->getMessage());
             }
-            static::$pdo->exec('SET NAMES '.$config['charset']);
+            static::exec('SET NAMES '.$config['charset']);
         }
     }
     private static function getConnectInfo() : array
@@ -46,100 +52,23 @@ final class Database
                 throw new DatabaseException('未知的数据库类型');
         }
     }
-    public static function get(string $sql, array $prepare = [])
-    {
-        static::$sqls[] = $sql;
-
-        try {
-            if (empty($prepare)) {
-                return static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            } else {
-                $stat = static::prepare($sql, $prepare);
-                $result = $stat->fetchAll(\PDO::FETCH_ASSOC);
-                unset($stat);
-                return $result === false ? null : $result;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage());
-        }
-    }
-    public static function getOne(string $sql, array $prepare = [])
-    {
-        static::$sqls[] = $sql;
-
-        try {
-            if (empty($prepare)) {
-                return static::sqlQuery($sql)->fetch(\PDO::FETCH_ASSOC);
-            } else {
-                $stat = static::prepare($sql, $prepare);
-                $result = $stat->fetch(\PDO::FETCH_ASSOC);
-                unset($stat);
-                return $result === false ? null : $result;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage());
-        }
-    }
-    public static function getColumn(string $sql, $prepare)
-    {
-        static::$sqls[] = $sql;
-        try {
-            if (empty($prepare)) {
-                return static::sqlQuery($sql)->fetchColumn();
-            } else {
-                $stat = static::prepare($sql, $prepare);
-                $result = $stat->fetchColumn();
-                return $result === false ? null : $result;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage());
-        }
-    }
     private static function sqlQuery(string $sql)
     {
         if (false === $stat = static::$pdo->query($sql)) {
             throw new DatabaseException('错误的query语句:'.$sql);
         } else {
+            static::$sqls[] = $sql;
             return $stat;
         }
     }
-    public static function query(string $sql, array $prepare = [])
+    private static function sqlExec(string $sql) : int
     {
         static::$sqls[] = $sql;
-
-        try {
-            if (empty($prepare)) {
-                return static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            } else {
-                $stat = static::prepare($sql, $prepare);
-                $result = $stat->fetchAll(\PDO::FETCH_ASSOC);
-                unset($stat);
-                return $result === false ? null : $result;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage());
-        }
-    }
-
-    public static function exec(string $sql,  array $prepare = []) : int
-    {
-        static::$sqls[] = $sql;
-
-        try {
-            if (empty($prepare)) {
-                return static::$pdo->exec($sql);
-            } else {
-                $stat = static::prepare($sql, $prepare);
-                $result = $stat->rowCount();
-                unset($stat);
-                return $result === false ? null : $result;
-            }
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage());
-        }
+        return static::$pdo->exec($sql);
     }
     private static function prepare(string $sql, array $prepare = []) : \PDOStatement
     {
+        static::$sqls[] = $sql;
         try {
             $stat = static::$pdo->prepare($sql);
             foreach ($prepare as $key => $value) {
@@ -150,18 +79,6 @@ final class Database
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
         }
-    }
-    public static function beginTransaction()
-    {
-        static::$pdo->beginTransaction();
-    }
-    public static function commit()
-    {
-        static::$pdo->commit();
-    }
-    public static function rollBack()
-    {
-        static::$pdo->rollBack();
     }
     public static function lastInsertId() : int
     {
@@ -175,5 +92,9 @@ final class Database
     public static function getSqls()
     {
         return static::$sqls;
+    }
+    public static function getTimes()
+    {
+        return static::$times;
     }
 }

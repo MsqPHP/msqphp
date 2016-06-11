@@ -58,7 +58,6 @@ final class Route
         //或者www.example.com?page=20&name=test
             $left_uri = substr($uri, 0, $pos);
             array_map(function($param) use (& $right) {
-                list($k, $v) = explode('=', $param);
                 if (false !== $pos = strpos($param, '=')) {
                     array_push($right, substr($param, 0, $pos), substr($param, $pos + 1));
                 }
@@ -76,46 +75,5 @@ final class Route
         }
 
         return array_merge(explode('/', $left_uri), $right);
-    }
-    /**
-     * 规则检测
-     *
-     * @param  string $may   可能值
-     * @param  array  $value 指定值
-     *
-     * @throws RouteException
-     * @return bool
-     */
-    private static function check(string $may, $value) : bool
-    {
-        //如果是个字符串, 表明调用对应规则
-        if (is_string($value)) {
-            return static::checkRoule($may, $value);
-        } elseif (is_array($value)) {
-        //如果是个数组, 判断是否是数组中的某个值
-            return in_array($may, $value);
-        } else {
-            throw new RouteException($may.'未知的检测类型'.$value);
-        }
-    }
-    /**
-     * 路由规则检测
-     *
-     * @param  string $value 值
-     * @param  string $roule 规则键
-     *
-     * @throws RouteException
-     * @return bool
-     */
-    private static function checkRoule(string $value, string $roule) : bool
-    {
-        if (!isset(static::$roule[$roule])) {
-            throw new RouteException('路由规则不存在');
-        }
-        if (is_string(static::$roule[$roule])) {
-            return 0 !== preg_match(static::$roule[$roule], $value);
-        } else {
-            return static::$roule[$roule]($value);
-        }
     }
 }

@@ -8,13 +8,8 @@ final class Arr
 {
     //万能静态call
     use traits\CallStatic;
-
-
-###
-#  设置\获取
-###
     /**
-     * 设置数组值,以点为分隔符,支持到十位数组, 若键为空,则用值替换数组;
+     * 设置数组值,以点为分隔符,若键为空,则用值替换数组;
      *
      * @example
      *         $arr = ['liming'=>['username'=>'test','password'=>'123456']];
@@ -50,7 +45,7 @@ final class Arr
         $result = $arr_value;
     }
     /**
-     * 获取数组值,,以点为分隔符,支持到十位数组, 若键为空,则获取整个数组值;
+     * 获取数组值,,以点为分隔符,若键为空,则获取整个数组值;
      *
      * @example
      *         $arr = ['liming'=>['username'=>'test','password'=>'123456']];
@@ -80,84 +75,6 @@ final class Arr
 
         //返回
         return $result;
-    }
-
-
-###
-#  排序
-###
-    /**
-     * 按键冒泡排序
-     *
-     * @param  array  $arr 待排序数组
-     *
-     * @return array
-     */
-    public static function bubbleSort(array $arr) : array
-    {
-        for ($i = 1, $len = count($arr); $i < $len; ++$i) {
-            for ($k = 0; $k < $len - $i; ++$k) {
-                $arr[$k] > $arr[$k+1] && list($arr[$k], $arr[$k+1]) = [$arr[$k+1], $arr[$k]];
-            }
-        }
-        return $arr;
-    }
-    /**
-     * 按键选择排序
-     *
-     * @param  array  $arr 待排序数组
-     *
-     * @return array
-     */
-    public static function selectSort(array $arr) : array
-    {
-        for ($i = 0, $len = count($arr); $i < $len - 1; ++$i) {
-            $p = $i;
-            for ($j = $i + 1; $j < $len; ++$j) {
-                $arr[$p] > $arr[$j] && $p = $j;
-            }
-            $p !== $i && list($arr[$p], $arr[$i]) = [$arr[$i], $arr[$p]];
-        }
-        return $arr;
-    }
-    /**
-     * 按键插入排序
-     *
-     * @param  array  $arr 待排序数组
-     *
-     * @return array
-     */
-    public static function insertSort(array $arr) : array
-    {
-        for ($i = 1, $len = count($arr); $i < $len; ++$i) {
-            $tmp = $arr[$i];
-            for ($j=$i-1;$j>=0;--$j) {
-                $tmp < $arr[$j] && list($arr[$j+1], $arr[$j]) = [$arr[$j], $tmp];
-            }
-        }
-        return $arr;
-    }
-    /**
-     * 按键快速排序
-     *
-     * @param  array  $arr 待排序数组
-     *
-     * @return array
-     */
-    public static function quickSort(array $arr) : array
-    {
-        //数组长度
-        $l = count($arr);
-        if ($l <= 1) {
-            return $arr;
-        }
-        $mid   = $arr[0];
-        $left  = [];
-        $right = [];
-        for (--$l; $l > 0;--$l) {
-            $mid > $arr[$l] && ($left[]=$arr[$l]) || ($right[]=$arr[$l]);
-        }
-        return array_merge(static::quickSort($left), [$mid], static::quickSort($right));
     }
     /**
      * 获得随机获得数组中固定个值

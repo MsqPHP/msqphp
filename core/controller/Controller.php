@@ -5,5 +5,6 @@ use msqphp\traits;
 
 abstract class Controller
 {
-    use traits\Get,traits\Call;
+    use traits\Get;
+    use traits\Call;
 }
