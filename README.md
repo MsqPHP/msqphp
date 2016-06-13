@@ -26,6 +26,7 @@ msqphp beta 1.1
 
 + git : https://github.com/MsqPHP/msqphp
 + 开发手册 : http://www.kancloud.cn/msqphp/msqphp
++ QQ交流群 : 566103528
 
 ## 理念
 
