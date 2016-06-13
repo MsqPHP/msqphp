@@ -77,7 +77,7 @@ class Environment
     public static function initPath(array $path_config)
     {
         //初始化路径
-        static::$path = array_map(function($path) {
+        static::$path = array_map(function (string $path) {
             //是目录则realpath
             if (is_dir($path)) {
                 return realpath($path) . DIRECTORY_SEPARATOR;

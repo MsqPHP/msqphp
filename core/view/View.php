@@ -225,9 +225,10 @@ abstract class View
         //静态
         $this->static = true;
         //拼接静态文件路径
-        $param = empty($_SERVER['QUERY_STRING']) ? '' : trim(strtr($_SERVER['QUERY_STRING'], '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
+        $request_uri = trim(strtr(core\route\Route::$info['request_uri'], '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
+        empty($request_uri) || $request_uri .= DIRECTORY_SEPARATOR;
 
-        $path = \msqphp\Environment::getPath('public') . $param . DIRECTORY_SEPARATOR . 'index.php';
+        $path = \msqphp\Environment::getPath('public') . $request_uri . 'index.php';
 
         $this->options['static_path'] = $path;
 

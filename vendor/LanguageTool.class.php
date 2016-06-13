@@ -1,5 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp;
+
 class StringClass
 {
     /**
@@ -36,8 +37,10 @@ class StringClass
                 }
             }
             $result .= $string[$a];
-            ++$a;           
+            ++$a;
         }
+        unset($utf8_big5);
+        unset($utf8_gb2312);
         return $result;
     }
 }

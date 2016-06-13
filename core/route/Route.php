@@ -57,23 +57,25 @@ final class Route
         } else {
         //或者www.example.com?page=20&name=test
             $left_uri = substr($uri, 0, $pos);
-            array_map(function($param) use (& $right) {
+            array_map(function(string $param) use (& $right) {
                 if (false !== $pos = strpos($param, '=')) {
                     array_push($right, substr($param, 0, $pos), substr($param, $pos + 1));
                 }
             }, explode('&', substr($uri, $pos + 1)));
         }
         //后缀去除
-        if (in_array(substr($left_uri, -11), ['/server.php', '/index.html', '/index.aspx'])) {
-            $left_uri = substr($left_uri, 0, strlen($left_uri)-11);
-        } elseif (in_array(substr($left_uri, -10), ['/index.php', '/index.asp', '/index.jsp', '/index.jsf'])) {
-            $left_uri = substr($left_uri, 0, strlen($left_uri)-10);
-        } elseif (in_array(substr($left_uri, -5), ['.html', '.aspx'])) {
-            $left_uri = substr($left_uri, 0, strlen($left_uri)-5);
-        } elseif (in_array(substr($left_uri, -4), ['.php', '.asp', '.jsp', '.jsf'])) {
-            $left_uri = substr($left_uri, 0, strlen($left_uri)-4);
+        if (false !== strpos($left_uri, '.')) {
+            if (in_array(substr($left_uri, -11), ['/server.php', '/index.html', '/index.aspx'])) {
+                $left_uri = substr($left_uri, 0, strlen($left_uri)-11);
+            } elseif (in_array(substr($left_uri, -10), ['/index.php', '/index.asp', '/index.jsp', '/index.jsf'])) {
+                $left_uri = substr($left_uri, 0, strlen($left_uri)-10);
+            } elseif (in_array(substr($left_uri, -5), ['.html', '.aspx'])) {
+                $left_uri = substr($left_uri, 0, strlen($left_uri)-5);
+            } elseif (in_array(substr($left_uri, -4), ['.php', '.asp', '.jsp', '.jsf'])) {
+                $left_uri = substr($left_uri, 0, strlen($left_uri)-4);
+            }
         }
-
+        static::$info['request_uri'] = $left_uri;
         return array_merge(explode('/', $left_uri), $right);
     }
 }

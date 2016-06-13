@@ -1,8 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
-use msqphp\base;
-
 trait RouteLimiteTrait
 {
     /**
@@ -110,38 +108,6 @@ trait RouteLimiteTrait
             call_user_func_array($func, $args);
         }
     }
-    /**
-     * 域名限制
-     *
-     * @param  miexd  $domain 域名 支持多
-     */
-    public static function domain($domain, \Closure $func, array $args = [])
-    {
-        if (static::$matched) {
-            return;
-        }
-        //获得当前域名
-        static::$info['domain'] = static::$info['domain'] ?? $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'];
-
-        if (in_array(static::$info['domain'], (array)$domain)) {
-            call_user_func_array($func, $args);
-        }
-    }
-    /**
-     * ip限制
-     *
-     * @param  miexd  $ip    ip 支持多
-     */
-    public static function ip($ip, \Closure $func, array $args = [])
-    {
-        if (static::$matched) {
-            return;
-        }
-        static::$info['ip'] = static::$info['ip'] ?? base\ip\Ip::get();
-        if (in_array(static::$info['ip'], (array)$ip)) {
-            call_user_func_array($func, $args);
-        }
-    }
     //SSL协议, 即https限制
     public static function ssl(\Closure $func, array $args = [])
     {
@@ -168,22 +134,6 @@ trait RouteLimiteTrait
             return true;
         } else {
             return false;
-        }
-    }
-    /**
-     * 端口限制
-     *
-     * @param  miexd  $port  端口,支持多
-     */
-    public static function port($port, \Closure $func, array $args = [])
-    {
-        if (static::$matched) {
-            return;
-        }
-        static::$info['port'] = static::$info['port'] ?? $_SERVER['SERVER_PORT'];
-
-        if (in_array(static::$info['port'], (array)$port)) {
-            call_user_func_array($func, $args);
         }
     }
     /**

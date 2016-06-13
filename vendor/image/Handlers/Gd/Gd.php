@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
-namespace msqphp\base\Image\Driver\Gd;
+namespace msqphp\vendor\Image\Driver\Gd;
 
-class Gd implements \msqphp\base\Image\DriverInterface
+class Gd implements \msqphp\vendor\image\handlers\ImageHandlerInterface
 {
     //图片资源
     private $resource     = null;

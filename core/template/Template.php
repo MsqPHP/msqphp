@@ -7,6 +7,9 @@ use msqphp\traits;
 
 final class Template
 {
+    use TemplateOneTrait;
+    use TemplateMoreTrait;
+
     private static $left = '';
     private static $right = '';
     private static $left_delim = '';
@@ -32,6 +35,7 @@ final class Template
         $name      = '([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)';
         $var       = '\\$'.$name;
         $compare   = '(\\<\\=|\\>=|\\<|\\<\\>|\\>|\\<\\>|\\!\\=|\\=\\=|\\=\\=\\=|\\!\\=\\=)';
+        $stringOrNumber = '([\'][^\']*[\']|[\\"][^\\"]*[\\"]|[0-9]*)';
 
         static::$pattern = [
             'include'     => $left.'include'.$blank.'([\\w\\/\\.:-]+)'.$right,
@@ -44,44 +48,17 @@ final class Template
             'array_b'     => $left.$var.'([\\.\\w]+)'.$right,
             'func'        => $left.$name.'\\('.'([\s\S]*)'.'\\)'.$right,
             //形式A       foreach $array as $value
-            'foreach_a'   => [
-                                'pattern'=>$left.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$right,
-                                'replace'=>''
-                            ],
+            'foreach_a'   => $left.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$right,
             //形式B       foreach $array as $key => $value
-            'foreach_b'   => [
-                                'pattern'=>$left.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var.$right,
-                                'replace'=>''
-                            ],
+            'foreach_b'   => $left.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var.$right,
             //正则
-            'foreach_end' => [
-                                'pattern'=>$left.'(\\/endforeach|endforeach)'.$right,
-                                'replace'=>''
-                            ],
-            'if_a'        => [
-                                'pattern'=>$left.'if'.$blank.$var.$may_blank.$compare.$may_blank.$var.$right,
-                                'replace'=>'<?php if(\\$\\1\\2$\\3) : ?>'
-                            ],
-            'if_b'        => [
-                                'pattern'=>$left.'if'.$blank.$var.$may_blank.$compare.$may_blank.'([\'][^\']*[\']|[\\"][^\\"]*[\\"]|[0-9])'.$right,
-                                'replace'=>'<?php if(\\$\\1\\2\\3) : ?>'
-                            ],
-            'elseif_a'    => [
-                                'pattern'=>$left.'elseif'.$blank.$var.$may_blank.$compare.$may_blank.$var.$right,
-                                'replace'=>'<?php elseif(\$\\1\\2$\\3) : ?>'
-                            ],
-            'elseif_b'    => [
-                                'pattern'=>$left.'elseif'.$blank.$var.$may_blank.$compare.$may_blank.'([\'][^\']*[\']|[\"][^\"]*[\"]|[0-9])'.$right,
-                                'replace'=>'<?php elseif(\$\\1\\2\\3) : ?>'
-                            ],
-            'else'        => [
-                                'pattern'=>$left.'else'.$right,
-                                'replace'=>'<?php else : ?>',
-                            ],
-            'endif'       => [
-                                'pattern'=>$left.'(\/endif|endif)'.$right,
-                                'replace'=>'<?php endif;?>',
-                            ],
+            'foreach_end' => $left.'(\\/endforeach|endforeach)'.$right,
+            'if_a'        => $left.'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$var.$right,
+            'if_b'        => $left.'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber.$right,
+            'elseif_a'    => $left.'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$var.$right,
+            'elseif_b'    => $left.'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber.$right,
+            'else'        => $left.'else'.$right,
+            'endif'       => $left.'(\\/endif|endif)'.$right,
         ];
 
     }
@@ -137,153 +114,9 @@ final class Template
             if (base\str\Str::startsWith($content_arr[0], $left_delim) && base\str\Str::endsWith($content_arr[0], $right_delim)) {
                 $tag = $content_arr[0];
                 if (base\str\Str::startsWith($tag, $left_delim.'foreach')) {
-                    $deep = 1;
-
-                    $begin = $content_arr[0];
-                    $middle = '';
-
-                    for ($i = 1, $l = count($content_arr); $i < $l; ++$i) {
-                        if (base\str\Str::startsWith($content_arr[$i],$left_delim.'foreach')) {
-                            ++$deep;
-                        }
-                        if (base\str\Str::startsWith($content_arr[$i],[$left_delim.'endforeach', $left_delim.'/endforeach'])) {
-                            --$deep;
-                        }
-                        if ($deep === 0) {
-                            break;
-                        }
-                        $middle .= $content_arr[$i];
-                    }
-
-                    if (0 !== $deep) {
-                        throw new TemplateException('未闭合的foreach标签');
-                    }
-
-                    if (0 !== preg_match(static::$pattern['foreach_a']['pattern'], $begin, $foreach)) {
-                        $type = 'a';
-                    } elseif(0 !== preg_match(static::$pattern['foreach_b']['pattern'], $begin, $foreach)) {
-                        $type = 'b';
-                    } else {
-                        throw new TemplateException('错误的foreach语法');
-                    }
-
-                    if (isset($data[$foreach[1]]) && $data[$foreach[1]]['cache']) {
-                        foreach ($data[$foreach[1]]['value'] as $key => $value) {
-                            $mid_data = array_merge($data,
-                                $type === 'a'
-                                ? [$foreach[2]=>['cache'=>true, 'value'=>$value]]
-                                : [$foreach[2]=>['cache'=>true, 'value'=>$key], $foreach[3]=>['cache'=>true, 'value'=>$value]]
-                            );
-                            $result .= static::commpile($middle, $mid_data, $language);
-                        }
-                    } else {
-                        $result .= $type === 'a' ? '<?php foreach $'.$foreach[1].' as '.$foreach[2].': ?>' : '<?php foreach $'.$data_key.' as '.$foreach[2].'=>'.$foreach[3].' : ?>';
-                        $result .= static::commpile($middle, $data, $language);
-                        $result .= '<?php endforeach;?>';
-                    }
-                    unset($middle);
-                    unset($begin);
-                    for (; $i >= 0; --$i) {
-                        array_shift($content_arr);
-                    }
-
+                    $result .= static::parForeach($content_arr, $data, $language);
                 } elseif (base\str\Str::startsWith($tag, $left_delim.'if')) {
-                    throw new TemplateException('待完善');
-                    $deep            = 1;
-                    $branch          = 0;
-                    $begin           = [];
-                    $begin[$branch]  = $content_arr[0];
-                    $middle          = [];
-                    $middle[$branch] = '';
-                    for ($i = 1, $l = count($content_arr); $i < $l; ++$i) {
-                        if (base\str\Str::startsWith($content_arr[$i],$left_delim.'if')) {
-                            ++$deep;
-                        }
-                        if (base\str\Str::startsWith($content_arr[$i],[$left_delim.'endif', $left_delim.'/endif'])) {
-                            --$deep;
-                        }
-                        if (0 === $deep) {
-                            break;
-                        }
-                        if (1 === $deep && base\str\Str::startsWith($content_arr[$i],$left_delim.'else')) {
-                            $begin[$branch] = $content_arr[$i];
-                            $middle[$branch] = '';
-                            ++$branch;
-                            continue;
-                        } else {
-                            $middle[$branch] .= $content_arr[$i];
-                        }
-                    }
-
-                    $if_result = '';
-                    $if_cached = false;
-                    if (0 !== preg_match(static::$pattern['if_a']['pattern'], $begin[0], $if)) {
-                        if (isset($data[$if[1]]) && $data[$if[1]]['cache'] && isset($data[$if[3]]) && $data[$if[3]]['cache']) {
-                            $value_a = $data[$if[1]]['value'];
-                            $compare = $if[2];
-                            $value_b = $data[$if[3]]['value'];
-                            $if_cached = static::compare($value_a, $value_b, $compare);
-                            if ($if_cached) {
-                                $if_result = static::commpile($middle[0], $data, $language);
-                            } else {
-                                $if_result.= '<?php if($'.$value_a.$compare.$value_b.') : ?>';
-                                $if_result.= static::commpile($middle[0], $data, $language);
-                            }
-                        } else {
-                            $if_result.= '<?php if($'.$if[1].$if[2].'$'.$if[3].') : ?>';
-                            $if_result.= static::commpile($middle[0], $data, $language);
-                        }
-                    } elseif(0 !== preg_match(static::$pattern['if_b']['pattern'], $begin[0], $if)) {
-                        if (isset( $data[$if[1]] ) && $data[$if[1]]['cache']) {
-                            $value_a = $data[$if[1]]['value'];
-                            $compare = $if[2];
-                            $value_b = static::getValue($if[3]);
-                            $if_cached = static::compare($value_a, $value_b, $compare);
-                            if ($if_cached) {
-                                $if_result = static::commpile($middle[0], $data, $language);
-                            } else {
-                                $if_result.= '<?php if($'.$value_a.$compare.$value_b.') : ?>';
-                                $if_result.= static::commpile($middle[0], $data, $language);
-                            }
-                        } else {
-                            $if_result.= '<?php if($'.$if[1].$if[2].$if[3].') : ?>';
-                            $if_result.= static::commpile($middle[0], $data, $language);
-                        }
-                    } else {
-                        throw new TemplateException('错误的if语法');
-                    }
-
-                    for ($j = 1; $j < $branch; ++$j) {
-                        if ($if_cached) {
-                            break;
-                        }
-                        $if_begin = $begin[$branch];
-                        $if_content = $middle[$branch];
-
-                        if (0 !== preg_match(static::$pattern['else']['pattern'], $if_begin, $if)) {
-                            $if_result .= static::commpile($middle[$j], $data, $language);
-                        } elseif (0 !== preg_match(static::$pattern['elseif_a']['pattern'], $if_begin, $if)) {
-                            
-                        } elseif(0 !== preg_match(static::$pattern['elseif_b']['pattern'], $if_begin, $if)) {
-                            if (isset( $data[$if[1]] ) && $data[$if[1]]['cache']) {
-                                $if_result.= static::commpile($middle[$j], $data, $language);
-                            } else {
-                                $if_result.= '<?php elseif($'.$if[1].$if[2].$if[3].') : ?>';
-                                $if_result.= static::commpile($middle[$j], $data, $language);
-                            }
-                        } else {
-                            throw new TemplateException('错误的if语法');
-                        }
-                    }
-                    !$if_cached && $if_result .= '<?php endif;?>';
-                    $result .= $if_result;
-
-                    unset($if_result);
-                    unset($middle);
-                    unset($begin);
-                    for (; $i >= 0; --$i) {
-                        array_shift($content_arr);
-                    }
+                    $result .= static::parIf($content_arr, $data, $language);
                 } else {
                     $result .= static::parOne($tag, $data, $language);
                     array_shift($content_arr);
@@ -296,145 +129,19 @@ final class Template
 
         return $result;
     }
-    private static function parOne(string $content, array $data, array $language = []) : string
+    private static function toValue(string $value)
     {
-        $content = static::parInclude($content, $data, $language);
-        $content = static::parConstant($content);
-        $content = static::parLanguae($content, $language);
-        $content = static::parVar($content, $data);
-        $content = static::parArray($content, $data);
-        return static::parFunc($content, $data);
-    }
-    private static function parFunc(string $content, array $data) : string
-    {
-        return preg_replace_callback(static::$pattern['func'], function($matches) use ($data) {
-            $func_content = substr($matches[0], strlen(static::$left_delim), strlen($matches[0]) - strlen(static::$right_delim) - strlen(static::$left_delim));
-            $func_name = $matches[1];
-            $cached = [];
-            $args = array_map(function ($value) use ($data, & $cache_arg) {
-                $value = trim($value);
-                if ('$' === $value[0]) {
-                    $arg_name = ltrim($value, '$');
-                    if (isset($data[$arg_name]) && $data[$arg_name]['cache']) {
-                        return $data[$arg_name]['value'];
-                    } else {
-                        $cache_arg['cached'] = false;
-                        return $value;
-                    }
-                } else {
-                    return static::getValue($value);
-                }
-            }, explode(',', $matches[2]));
-
-
-            if (isset($cache_arg['cached']) && false === $cache_arg['cached']) {
-                return '<?php echo '.$func_name.'('.implode(',', array_map('static::setValue',$args)).');?>';
-            } else {
-                $result = call_user_func_array($func_name, $args);
-                if (is_string($result) || is_int($result) || is_float($result)) {
-                    return (string) $result;
-                } else {
-                    throw new TemplateException('错误的模版返回值');
-                }
-            }
-        }, $content);
-    }
-    /**
-     * 解析包含文件
-     * @example <{include 'file.html'}>  =>    file_get_contents(file.html);
-     */
-    private static function parInclude(string $content, array $data, array $language) : string
-    {
-        return preg_replace_callback(static::$pattern['include'], function($matches){
-            $file = $matches[1];
-            if (is_file($file)) {
-                return static::commpile(base\file\File::get($file), $data, $language);
-            } else {
-                throw new TemplateException($file.'模版文件不存在');
-            }
-        }, $content);
-    }
-    /**
-     * 解析常量
-     * @example <{constant.IMAGE}>  =>    http://image.test.com/ (一次解析, 直接替换)
-     */
-    private static function parConstant(string $content) : string
-    {
-        return preg_replace_callback([
-            static::$pattern['constant_a'],
-            static::$pattern['constant_b']
-        ], function($matches) {
-            if (defined($matches[1])) {
-                return constant($matches[1]);
-            } else {
-                throw new TemplateException($matches[1].'常量未定义');
-            }
-        }, $content);
-    }
-    /**
-     * 解析语言
-     * @example <{lang.username}>  =>    用户名 | username (一次解析, 直接替换)
-     */
-    private static function parLanguae(string $content, array $language) : string
-    {
-        return preg_replace_callback([
-            static::$pattern['language_a'],
-            static::$pattern['language_b']
-        ], function($matches) use ($language) {
-            if (isset($language[$matches[1]])) {
-                return $language[$matches[1]];
-            } else {
-                throw new TemplateException($matches[1].'对应语言不存在');
-            }
-        }, $content);
-    }
-    /**
-     * 解析变量
-     * @example         <{$name}>      -->  <?php echo $name;?>
-     * @example (cache) <{$name}>      -->  value
-     */
-    private static function parVar(string $content, array $data) : string
-    {
-        return preg_replace_callback(static::$pattern['var'], function($matches) use ($data) {
-            $key = $matches[1];
-            if (isset($data[$key]) && $data[$key]['cache']) {
-                if (is_array($data[$key]['value'])) {
-                    throw new TemplateException($key.'数组被当作普通变量使用');
-                } else {
-                    return $data[$key]['value'];
-                }
-            } else {
-                return '<?php echo $'.$key.';?>';
-            }
-        }, $content);
-    }
-    private static function parArray(string $content, array $data) : string
-    {
-        return preg_replace_callback([
-            static::$pattern['array_a'],
-            static::$pattern['array_b']
-        ], function($matches) use ($data) {
-            $key = $matches[1];
-            $val = $matches[2];
-            if (isset($data[$key]) && $data[$key]['cache']) {
-
-                $arr_key = array_map('static::getValue', false === strpos($val, '.') ? explode('][', trim($val, '[]')) : explode('.', trim($val, '.')));
-
-                $result = $data[$key]['value'];
-
-                for ($i = 0,$l = count($arr_key); $i < $l; ++$i) {
-                    $result = $result[$arr_key[$i]];
-                }
-
-                return $result;
-            } else {
-                if (false !== strpos($val, '.')) {
-                    $val = array_map('static::setValue', explode('.', trim($val, '.')));
-                    $val = '['.implode('][', $val).']';
-                }
-                return '<?php echo $'.$key.$val.';?>';
-            }
-        }, $content);
+        if ($value[0] === '\'') {
+            return trim($value, '\'');
+        } elseif ($value[0] === '"') {
+            return trim($value, '"');
+        } elseif ($value === 'true') {
+            return true;
+        } elseif ($value === 'false') {
+            return false;
+        } else {
+            return int($value);
+        }
     }
     private static function compare($value_a, $value_b, string $type) : bool
     {
@@ -460,16 +167,15 @@ final class Template
                 throw new TemplateException('未知的比较符号');
         }
     }
-    private static function getValue($value)
+    private static function stringToValue($value)
     {
-        $value = trim($value, '\'"');
-        return 0 !== preg_match('/^\d+$/', $value) ? (int) $value : $value;
+        return $value[0] === '\'' || $value[0] === '"' ? substr($value, 1, strlen($value) -2) : (int)$value;
     }
     private static function filterValue($value)
     {
         return 0 !== preg_match('/^\d+$/', $value) ? (int) $value : $value;
     }
-    private static function setValue($value)
+    private static function valueToString($value)
     {
         if (is_int($value) || '$' === $value[0]) {
             return $value;

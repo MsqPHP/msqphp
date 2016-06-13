@@ -50,7 +50,7 @@ class CacheTest extends msqphp\test\Test
         $this->method('key')->args('test')->result($this)->test();
         $this->method('exists')->args()->result(false)->test();
         $this->method('value')->args(1)->result($this)->test();
-        $this->method('set')->args()->result(null)->test();
+        $this->method('set')->args()->result($this)->test();
         $this->method('exists')->args()->result(true)->test();
         $this->method('get')->args()->result(1)->test();
         $this->method('increment')->args()->result(2)->test();
@@ -61,7 +61,7 @@ class CacheTest extends msqphp\test\Test
         $this->method('get')->args()->result(2)->test();
         $this->method('dec')->args()->result(1)->test();
         $this->method('exists')->args()->result(true)->test();
-        $this->method('delete')->args()->result(null)->test();
+        $this->method('delete')->args()->result($this)->test();
         $this->method('exists')->args()->result(false)->test();
     }
 }

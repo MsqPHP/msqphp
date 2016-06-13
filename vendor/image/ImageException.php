@@ -3,5 +3,4 @@ namespace msqphp\vendor\image;
 
 class ImageException extends \msqphp\core\exception\Exception
 {
-    
 }

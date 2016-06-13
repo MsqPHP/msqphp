@@ -49,7 +49,7 @@ final class File implements CacheHandlerInterface
         //读取前十个字符, 如果大于现在时间, 则过期
         try {
             //是否为空
-            if ((int)base\file\File::read($file, 10) < time()) {
+            if (time() > (int)base\file\File::read($file, 10)) {
                 base\file\File::delete($file);
                 return false;
             } else {
@@ -120,17 +120,15 @@ final class File implements CacheHandlerInterface
             //获得文件路径
             $file = $this->filename($key);
             if (!is_file($file)) {
-                throw new CacheHandlerException($key.'不存在,无法自增');
+                throw new CacheHandlerException($file.'不存在');
             }
             //获得内容
             $content = base\file\File::get($file);
 
             $expire = (int) substr($content, 0, 10);
 
-            $now = time();
-
-            if ($now < $expire) {
-                throw new CacheHandlerException($key.'不存在,无法自增');
+            if (time() > $expire) {
+                throw new CacheHandlerException($file.'已过期');
             }
 
             $num = (int) unserialize(substr($content, 10));
@@ -158,17 +156,15 @@ final class File implements CacheHandlerInterface
             //获得文件路径
             $file = $this->filename($key);
             if (!is_file($file)) {
-                throw new CacheHandlerException($key.'不存在,无法自减');
+                throw new CacheHandlerException($file.'不存在');
             }
             //获得内容
             $content = base\file\File::get($file);
 
             $expire = (int) substr($content, 0, 10);
 
-            $now = time();
-
-            if ($now < $expire) {
-                throw new CacheHandlerException($key.'不存在,无法自减');
+            if (time() > $expire) {
+                throw new CacheHandlerException($file.'已过期');
             }
 
             $num = (int) unserialize(substr($content, 10));

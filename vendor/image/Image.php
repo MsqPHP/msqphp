@@ -78,7 +78,7 @@ class Image
             require __DIR__.DIRECTORY_SEPARATOR.'ImageHandlerInterface.php';
             require __DIR__.DIRECTORY_SEPARATOR.'Handelers'.DIRECTORY_SEPARATOR.$handler_type.DIRECTORY_SEPARATOR.$handler_type.'.php';
             //建立实例
-            $handler_class_name = __NAMESPACE__.'\\Handelers\\'.$handler_type.'\\'.$handler_type;
+            $handler_class_name = __NAMESPACE__.'\\handelers\\'.$handler_type.'\\'.$handler_type;
             static::$handler = $handler = new $handler_class_name();
             if($handler->isInstalled() === false) {
                 throw new ImageException($handler_type.'库未安装', 1);

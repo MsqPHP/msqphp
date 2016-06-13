@@ -6,20 +6,10 @@ trait ModelSqlTrait
     private function getInsertQuery() : string
     {
         $pointer = $this->pointer;
-        $sql = 'INSERT INTO '.$pointer['table'][0];
-        if (isset($pointer['field'])) {
-            $sql .= '(';
-            foreach ($pointer['field'] as $field) {
-                $sql.=$field.', ';
-            }
-            $sql = rtrim($sql, ', ').') ';
-        }
-        if (isset($pointer['value'])) {
-            $sql .= 'VALUES (';
-            foreach ($pointer['value'] as $value) {
-                $sql.=$value.', ';
-            }
-            $sql = rtrim($sql, ', ').') ';
+        if (isset($pointer['field']) && isset($pointer['value']) && count($pointer['field']) === count($pointer['value'])) {
+            $sql = 'INSERT INTO '.$pointer['table'][0] . '('.rtrim(implode(',', $pointer['field']), ',') . ') ' . 'VALUES ('. rtrim(implode(',', $pointer['value']), ',').') ';
+        } else {
+            throw new ModelException('错误的sql插入语句,键值不存在或数目不匹配');
         }
         return $sql;
     }
@@ -28,19 +18,12 @@ trait ModelSqlTrait
         $pointer = $this->pointer;
         $sql = 'SELECT ';
         if (isset($pointer['field'])) {
-            foreach ($pointer['field'] as $value) {
-                $sql.=$value.', ';
-            }
-            $sql = rtrim($sql, ', ') . ' ';
+            $sql .= rtrim(implode(',', $pointer['field']), ',') . ' ';
         } else {
             throw new ModelException('错误的sql查询,未指定查询值');
         }
         if (isset($pointer['table'])) {
-            $sql .= 'FROM ';
-            foreach ($pointer['table'] as $value) {
-                $sql.=$value.', ';
-            }
-            $sql = rtrim($sql, ', ') . ' ';
+            $sql .= 'FROM '.rtrim(implode(',', $pointer['table']), ',') . ' ';
         } else {
             throw new ModelException('错误的sql查询,未指定表名');
         }
@@ -83,9 +66,9 @@ trait ModelSqlTrait
         }
         if (isset($pointer['order'])) {
             $sql .= 'ORDER BY ';
-            foreach ($pointer['order'] as $value) {
-                $sql .= $value[0].' '.$value[1].' ';
-            }
+            array_map(function (array $order) use (& $sql) {
+                $sql .= $order['filed'].' '.$order['type'].' ';
+            }, $pointer['order']);
         }
         if (isset($pointer['limit'])) {
             $sql .= 'LIMIT '.$pointer['limit']. ' ';

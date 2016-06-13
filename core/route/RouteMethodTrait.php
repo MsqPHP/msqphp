@@ -42,6 +42,7 @@ trait RouteMethodTrait
         if (!in_array(static::$info['method'], $method)) {
             return;
         }
+        $matched_key = '';
 
         foreach ((array)$params as $param) {
             if (static::checkParam(explode('/', $param))) {
@@ -59,27 +60,38 @@ trait RouteMethodTrait
         unset($params);
 
         if ($autoload && !defined('NO_CACHE')) {
+
             $aiload = core\aiload\AiLoad::getInstance()->init()->key($matched_key);
-            if (\msqphp\Environment::$autoload_changed) {
-                $aiload->delete();
-            }
+
+            \msqphp\Environment::$autoload_changed && $aiload->delete();
+
             $aiload->load();
         }
 
         unset($matched_key);
 
         if (is_string($func)) {
-            static::callUserClassFunc($func);
+
+            static::callUserClassFunc($func, $args);
+
         } else {
+
             call_user_func_array($func, $args);
+
         }
 
         if ($autoload && !defined('NO_CACHE')) {
+
             if ($aiload->changed()) {
+
                 $aiload->update()->save()->end();
+
             } else {
+
                 rand(0,5000) === 1000 && $aiload->delete();
+
                 $aiload->end();
+
             }
         }
     }
@@ -129,35 +141,34 @@ trait RouteMethodTrait
      *
      * @return void
      */
-    private static function callUserClassFunc(string $func)
+    private static function callUserClassFunc(string $func, array $args)
     {
-        list($class , $method) = explode('@', $func);
-        $args = [];
+        list($class , $method) = explode('@', $func, 2);
         $get_pos = strpos($method, '?');
         $post_pos = strpos($method, '#');
 
         if (false !== $get_pos && false !== $post_pos) {
             if ($get_pos > $post_pos) {
-                list($method, $args_str) = explode('?', $method);
-                list($get_args, $post_args) = explode('#', $args_str);
-                static::addPostArgs($post_args, $args);
-                static::addGetArgs($add_args, $args);
+                list($method, $args_str) = explode('?', $method, 2);
+                list($get_args, $post_args) = explode('#', $args_str, 2);
+                static::addArgs($post_args, $args, $_POST);
+                static::addArgs($add_args, $args, $_GET);
             } else {
-                list($method, $args_str) = explode('#', $method);
-                list($get_args, $post_args) = explode('?', $args_str);
-                static::addGetArgs($add_args, $args);
-                static::addPostArgs($post_args, $args);
+                list($method, $args_str) = explode('#', $method, 2);
+                list($get_args, $post_args) = explode('?', $args_str, 2);
+                static::addArgs($add_args, $args, $_GET);
+                static::addArgs($post_args, $args, $_POST);
             }
             unset($get_args);
             unset($post_args);
             unset($args_str);
         } elseif (false !== $get_pos) {
             list($method, $get_args) = explode('?', $method);
-            static::addGetArgs($add_args, $args);
+            static::addArgs($add_args, $args, $_GET);
             unset($get_args);
         } elseif (false !== $post_pos) {
             list($method, $post_args) = explode('#', $method);
-            static::addPostArgs($post_args, $args);
+            static::addArgs($post_args, $args, $_POST);
             unset($post_args);
         }
         unset($get_pos);
@@ -170,28 +181,16 @@ trait RouteMethodTrait
         unset($cont);
     }
 
-
-    private static function addPostArgs(string $post_args, array & $args)
+    private static function addArgs(string $add_args, array & $args, array $target)
     {
-        foreach (explode('&', $post_args) as $key) {
-            if (!isset($_POST[$key])) {
-                throw new RouteException($key.' post值不存在');
-            } else {
-                $args[] = $_POST[$key];
-            }
-        }
-    }
-    private static function addGetArgs(string $get_args, array & $args)
-    {
-        foreach (explode('&', $get_args) as $key) {
-            if (!isset($_GET[$key])) {
+        array_map(function (string $key) use (& $args, $target) {
+            if (!isset($target[$key])) {
                 throw new RouteException($key.' get值不存在');
             } else {
-                $args[] = $_GET[$key];
+                $args[] = $target[$key];
             }
-        }
+        }, explode('&', $add_args));
     }
-
     /**
      * 路由规则检测
      *

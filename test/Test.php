@@ -5,6 +5,7 @@ use msqphp\base;
 
 abstract class Test
 {
+    use TestPointerTrait;
     protected $not_test = ['test', 'testProperty', 'testStaticProperty', 'testStart', 'testFunc', 'testMethod', 'testAll', 'testThis', 'testStaticMethod', 'testFunction'];
 
     public function testStart()

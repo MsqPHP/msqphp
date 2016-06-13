@@ -1,5 +1,6 @@
 <?php declare(strict_types = 1);
-namespace msqphp\vendor\image;
+namespace msqphp\vendor\image\handlers;
+
 Interface ImageHandlerInterface
 {
     /**
