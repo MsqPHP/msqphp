@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
-namespace msqphp\base\arr;    /**
+namespace msqphp\base\arr;
+
+/**
  * 按键选择排序
  *
  * @function selectSort

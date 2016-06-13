@@ -13,13 +13,11 @@ class App
         //执行定时任务
         if (!defined('NO_CAHCE') && core\config\Config::get('framework.cron')) {
             $path = Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron'.DIRECTORY_SEPARATOR.'cron.log';
-            $time = time() - core\config\Config::get('framework.cron_intervals');
-            if (is_file($path) &&  $time > filemtime($path)) {
+            if (is_file($path) &&  filemtime($path) < time() - core\config\Config::get('framework.cron_intervals')) {
                 require __DIR__.'/core/cron/Cron.php';
                 core\cron\Cron::getInstance()->run();
             }
             unset($path);
-            unset($time);
         }
 
         //控制器加路由开始时间
@@ -56,24 +54,20 @@ class App
     public static function end()
     {
         //结束调用,产生框架运行信息;
-        if (defined('PHP_START_CPU')) {
-            $end_cpu = getrusage();
-        }
-        if (defined('PHP_START_MEM')) {
-            $end_mem = memory_get_usage();
-        }
-        if (defined('PHP_INIT_TIME')) {
-            $end_time = microtime(true);
-        }
+        defined('PHP_INIT_TIME') && $end_time = microtime(true);
+        defined('PHP_START_MEM') && $end_mem = memory_get_usage();
+        defined('PHP_START_CPU') && $end_cpu = getrusage();
+
         $end_info = [];
+
         if (isset($end_time)) {
             $end_info[] = '时间信息:';
-            $end_info[] = "\t现在时间戳      : " . time();
+            $end_info[] = "\t现在时间戳      : " . (string) round(microtime(true)                , 12) . '秒';
             $end_info[] = "\t现在时间        : " . date('Y-m-d H:i:s');
-            $end_info[] = "\t总用时          : " . ($end_time          - PHP_INIT_TIME         ) . '秒';
-            $end_info[] = "\t初始化(composer)用时      : " . (PHP_START_TIME     - PHP_INIT_TIME         ) . '秒';
-            $end_info[] = "\t框架总用时      : " . ($end_time          - PHP_START_TIME        ) . '秒';
-            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START) . '秒';
+            $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_INIT_TIME , 12) . '秒';
+            $end_info[] = "\t初始化用时      : " . (string) round(PHP_START_TIME - PHP_INIT_TIME , 12) . '秒(composer)';
+            $end_info[] = "\t框架总用时      : " . (string) round($end_time      - PHP_START_TIME, 12) . '秒';
+            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
             unset($end_time);
         }
         if (class_exists('\msqphp\core\database\Database', false)) {
@@ -137,10 +131,12 @@ class App
                 $end_info[] = "\t".'常量:'.$key.'=>'.$value;
             }
         }
-        $end_info[] = 'composer加载文件个数:'.count(Environment::$autoload_classes);
-        $end_info[] = 'composer加载文件列表:';
-        foreach (Environment::$autoload_classes as $file) {
-            $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
+        if (!empty(Environment::$autoload_classes)) {
+            $end_info[] = 'composer加载文件个数:'.count(Environment::$autoload_classes);
+            $end_info[] = 'composer加载文件列表:';
+            foreach (Environment::$autoload_classes as $file) {
+                $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
+            }
         }
         if (0 === APP_DEBUG || 5 === APP_DEBUG) {
             core\log\Log::getInstance()->init()->message(implode(PHP_EOL, $end_info))->type('succes')->recode();

@@ -27,8 +27,13 @@ final class Filter
                 }
             ],
             [
-                'miexd', function ($value) {
+                'number', function ($value) {
                     return (string)$value;
+                }
+            ],
+            [
+                'miexd', function ($value) {
+                    throw new FilterException('不支持的格式');
                 }
             ]
         );
@@ -39,12 +44,28 @@ final class Filter
      * @return miexd
      */
     public static function slashes($value) {
-        if(is_array($value)) {
-            return array_map('static::slashes', $value);
-        } elseif(is_string($value)) {
-            return addslashes($value);
-        } else {
-            return $value;
-        }
+        return static::polymorphic(
+            func_get_args(),
+            [
+                'string', function (string $value) : string {
+                    return addslashes($value);
+                }
+            ],
+            [
+                'array', function (array $value) : array {
+                    return array_map('static::slashes', $value);
+                }
+            ],
+            [
+                'number', function ($value) {
+                    return (string)$value;
+                }
+            ],
+            [
+                'miexd', function ($value) {
+                    throw new FilterException('不支持的格式');
+                }
+            ]
+        );
     }
 }

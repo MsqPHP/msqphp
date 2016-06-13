@@ -8,75 +8,50 @@ trait Polymorphic
         static $allowed = [
             'string'=>['string','str','miexd'],
             'array'=>['array','arr','miexd'],
-            'int'=>['int','integer','number','miexd'],
-            'float'=>['float','number','miexd'],
+            'integer'=>['int','integer','number','miexd'],
+            'double'=>['float','double','number','miexd'],
             'object'=>['object','miexd'],
-            'bool'=>['bool','miexd'],
-            'null'=>['null','miexd'],
+            'boolean'=>['bool','boolean','miexd'],
+            'NULL'=>['null','miexd'],
+            'resource'=>['resource','miexd']
         ];
+
+        //所有参数
         $func_args = func_get_args();
+
+        //第一个为传参
         $args = array_shift($func_args);
-        $args_type = array_map('static::getParamType', $args);
+
+        //参数类型
+        $args_type = array_map('gettype', $args);
+        //参数个数
         $args_len = count($args);
 
+        //匹配
         while (isset($func_args[0])) {
+            //最后一个为callback
             $callback = array_pop($func_args[0]);
+            //其余为参数类型
             $type = $func_args[0] ?: [];
+            //如果相等,即个数相同
             if (count($type) === $args_len) {
+                //类型检测
                 for ($i = 0, $l = count($type); $i < $l; ++$i) {
-                    if (!in_array(strtolower($type[$i]), $allowed[$args_type[$i]])) {
+                    if ('miexd' === strtolower($type[$i]) || !in_array(strtolower($type[$i]), $allowed[$args_type[$i]])) {
                         continue 2;
                     }
                 }
 
                 if (!is_callable($callback)) {
-                    throw new TraitsException('函数不可调用');
+                    throw new TraitsException('函数不可重构');
                 }
                 return call_user_func_array($callback, $args);
             }
+
+            //匹配失败,删除
             array_shift($func_args);
         }
 
         throw new TraitsException('函数不可重构');
-
-        for ($i = 0, $l = count($args); $i < $l; ++$i) {
-            $value = $func_args[$i];
-            if ($l_ = count($value) === $l - 1) {
-                if ($value[0] === 'else') {
-                    $callback = $value[1];
-                } else {
-                    for ($j = 0; $j < $l_; ++$j) {
-                        if (!in_array(static::getParamType($value[$j]), $allowed[$args_type[$i]])) {
-                            continue 2;
-                        }
-                    }
-                    $callback = $value[$j];
-                }
-                if (!is_callable($callback)) {
-                    throw new TraitsException('函数不可调用');
-                }
-                return call_user_func_array($callback, $args);
-            }
-        }
-    }
-    private static function getParamType($arg) : string
-    {
-        if (is_string($arg)) {
-            return 'string';
-        } elseif(is_array($arg)) {
-            return 'array';
-        } elseif(is_int($arg)) {
-            return 'int';
-        } elseif(is_float($arg)) {
-            return 'float';
-        } elseif(is_bool($arg)) {
-            return 'bool';
-        } elseif(is_null($arg)) {
-            return 'null';
-        } elseif(is_object($arg)) {
-            return 'object';
-        } else {
-            throw new TraitsException('未知属性');
-        }
     }
 }

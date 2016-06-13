@@ -7,6 +7,7 @@ use msqphp\traits;
 final class Number
 {
     use traits\CallStatic;
+    use traits\Polymorphic;
     /**
      * 数字转换文件大小格式
      * @param  int     $size  数字

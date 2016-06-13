@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
-namespace msqphp\base\arr;    /**
+namespace msqphp\base\arr;
+
+/**
  * 按键冒泡排序
  *
  * @function bubbleSort

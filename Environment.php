@@ -199,22 +199,6 @@ class Environment
         return static::$path[$name];
     }
     /**
-     * 设置路径
-     *
-     * @param  string  $name 名称
-     * @param  string  $path 路径
-     *
-     * @return void
-     */
-    public static function setPath(string $name, string $path)
-    {
-        if (is_dir($path)) {
-            static::$path[$name] = realpath($path).DIRECTORY_SEPARATOR;
-        } else {
-            base\response\Response::error($path.'不存在');
-        }
-    }
-    /**
      * 获得当前运行环境
      *
      * @return string
