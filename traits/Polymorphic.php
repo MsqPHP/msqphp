@@ -3,7 +3,7 @@ namespace msqphp\traits;
 
 trait Polymorphic
 {
-    private static function polymorphic(array $args)
+    private static function polymorphic()
     {
         static $allowed = [
             'string'=>['string','str','miexd'],
@@ -14,15 +14,33 @@ trait Polymorphic
             'bool'=>['bool','miexd'],
             'null'=>['null','miexd'],
         ];
-        show($args);
-exit;
-        show(func_get_args());
         $func_args = func_get_args();
+        $args = array_shift($func_args);
         $args_type = array_map('static::getParamType', $args);
+        $args_len = count($args);
 
-        $polymorphic = array_shift($func_args);
+        while (isset($func_args[0])) {
+            $callback = array_pop($func_args[0]);
+            $type = $func_args[0] ?: [];
+            if (count($type) === $args_len) {
+                for ($i = 0, $l = count($type); $i < $l; ++$i) {
+                    if (!in_array(strtolower($type[$i]), $allowed[$args_type[$i]])) {
+                        continue 2;
+                    }
+                }
+
+                if (!is_callable($callback)) {
+                    throw new TraitsException('函数不可调用');
+                }
+                return call_user_func_array($callback, $args);
+            }
+            array_shift($func_args);
+        }
+
+        throw new TraitsException('函数不可重构');
+
         for ($i = 0, $l = count($args); $i < $l; ++$i) {
-            $value = $polymorphic[$i];
+            $value = $func_args[$i];
             if ($l_ = count($value) === $l - 1) {
                 if ($value[0] === 'else') {
                     $callback = $value[1];

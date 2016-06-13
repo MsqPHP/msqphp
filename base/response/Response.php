@@ -150,15 +150,17 @@ final class Response
     public static function dump()
     {
         if (\msqphp\Environment::getSapi() === 'cli') {
-            foreach (func_get_args() as $v) {
+            array_map(function ($v) {
                 var_export($v);
-            }
+            }, func_get_args());
             echo PHP_EOL;
         } else {
             echo '<pre>';
-            foreach (func_get_args() as $v) {
+
+            array_map(function ($v) {
                 var_export(base\filter\Filter::html($v));
-            }
+            }, func_get_args());
+
             echo '</pre><hr/>';
         }
     }

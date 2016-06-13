@@ -3,7 +3,7 @@ namespace msqphp;
 
 class Environment
 {
-    const vension = 1.1;
+    const vension = 1.2;
     //所有目录存放
     private static $path = [];
     //当前运行环境
@@ -51,7 +51,6 @@ class Environment
 
         //如果有缓存,则结束
         defined('NO_CACHE') || static::endAutoload();
-
         //分情况运行
         if ('cli' === static::$sapi) {
             //命令行模式
@@ -148,6 +147,8 @@ class Environment
             ini_set('display_errors', 'Off');
             //开启日志记录
             ini_set('log_errors', 'On');
+            //日志文件
+            ini_set('error_log', static::getPath('storage').'error.log');
         } else {
             //设置错误级别最高
             error_reporting(E_ALL);

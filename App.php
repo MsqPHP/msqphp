@@ -24,7 +24,6 @@ class App
 
         //控制器加路由开始时间
         define('ROUTE_CONTROLLER_START', microtime(true));
-
         try {
 
             //加载路由并运行
@@ -32,7 +31,6 @@ class App
             require __DIR__.'/core/route/RouteMethodTrait.php';
             require __DIR__.'/core/route/Route.php';
             core\route\Route::run();
-
         } catch(core\route\RouteException $e) {
 
             base\response\Response::error($e->getMessage());
