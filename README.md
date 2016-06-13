@@ -248,7 +248,9 @@ Route::group('controller', 'index', function () {
 > 直接调用此时对应类对应方法
 
 > 支持无限递归之类的
+
 ~~~
+
 ├──application           应用目录
 │  ├──route.php          路由流程类
 │  ├──home
@@ -286,10 +288,13 @@ Route::group('module', 'home', function () {
         ...Route::ajax();
     });
 });
+
 ~~~
 
 ##**框架结构**
+
 ~~~
+
 ├──msqphp                msqphp框架
 │  └──framework          框架
 │    │

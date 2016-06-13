@@ -62,7 +62,7 @@ final class Cache
     private function setHandler(string $type = '', array $config = []) : handlers\CacheHandlerInterface
     {
         //为空取默认
-        $type = $type ?: $this->config['default_handler'];
+        $type = ucfirst($type ?: $this->config['default_handler']);
         //如果不在支持列表中
         if (!in_array($type, $this->config['sports'])) {
             throw new CacheException($type . ' 缓存处理器不支持');

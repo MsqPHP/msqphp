@@ -10,7 +10,7 @@ trait CacheOperateTrait
      */
     public function exists() : bool
     {
-        return !defined('NO_CACHE') && $this->pointer['handler']->available($this->getKey());
+        return !defined('NO_CACHE') && $this->getCacheHander()->available($this->getKey());
     }
     public function available() : bool
     {
@@ -25,7 +25,7 @@ trait CacheOperateTrait
     public function get()
     {
         try {
-            return $this->pointer['handler']->get($this->getKey());
+            return $this->getCacheHander()->get($this->getKey());
         } catch(handlers\CacheHandlerException $e) {
             throw new CacheException($this->getKey().'缓存无法获取,原因:'.$e->getMessage());
         }
@@ -44,7 +44,7 @@ trait CacheOperateTrait
     public function increment() : int
     {
         try {
-            return $this->pointer['handler']->increment($this->getKey(), $this->pointer['offset'] ?? 1);
+            return $this->getCacheHander()->increment($this->getKey(), $this->pointer['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
             throw new CacheException($this->getKey().'缓存无法自增,原因:'.$e->getMessage());
         }
@@ -62,7 +62,7 @@ trait CacheOperateTrait
     public function decrement()
     {
         try {
-            return $this->pointer['handler']->decrement($this->getKey(), $this->pointer['offset'] ?? 1);
+            return $this->getCacheHander()->decrement($this->getKey(), $this->pointer['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
             throw new CacheException($this->getKey().'缓存无法自减,原因:'.$e->getMessage());
         }
@@ -77,7 +77,7 @@ trait CacheOperateTrait
     {
         if (!defined('NO_CACHE')) {
             try {
-                $this->pointer['handler']->set($this->getKey(), $this->pointer['value'], $this->pointer['expire'] ?? $this->config['expire']);
+                $this->getCacheHander()->set($this->getKey(), $this->pointer['value'], $this->pointer['expire'] ?? $this->config['expire']);
             } catch(handlers\CacheHandlerException $e) {
                 throw new CacheException($this->getKey().'缓存无法赋值,原因:'.$e->getMessage());
             }
@@ -93,7 +93,7 @@ trait CacheOperateTrait
     public function delete() : self
     {
         try {
-            $this->pointer['handler']->delete($this->getKey());
+            $this->getCacheHander()->delete($this->getKey());
         } catch(handlers\CacheHandlerException $e) {
             throw new CacheException($this->getKey().'缓存无法删除,原因:'.$e->getMessage());
         }
@@ -108,11 +108,16 @@ trait CacheOperateTrait
     public function clear() : self
     {
         try {
-            $this->pointer['handler']->clear();
+            $this->getCacheHander()->clear();
         } catch(handlers\CacheHandlerException $e) {
             throw new CacheException('缓存无法清空,原因:'.$e->getMessage());
         }
         return $this;
+    }
+
+    public function flush() : self
+    {
+        return $this->clear();
     }
 
     /**
@@ -126,5 +131,11 @@ trait CacheOperateTrait
         } else {
             throw new CacheException('未选择任意缓存键');
         }
+    }
+
+    private function getCacheHander() : handlers\CacheHandlerInterface
+    {
+        //设置处理类
+        return $this->pointer['handler'] ?? $this->setHandler($this->pointer['type'], $this->pointer['config']);
     }
 }

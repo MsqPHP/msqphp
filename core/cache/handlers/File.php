@@ -23,7 +23,8 @@ final class File implements CacheHandlerInterface
 
         if (!is_dir($config['path'])) {
             throw new CacheHandlerException('缓存路径不存在');
-        } elseif (!is_writable($config['path'])) {
+        }
+        if (!is_writable($config['path']) || !is_readable($config['path'])) {
             throw new CacheHandlerException('缓存路径不可写');
         }
 

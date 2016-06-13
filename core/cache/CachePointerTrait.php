@@ -14,12 +14,20 @@ trait CachePointerTrait
      *
      * @return self
      */
-    public function init(string $type = '', array $config=[]) : self
+    public function init() : self
     {
         //将当前操作cache初始化
         $this->pointer = [];
-        //设置处理类
-        $this->pointer['handler'] = $this->setHandler($type, $config);
+        return $this;
+    }
+    public function type(string $type) : self
+    {
+        $this->pointer['type'] = $type;
+        return $this;
+    }
+    public function config(array $config) : self
+    {
+        $this->pointer['config'] = $config;
         return $this;
     }
     /**
