@@ -62,17 +62,17 @@ abstract class Test
 
         if ($result === $func_result || is_object($result) && $result($func_result)) {
 
-            base\response\Response::dump($str, '测试成功;');
+            core\response\Response::dump($str, '测试成功;');
 
         } else {
 
-            base\response\Response::dump($str, '测试失败;');
-            base\response\Response::dump('参数：');
-            base\response\Response::dump($args);
-            base\response\Response::dump('结果应为：');
-            base\response\Response::dump($result);
-            base\response\Response::dump('实际结果：');
-            base\response\Response::dump($func_result);
+            core\response\Response::dump($str, '测试失败;');
+            core\response\Response::dump('参数：');
+            core\response\Response::dump($args);
+            core\response\Response::dump('结果应为：');
+            core\response\Response::dump($result);
+            core\response\Response::dump('实际结果：');
+            core\response\Response::dump($func_result);
 
             throw new TestException("测试失败", 500);
         }
@@ -92,17 +92,17 @@ abstract class Test
     protected static function testProperty($class, $property, $value)
     {
         if ($class->$property === $value) {
-            base\response\Response::dump('属性:'.$class.'->$'.$property, '测试成功;');
+            core\response\Response::dump('属性:'.$class.'->$'.$property, '测试成功;');
         } else {
-            base\response\Response::dump('属性:'.$class.'->$'.$property, '测试失败;');
+            core\response\Response::dump('属性:'.$class.'->$'.$property, '测试失败;');
         }
     }
     protected static function testStaticProperty($class, $property, $value)
     {
         if ($class::$property === $value) {
-            base\response\Response::dump('属性:'.$class.'::$'.$property, '测试成功;');
+            core\response\Response::dump('属性:'.$class.'::$'.$property, '测试成功;');
         } else {
-            base\response\Response::dump('属性:'.$class.'->$'.$property, '测试失败;');
+            core\response\Response::dump('属性:'.$class.'->$'.$property, '测试失败;');
         }
     }
 

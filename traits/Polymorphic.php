@@ -6,14 +6,14 @@ trait Polymorphic
     private static function polymorphic()
     {
         static $allowed = [
-            'string'=>['string','str','miexd'],
-            'array'=>['array','arr','miexd'],
-            'integer'=>['int','integer','number','miexd'],
-            'double'=>['float','double','number','miexd'],
-            'object'=>['object','miexd'],
-            'boolean'=>['bool','boolean','miexd'],
-            'NULL'=>['null','miexd'],
-            'resource'=>['resource','miexd']
+            'string'   =>['string','str'],
+            'array'    =>['array','arr'],
+            'integer'  =>['int','integer','number'],
+            'double'   =>['float','double','number'],
+            'object'   =>['object','class'],
+            'boolean'  =>['bool','boolean'],
+            'NULL'     =>['null'],
+            'resource' =>['resource']
         ];
 
         //所有参数
@@ -43,7 +43,7 @@ trait Polymorphic
                 }
 
                 if (!is_callable($callback)) {
-                    throw new TraitsException('函数不可重构');
+                    throw new TraitsException('函数不可调用,无法实现重构');
                 }
                 return call_user_func_array($callback, $args);
             }
@@ -52,6 +52,6 @@ trait Polymorphic
             array_shift($func_args);
         }
 
-        throw new TraitsException('函数不可重构');
+        throw new TraitsException('函数重构匹配失败');
     }
 }

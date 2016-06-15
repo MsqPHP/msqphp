@@ -13,6 +13,7 @@ trait Call
     public function __call(string $method, array $args)
     {
         static $methods = [];
+
         if (!isset($methods[$method])) {
 
             $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;
@@ -21,7 +22,7 @@ trait Call
 
             $file = $framework_path . $namespace . DIRECTORY_SEPARATOR.'methods'.DIRECTORY_SEPARATOR.$method.'.php';
 
-            !is_file($file) && $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
+            is_file($file) || $file = str_replace($framework_path, \msqphp\Environment::getPath('library'), $file);
 
             if (!is_file($file)) {
                 throw new TraitsException(__CLASS__.'类的'.$method.'方法不存在');

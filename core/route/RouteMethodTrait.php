@@ -5,6 +5,20 @@ use msqphp\core;
 
 trait RouteMethodTrait
 {
+    /**
+     * @param array    $method    get\post\ajax方法(匹配多);
+     *
+     * @param string   $param     匹配单个
+     * @param array   $param     匹配多个
+     *
+     * @param string   $func      调用对应类对应方法
+     * @param \Closure $func      调用函数,并传参$args
+     *
+     * @param bool     $aiload    是否智能加载需要类文件(默认否,在一个类方法或函数加载类文件过多的时候使用)
+     *
+     * @return void
+     */
+
     //get
     public static function get($params, $func, array $args = [] , bool $autoload = false)
     {
@@ -23,85 +37,57 @@ trait RouteMethodTrait
         static::method(['post'], $params, $func, $args, $autoload);
     }
 
-    /**
-     * 方法调用
-     *
-     * @param  array        $method   匹配方法
-     * @param  miexd        $params    匹配参数,支持多
-     * @param  miexd        $func     调用方法
-     * @param  array        $args     传递参数
-     * @param  bool         $autoload 智能加载
-     *
-     * @return void
-     */
+    //method
     public static function method(array $method, $params, $func, array $args = [], bool $autoload = false)
     {
-        if (static::$matched) {
-            return;
-        }
         if (!in_array(static::$info['method'], $method)) {
             return;
         }
-        $matched_key = '';
 
         foreach ((array)$params as $param) {
-            if (static::checkParam(explode('/', $param))) {
+
+            if (static::checkParam($param)) {
+
                 static::$matched = true;
-                $autoload && $matched_key = md5(implode('/',static::$group).$param);
-                break;
-            }
-        }
 
-        if (!static::$matched) {
-            return;
-        }
+                if ($autoload) {
 
-        unset($method);
-        unset($params);
+                    $aiload = core\aiload\AiLoad::getInstance()->init()->key(md5(static::$url.implode('/', (array)$params).'/'.implode('/', $method)));
 
-        if ($autoload && !defined('NO_CACHE')) {
+                    \msqphp\Environment::$autoload_changed && $aiload->delete();
 
-            $aiload = core\aiload\AiLoad::getInstance()->init()->key($matched_key);
+                    $aiload->load();
+                }
 
-            \msqphp\Environment::$autoload_changed && $aiload->delete();
+                if (is_string($func)) {
 
-            $aiload->load();
-        }
+                    static::callUserClassFunc($func, $args);
 
-        unset($matched_key);
+                } elseif ($func instanceof \Closure) {
 
-        if (is_string($func)) {
+                    call_user_func_array($func, $args);
 
-            static::callUserClassFunc($func, $args);
+                } else {
+                    throw new RouteException('错误的回调函数');
+                }
+                if ($autoload) {
 
-        } else {
-
-            call_user_func_array($func, $args);
-
-        }
-
-        if ($autoload && !defined('NO_CACHE')) {
-
-            if ($aiload->changed()) {
-
-                $aiload->update()->save()->end();
-
-            } else {
-
-                rand(0,5000) === 1000 && $aiload->delete();
-
-                $aiload->end();
+                    if ($aiload->changed()) {
+                        $aiload->update()->save()->end();
+                    } else {
+                        rand(0,5000) === 1000 && $aiload->delete();
+                        $aiload->end();
+                    }
+                }
 
             }
         }
+
     }
 
     public static function error(\Closure $func, array $args = [])
     {
-        if (static::$matched) {
-            return;
-        }
-        call_user_func_array($func, $args);
+        static::$matched || call_user_func_array($func, $args);
     }
     /**
      * 检测参数是否符合并重组$_GET;
@@ -110,28 +96,32 @@ trait RouteMethodTrait
      *
      * @return bool
      */
-    private static function checkParam(array $params) : bool
+    private static function checkParam(string $params) : bool
     {
-        $params_handle = static::$params_handle;
+        $params = explode('/', $params);
 
-        if (count($params) !== count(static::$params_handle)) {
+        $params_handle = static::$params_handle ?: [''];
+
+        if (count($params) !== count($params_handle)) {
             return false;
         }
 
         $get = [];
+
         foreach ($params as $key => $value) {
             //遍历, 如果三等, 或者符合对应规则
-            if ($value === $params_handle[$key] || isset(static::$roule[$value]) && static::checkRoule($params_handle[$key], $value)) {
+            if ($value === $params_handle[$key] || static::checkRoule($params_handle[$key], $value)) {
                 //$_GET重新生成;
-                if ($key !== 0 && ($key % 2 === 0)) {
-                    $get[$params[$key-1]] = $params_handle[$key];
-                }
+                //忽略第0个参数,当为偶数时 赋 上一个单数为键, 当前偶数为值
+                $key !== 0 && ($key % 2 === 0) && $get[$params[$key-1]] = $params_handle[$key];
             //否则返回
             } else {
                 return false;
             }
         }
+
         $_GET = $get;
+
         return true;
     }
     /**
@@ -144,71 +134,45 @@ trait RouteMethodTrait
     private static function callUserClassFunc(string $func, array $args)
     {
         list($class , $method) = explode('@', $func, 2);
-        $get_pos = strpos($method, '?');
-        $post_pos = strpos($method, '#');
-
+        list($method, $args) = static::getArgs($method, $args);
+        $class_name = static::$namespace . $class;
+        call_user_func_array([new $class_name(), $method], $args);
+    }
+    private static function getArgs(string $param, array $args) : array
+    {
+        $get_pos = strpos($param, '?');
+        $post_pos = strpos($param, '#');
         if (false !== $get_pos && false !== $post_pos) {
             if ($get_pos > $post_pos) {
-                list($method, $args_str) = explode('?', $method, 2);
-                list($get_args, $post_args) = explode('#', $args_str, 2);
-                static::addArgs($post_args, $args, $_POST);
-                static::addArgs($add_args, $args, $_GET);
+                list($method, $args_str) = explode('?', $param, 2);
+                list($get_param, $post_param) = explode('#', $args_str, 2);
+                static::addArgs($post_param, $args, $_POST);
+                static::addArgs($get_param, $args, $_GET);
             } else {
-                list($method, $args_str) = explode('#', $method, 2);
-                list($get_args, $post_args) = explode('?', $args_str, 2);
-                static::addArgs($add_args, $args, $_GET);
-                static::addArgs($post_args, $args, $_POST);
+                list($method, $args_str) = explode('#', $param, 2);
+                list($get_param, $post_param) = explode('?', $args_str, 2);
+                static::addArgs($get_param, $args, $_GET);
+                static::addArgs($post_param, $args, $_POST);
             }
-            unset($get_args);
-            unset($post_args);
-            unset($args_str);
         } elseif (false !== $get_pos) {
-            list($method, $get_args) = explode('?', $method);
-            static::addArgs($add_args, $args, $_GET);
-            unset($get_args);
+            list($method, $get_param) = explode('?', $param);
+            static::addArgs($get_param, $args, $_GET);
         } elseif (false !== $post_pos) {
-            list($method, $post_args) = explode('#', $method);
-            static::addArgs($post_args, $args, $_POST);
-            unset($post_args);
+            list($method, $post_param) = explode('#', $param);
+            static::addArgs($post_param, $args, $_POST);
+        } else {
+            $method = $param;
         }
-        unset($get_pos);
-        unset($post_pos);
-
-        $class_name = static::$namespace . $class;
-
-        $cont = new $class_name();
-        call_user_func_array([$cont, $method], $args);
-        unset($cont);
+        return [$method, $args];
     }
-
     private static function addArgs(string $add_args, array & $args, array $target)
     {
-        array_map(function (string $key) use (& $args, $target) {
+        foreach (explode('&', $add_args) as $key) {
             if (!isset($target[$key])) {
                 throw new RouteException($key.' get值不存在');
             } else {
                 $args[] = $target[$key];
             }
-        }, explode('&', $add_args));
-    }
-    /**
-     * 路由规则检测
-     *
-     * @param  string $value 值
-     * @param  string $roule 规则键
-     *
-     * @throws RouteException
-     * @return bool
-     */
-    private static function checkRoule(string $value, string $roule) : bool
-    {
-        if (!isset(static::$roule[$roule])) {
-            throw new RouteException('路由规则不存在');
-        }
-        if (is_string(static::$roule[$roule])) {
-            return 0 !== preg_match(static::$roule[$roule], $value);
-        } else {
-            return static::$roule[$roule]($value);
         }
     }
 }

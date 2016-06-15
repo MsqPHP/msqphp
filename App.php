@@ -22,23 +22,30 @@ class App
 
         //控制器加路由开始时间
         define('ROUTE_CONTROLLER_START', microtime(true));
+
         try {
 
             //加载路由并运行
+            require __DIR__.'/core/route/RouteRouleTrait.php';
+            require __DIR__.'/core/route/RouteGroupTrait.php';
             require __DIR__.'/core/route/RouteLimiteTrait.php';
             require __DIR__.'/core/route/RouteMethodTrait.php';
             require __DIR__.'/core/route/Route.php';
+
+
             core\route\Route::run();
+
         } catch(core\route\RouteException $e) {
 
-            base\response\Response::error($e->getMessage());
+            core\response\Response::error('Route执行错误,原因:'.$e->getMessage());
 
         } catch(core\exception\Exception $e) {
 
-            base\response\Response::error($e->getMessage());
+            core\response\Response::error($e->getMessage());
+
         } catch (\Exception $e) {
 
-            base\response\Response::error($e->getMessage());
+            throw $e;
         }
 
         //控制器加路由结束时间
@@ -67,14 +74,15 @@ class App
             $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_INIT_TIME , 12) . '秒';
             $end_info[] = "\t初始化用时      : " . (string) round(PHP_START_TIME - PHP_INIT_TIME , 12) . '秒(composer)';
             $end_info[] = "\t框架总用时      : " . (string) round($end_time      - PHP_START_TIME, 12) . '秒';
+            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t框架实际用时    : " . (string) round($end_time      - PHP_START_TIME - ROUTE_CONTROLLER_END + ROUTE_CONTROLLER_START, 12) . '秒';
             defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
             unset($end_time);
         }
         if (class_exists('\msqphp\core\database\Database', false)) {
             $end_info[] = 'sql信息:';
-            $sqls = core\database\Database::getSqls();
-            $times = core\database\Database::getTimes();
-            $total = $times['init'];
+            $sqls       = core\database\Database::getSqls();
+            $times      = core\database\Database::getTimes();
+            $total      = $times['init'];
             $end_info[] = "\t".'sql初始化:'.$times['init'];
             $end_info[] = "\t".'sql语句:'.count($sqls).'条';
             foreach($times['sqls'] as $info) {
@@ -106,33 +114,34 @@ class App
             $end_info[] = "\t页失效        : 开始:" . PHP_START_CPU['ru_majflt'] . ", \t结束:" . $end_cpu['ru_majflt'];
             unset($end_cpu);
         }
+        if (function_exists('get_defined_constants')) {
+            $end_info[] = '常量信息:';
+            foreach (get_defined_constants(true)['user'] as $key => $value) {
+                is_array($value) && $value = var_export($value, true);
+                is_bool($value) && $value = $value ? 'true' : 'false';
+                $end_info[] = "\t".'常量:'.$key."\t=>\t".$value;
+            }
+        }
         if (function_exists('get_required_files')) {
-            $files = get_required_files();
-            $all_size = 0;
+            $files      = get_required_files();
+            $all_size   = 0;
             $end_info[] = '加载信息:';
-            $file_info = [];
+            $file_info  = [];
             foreach ($files as $file) {
-                $byte = filesize($file);
+                $byte        = filesize($file);
                 $file_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte($byte, false);
-                $all_size += $byte;
+                $all_size    += $byte;
             }
             $end_info[] = "\t".'总共加载文件:'.count($files).'个, 大小:'.base\number\Number::byte($all_size, false);
-            $end_info = array_merge($end_info, $file_info);
+            $end_info   = array_merge($end_info, $file_info);
             unset($file_info);
             unset($files);
             unset($all_size);
             unset($file);
             unset($byte);
         }
-        if (function_exists('get_defined_constants')) {
-            $end_info[] = '常量信息:';
-            foreach (get_defined_constants(true)['user'] as $key => $value) {
-                is_array($value) && $value = var_export($value, true);
-                $end_info[] = "\t".'常量:'.$key.'=>'.$value;
-            }
-        }
         if (!empty(Environment::$autoload_classes)) {
-            $end_info[] = 'composer加载文件个数:'.count(Environment::$autoload_classes);
+            $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count(Environment::$autoload_classes);
             $end_info[] = 'composer加载文件列表:';
             foreach (Environment::$autoload_classes as $file) {
                 $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
@@ -141,7 +150,7 @@ class App
         if (0 === APP_DEBUG || 5 === APP_DEBUG) {
             core\log\Log::getInstance()->init()->message(implode(PHP_EOL, $end_info))->type('succes')->recode();
         } else {
-            base\response\Response::dumpArray($end_info, true);
+            core\response\Response::dumpArray($end_info, true);
         }
     }
 }

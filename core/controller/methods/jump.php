@@ -5,5 +5,5 @@ use msqphp\base;
 
 return function(string $url, int $time = 0, string $msg = '')
 {
-    return base\response\Response::jump($url, $time, $msg);
+    return core\response\Response::jump($url, $time, $msg);
 };

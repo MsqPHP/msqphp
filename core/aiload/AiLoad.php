@@ -4,6 +4,19 @@ namespace msqphp\core\aiload;
 use msqphp\base;
 use msqphp\traits;
 
+/**
+ * 实现原理:
+ * $info = [
+ *     'last'     => [],//最终需要加载的文件
+ *     'needful'  => [],//需要加载的文件,但不确定依赖关系(加载顺序),
+ *     'tidied'   => [],//整理过的文件列表,直接依次加载即可
+ * ];
+ * 主要逻辑为对数据的处理
+ * 如果$info不存在,取空,返回
+ * 如果$info['last']存在并且$info['needful']不存在,直接加载返回
+ * 其他情况进行整理
+ */
+
 final class AiLoad
 {
     use traits\Instance;
@@ -24,11 +37,8 @@ final class AiLoad
     {
         $this->pointer['info'] = [];
 
-        //缓存文件
-        $file = $this->getFile();
-
         //文件不存在,自动加载信息为空,直接返回
-        if (!is_file($file)) {
+        if (defined('NO_CACHE') || !is_file($file = $this->getFile())) {
             return $this;
         }
 
@@ -37,10 +47,13 @@ final class AiLoad
 
         //如果得到最终结果,直接加载所有文件并返回
         if (isset($info['last']) && !isset($info['needful'])) {
-            $this->pointer['info'] = $info;
+
             array_map(function ($file) {
                 require $file;
             }, $info['last']);
+
+            $this->pointer['info'] = $info;
+
             return $this;
         }
 
@@ -86,13 +99,16 @@ final class AiLoad
     }
     public function save() : self
     {
+        if (defined('NO_CACHE')) {
+            return $this;
+        }
         $file = $this->getFile();
         base\file\File::write($file, '<?php'.PHP_EOL.'return '.var_export($this->pointer['info'], true).';', true);
         return $this;
     }
     private function getFile() : string
     {
-        return \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload'.DIRECTORY_SEPARATOR.md5($this->pointer['key']).'.php';
+        return \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload'.DIRECTORY_SEPARATOR.$this->pointer['key'].'.php';
     }
     public function delete() : self
     {

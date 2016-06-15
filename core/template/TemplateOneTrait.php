@@ -72,12 +72,12 @@ trait TemplateOneTrait
                 }
             }, explode(',', $matches[2]));
 
-            //不缓存
-            if (false === $cached || null === $cached) {
-                return '<?php echo '.$func_name.'('.implode(',', array_map('static::valueToString',$args)).');?>';
-            } else {
             //缓存
+            if ($cached) {
                 return (string) call_user_func_array($func_name, $args);
+            //不缓存
+            } else {
+                return '<?php echo '.$func_name.'('.implode(',', array_map('static::valueToString',$args)).');?>';
             }
 
         }, $content);
@@ -89,8 +89,7 @@ trait TemplateOneTrait
     private static function parInclude(string $content, array $data, array $language) : string
     {
         return preg_replace_callback(static::$pattern['include'], function (array $matches) {
-            $file = $matches[1];
-            if (is_file($file)) {
+            if (is_file($file = $matches[1])) {
                 return static::commpile(base\file\File::get($file), $data, $language);
             } else {
                 throw new TemplateException($file.'模版文件不存在');
@@ -103,16 +102,20 @@ trait TemplateOneTrait
      */
     private static function parConstant(string $content) : string
     {
-        return preg_replace_callback([
-            static::$pattern['constant_a'],
-            static::$pattern['constant_b']
-        ], function (array $matches) {
-            if (defined($matches[1])) {
-                return constant($matches[1]);
-            } else {
-                throw new TemplateException($matches[1].'常量未定义');
-            }
-        }, $content);
+        return preg_replace_callback(
+            [
+                static::$pattern['constant_a'],
+                static::$pattern['constant_b']
+            ],
+            function (array $matches) {
+                if (defined($matches[1])) {
+                    return constant($matches[1]);
+                } else {
+                    throw new TemplateException($matches[1].'常量未定义');
+                }
+            },
+            $content
+        );
     }
     /**
      * 解析语言
@@ -120,16 +123,20 @@ trait TemplateOneTrait
      */
     private static function parLanguae(string $content, array $language) : string
     {
-        return preg_replace_callback([
-            static::$pattern['language_a'],
-            static::$pattern['language_b']
-        ], function (array $matches) use ($language) {
-            if (isset($language[$matches[1]])) {
-                return $language[$matches[1]];
-            } else {
-                throw new TemplateException($matches[1].'对应语言不存在');
-            }
-        }, $content);
+        return preg_replace_callback(
+            [
+                static::$pattern['language_a'],
+                static::$pattern['language_b']
+            ],
+            function (array $matches) use ($language) {
+                if (isset($language[$matches[1]])) {
+                    return $language[$matches[1]];
+                } else {
+                    throw new TemplateException($matches[1].'对应语言不存在');
+                }
+            },
+            $content
+        );
     }
     /**
      * 解析变量
@@ -153,30 +160,34 @@ trait TemplateOneTrait
     }
     private static function parArray(string $content, array $data) : string
     {
-        return preg_replace_callback([
-            static::$pattern['array_a'],
-            static::$pattern['array_b']
-        ], function (array $matches) use ($data) {
-            $key = $matches[1];
-            $val = $matches[2];
-            if (isset($data[$key]) && $data[$key]['cache']) {
+        return preg_replace_callback(
+            [
+                static::$pattern['array_a'],
+                static::$pattern['array_b']
+            ],
+            function (array $matches) use ($data) {
+                $key = $matches[1];
+                $val = $matches[2];
+                if (isset($data[$key]) && $data[$key]['cache']) {
 
-                $arr_key = array_map('static::stringToValue', false === strpos($val, '.') ? explode('][', trim($val, '[]')) : explode('.', trim($val, '.')));
+                    $arr_key = array_map('static::stringToValue', false === strpos($val, '.') ? explode('][', trim($val, '[]')) : explode('.', trim($val, '.')));
 
-                $result = $data[$key]['value'];
+                    $result = $data[$key]['value'];
 
-                for ($i = 0,$l = count($arr_key); $i < $l; ++$i) {
-                    $result = $result[$arr_key[$i]];
+                    for ($i = 0,$l = count($arr_key); $i < $l; ++$i) {
+                        $result = $result[$arr_key[$i]];
+                    }
+
+                    return $result;
+                } else {
+                    if (false !== strpos($val, '.')) {
+                        $val = array_map('static::valueToString', explode('.', trim($val, '.')));
+                        $val = '['.implode('][', $val).']';
+                    }
+                    return '<?php echo $'.$key.$val.';?>';
                 }
-
-                return $result;
-            } else {
-                if (false !== strpos($val, '.')) {
-                    $val = array_map('static::valueToString', explode('.', trim($val, '.')));
-                    $val = '['.implode('][', $val).']';
-                }
-                return '<?php echo $'.$key.$val.';?>';
-            }
-        }, $content);
+            },
+            $content
+        );
     }
 }

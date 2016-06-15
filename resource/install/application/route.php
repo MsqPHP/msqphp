@@ -15,8 +15,6 @@ Route::addRoule(':int', function (& $value) {
 Route::addRoule(':empty', function ($value) {
     return $value === '';
 });
-//增加一个url参数分组,将获取第一个参数,如果在列表中,则取值,删除,否则取默认值
-//模块用于分组
 Route::addGroup([
     'name'      =>'module',
     'allowed'   =>['home'],

@@ -32,38 +32,35 @@ trait ViewDataTrait
     /**
      * 模版变量赋值
      * @param  string|array  $tpl_var  变量名称或对应值
-     * @param  string  $value 变量值
+     * @param  miexd   $value 变量值
      * @param  boolen  $cache 是否缓存
      * @param  boolen  $html  是否仅仅为html文本
      * @throws ViewException
      * @return self
      */
-    public function assign($tpl_var, $value='', bool $cache = false, bool $html = false) :self
+    public function assign($tpl_var, $value = null, bool $cache = false, bool $html = false) : self
     {
-        //定义一个数组，存放变量数据
-        $tpl_arr = [];
         //数组
         if (is_array($tpl_var)) {
-            $tpl_key = $tpl_var['key'] ?? $tpl_var[0] ?? '';
-            $value = $tpl_var['value'] ?? $tpl_var[1] ?? '';
-            $cache = $tpl_var['cache'] ?? $tpl_var[2] ?? false;
-            $html  = $tpl_var['html']  ?? $tpl_var[3] ?? false;
-        } elseif(is_string($tpl_var)) {//字符串
-            $tpl_key = $tpl_var;
+            $key = $tpl_var['key'] ?? $tpl_var[0] ?? '';
+            $value   = $tpl_var['value'] ?? $tpl_var[1] ?? '';
+            $cache   = $tpl_var['cache'] ?? $tpl_var[2] ?? false;
+            $html    = $tpl_var['html']  ?? $tpl_var[3] ?? false;
+        } elseif (is_string($tpl_var)) {//字符串
+            $key = $tpl_var;
         } else {
-            throw new ViewException($tpl_var.'数据有误');
+            throw new ViewException('View数据设置错误,原因:数据格式为'.gettype($tpl_var));
         }
+
         //转义
         $html && $value = base\filter\Filter::html($value);
+
         //赋值
-        $tpl_arr['value'] = $value;
-        $tpl_arr['cache'] = $cache;
-        //赋值
-        $this->data[$tpl_key] = $tpl_arr;
+        $this->data[$key] = ['value'=>$value,'cache'=>$cache];;
 
         return $this;
     }
-    public function set($tpl_var, $value='', bool $cache = false, bool $html = false) :self
+    public function set($tpl_var, $value = null, bool $cache = false, bool $html = false) : self
     {
         return $this->assign($tpl_var, $value, $cache, $html);
     }
@@ -72,7 +69,7 @@ trait ViewDataTrait
      * @param  string $key [description]
      * @return self
      */
-    public function delete(string $key) :self
+    public function delete(string $key) : self
     {
         unset($this->data[$key]);
         return $this;

@@ -13,7 +13,7 @@ final class Filter
      * @param  miexd $value 值
      * @return miexd
      */
-    public static function html($value) {
+    public static function html() {
         return static::polymorphic(
             func_get_args(),
             [
@@ -43,7 +43,7 @@ final class Filter
      * @param  miexd $value 值
      * @return miexd
      */
-    public static function slashes($value) {
+    public static function slashes() {
         return static::polymorphic(
             func_get_args(),
             [

@@ -12,8 +12,9 @@ trait CallStatic
      */
     public static function __callStatic(string $method, array $args)
     {
-        static $func = [];
-        if (!isset($func[$method])) {
+        static $methods = [];
+
+        if (!isset($methods[$method])) {
 
             $framework_path = dirname(__DIR__) . DIRECTORY_SEPARATOR;
 
@@ -27,9 +28,9 @@ trait CallStatic
                 throw new TraitsException(__CLASS__.'类的'.$method.'静态方法不存在');
             }
 
-            $func[$method] = require $file;
+            $methods[$method] = require $file;
         }
 
-        return call_user_func_array($func[$method], $args);
+        return call_user_func_array($methods[$method], $args);
     }
 }

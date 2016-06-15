@@ -9,16 +9,23 @@ trait ViewThemeTrait
     //主题支持
     protected $theme    = false;
 
+    protected function initTheme()
+    {
+        $this->theme      = true;
+        $this->options['theme'] = defined('__THEME__') ? __THEME__ : $this->config['default_theme'];
+    }
+
+
     public function theme(string $theme = '')
     {
-        if ($this->theme) {
-            if ('' === $theme) {
-                return $this->getTheme();
-            } else {
-                return $this->setTheme($theme);
-            }
-        } else {
+        if (!$this->theme) {
             throw new ViewException('不支持多主题');
+        }
+
+        if ('' === $theme) {
+            return $this->getTheme();
+        } else {
+            return $this->setTheme($theme);
         }
     }
     protected function getTheme() : string
