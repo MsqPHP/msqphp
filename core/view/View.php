@@ -6,41 +6,30 @@ use msqphp\core;
 
 abstract class View
 {
-    //多主题
-    use ViewThemeTrait;
-    //多语支持
-    use ViewLanguageTrait;
     //数据操作
     use ViewDataTrait;
+
     //layout支持
     use ViewLayoutTrait;
 
+    //多主题
+    use ViewThemeTrait;
+
+    //多语支持
+    use ViewLanguageTrait;
+
     //是否为静态页
     protected $static   = false;
+
     //当前视图选项
     protected $options  = [];
+
     //当前配置
     protected $config   = [];
 
     //构造函数
     public function __construct()
     {
-        //载入配置
-        $config = core\config\Config::get('view');
-        //目录赋值
-        if (!is_dir($config['tpl_path']) || !is_dir($config['tpl_cache_path']) || !is_dir($config['tpl_last_path'])) {
-            throw new ViwException('模版路径或模版缓存路径不存在');
-        }
-        //模版路径
-        $config['tpl_path']       = realpath($config['tpl_path']) . DIRECTORY_SEPARATOR;
-        //缓存路径
-        $config['tpl_cache_path'] = realpath($config['tpl_cache_path']) . DIRECTORY_SEPARATOR;
-        //最终路径
-        $config['tpl_last_path']  = realpath($config['tpl_last_path']) . DIRECTORY_SEPARATOR;
-
-        //赋值
-        $this->config = $config;
-
         //获得分组信息
         $group_info = core\route\Route::$group;
 
@@ -51,17 +40,34 @@ abstract class View
 
         $this->options = ['group'=>$group];
 
+        unset($group);
+
+        //载入配置
+        $config = core\config\Config::get('view');
+        //目录赋值
+        if (!is_dir($config['tpl_path']) || !is_dir($config['tpl_cache_path']) || !is_dir($config['tpl_last_path'])) {
+            throw new ViwException('模版路径或模版缓存路径不存在');
+        }
+
+        //模版路径
+        $config['tpl_path']       = realpath($config['tpl_path']) . DIRECTORY_SEPARATOR;
+        //缓存路径
+        $config['tpl_cache_path'] = realpath($config['tpl_cache_path']) . DIRECTORY_SEPARATOR;
+        //最终路径
+        $config['tpl_last_path']  = realpath($config['tpl_last_path']) . DIRECTORY_SEPARATOR;
+
+        //赋值
+        $this->config = $config;
+
+
         //是否支持多主题
-        $config['theme'] && $this->initTheme();
+        $config['theme']    && $this->initTheme();
 
         //是否支持多语
         $config['language'] && $this->initLanguage();
 
         //是否支持布局
-        $config['layout'] && $this->initLayout();
-
-        unset($config);
-
+        $config['layout']   && $this->initLayout();
     }
 
     /**
@@ -75,6 +81,7 @@ abstract class View
     protected function getTplFilePath(string $file_name) : string
     {
         $options  = $this->options;
+
         $theme    = $this->theme ? $options['theme'] . DIRECTORY_SEPARATOR : '';
         $language = $this->language ? $options['language'] . DIRECTORY_SEPARATOR : '';
 
@@ -82,22 +89,18 @@ abstract class View
 
         return is_file($file) ? $file : $this->config['tpl_path'].$options['group'].$theme.$file_name.$this->config['tpl_ext'];
     }
-    protected function getTplLastFilePath(string $file_name) : string
+    protected function getTplCacheFilePath(string $file_name, bool $last = false) : string
     {
         $options = $this->options;
 
         $theme = $this->theme ? $options['theme'] . DIRECTORY_SEPARATOR : '';
         $language = $this->language ? $options['language'] . DIRECTORY_SEPARATOR : '';
 
-        return $this->config['tpl_last_path'].$theme.$language.$options['group'].$file_name.$this->config['tpl_last_ext'];
+        return $last
+        ? $this->config['tpl_last_path'].$theme.$language.$options['group'].$file_name.$this->config['tpl_last_ext']
+        : $this->config['tpl_cache_path'].$theme.$language.$options['group'].$file_name.$this->config['tpl_cache_ext'];
     }
-    protected function getTplCacheFilePath(string $file_name) : string
-    {
-        $options = $this->options;
-        $theme = $this->theme ? $options['theme'] . DIRECTORY_SEPARATOR : '';
-        $language = $this->language ? $options['language'] . DIRECTORY_SEPARATOR : '';
-        return $this->config['tpl_cache_path'].$theme.$language.$options['group'].$file_name.$this->config['tpl_cache_ext'];
-    }
+
     /**
      * 加载模板和页面输出
      * @param  string       $file_name 模版名
@@ -170,19 +173,15 @@ abstract class View
 
         unset($this->options['display']);
 
+        $tpl_cache_file = $this->getTplCacheFilePath($file_name, $last);
+
         foreach ($display as $file) {
-            $content .= base\file\File::get($file);
+            $content .= base\str\Str::formatHtml(base\file\File::get($file));
         }
 
-
-        if ($last) {
-            $content = base\str\Str::formatHtml($content);
-            $tpl_cache_file = $this->getTplLastFilePath($file_name);
-        } else {
-            $tpl_cache_file = $this->getTplCacheFilePath($file_name);
-        }
 
         base\file\File::write($tpl_cache_file, $content, true);
+
 
         unset($content);
 
@@ -198,29 +197,22 @@ abstract class View
      */
     public function staticHtml(int $expire = 3600) : self
     {
-        if (defined('NO_STATIC')) {
-            $this->options['static'] = false;
-            return $this;
-        }
-        $this->options['static'] = true;
         //静态
-        $this->static = true;
-        //拼接静态文件路径
+        $this->static = true && !defined('NO_STATIC');
+
         $request = trim(strtr(core\route\Route::$info['request'], '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
+
         empty($request) || $request .= DIRECTORY_SEPARATOR;
 
-        $path = \msqphp\Environment::getPath('public') . $request . 'index.php';
-
-        $this->options['static_path'] = $path;
+        $this->options['static_path'] = $path = \msqphp\Environment::getPath('public') . $request . 'index.php';
 
         if (0 === $expire) {
             $this->options['static_content'] = '';
         } else {
             $this->options['static_content'] = '<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('bootstrap').'app.php\';exit;}?>';
-        }
-        if (0 !== $expire) {
             core\cron\Cron::getInstance()->set($path, [core\cron\Cron::DELETE_FILE, $path], time()+$expire);
         }
+
         return $this;
     }
     /**
@@ -233,7 +225,11 @@ abstract class View
     public function show(string $file_name)
     {
         //拼装文件路径
-        $______tpl_last_file = $this->getTplLastFilePath($file_name);
+        $______tpl_last_file = $this->getTplCacheFilePath($file_name, true);
+
+        if (!is_file($______tpl_last_file)) {
+            throw new ViewException($______tpl_last_file.'模版文件不存在,无法展示');
+        }
 
         $tpl_arr = [];
         //遍历赋值
@@ -254,8 +250,10 @@ abstract class View
     }
     public function showed(string $file_name) : bool
     {
-        return !defined('NO_VIEW') && is_file($this->getTplLastFilePath($file_name));
+        return !defined('NO_VIEW') && is_file($this->getTplCacheFilePath($file_name, true));
     }
+
+
     public function __destruct() {
         $this->static && base\file\File::write($this->options['static_path'], $this->options['static_content'], true);
     }

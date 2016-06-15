@@ -18,12 +18,13 @@ trait RouteRouleTrait
      */
     private static function checkRoule(string $value, string $roule) : bool
     {
-        //规则不存在,返回
-        if (!isset(static::$roule[$roule])) {
-            return false;
-        }
-        //如果是string则正则,否则调用函数
-        return is_string(static::$roule[$roule]) ? 0 !== preg_match(static::$roule[$roule], $value) : static::$roule[$roule]($value);
+        //规则存在
+        //如果是string则正则
+        //则调用函数
+        return isset(static::$roule[$roule]) && (
+            is_string(static::$roule[$roule])
+            ? 0 !== preg_match(static::$roule[$roule], $value)
+            : static::$roule[$roule]($value));
     }
 
     /**

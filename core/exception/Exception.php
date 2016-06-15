@@ -9,11 +9,12 @@ class Exception extends \Exception
 {
     public function __construct(string $message = '', int $code = 0, \Exception $previous = null)
     {
-        echo '<pre>';
-        show(debug_print_backtrace());
-        echo '</pre>';
-        show($this->getLine(),$this->getFile());
         parent::__construct($message, $code, $previous);
+        echo '<pre>';
+        debug_print_backtrace();
+        var_dump($this->getLine(),$this->getFile());
+        echo '</pre>';
+        exit;
     }
     public function toString()
     {

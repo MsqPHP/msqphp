@@ -26,7 +26,9 @@ final class Xml
 
     public static function decode(string $xml)
     {
-        $data = '';
-        return $data;
+        $obj = xml_parser_create();
+        xml_parse_into_struct($obj, $xml, $result);
+        xml_parser_free($obj);
+        return $result;
     }
 }

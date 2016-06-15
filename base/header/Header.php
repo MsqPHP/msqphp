@@ -74,8 +74,9 @@ final class Header
             throw new HeaderException($code.'暂未支持');
         }
     }
-    public static function type(string $type)
+    public static function type(string $type, string $charset = 'utf-8')
     {
+        $type = strtolower($type);
         static $headers = [
             'ez'      => 'application/andrew-inset',
             'hqx'     => 'application/mac-binhex40',
@@ -218,7 +219,7 @@ final class Header
             'json' => 'application/json',
         ];
         if (isset($headers[$type])) {
-            header('Content-Type:' . $headers[$type] . '; charset=utf-8');
+            header('Content-Type:' . $headers[$type] . '; charset='.$charset);
             unset($headers);
         } else {
             throw new HeaderException($type.'暂未支持');
@@ -227,7 +228,7 @@ final class Header
     public static function download(string $filepath, string $filename = '', string $type = '')
     {
         if (!is_file($file) || !is_writable($file)) {
-            throw new HeaderException($file.'不存在或不可读');
+            throw new HeaderException('无法发送下载头,原因:'.(string)$file.'不存在或不可读');
         }
 
         static::type($type ?: pathinfo($filepath, PATHINFO_EXTENSION));

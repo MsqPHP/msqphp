@@ -63,11 +63,13 @@ final class Arr
         if ('' === $arr_key) {
             return $array;
         }
+
         //以点分割
         $key = explode('.', $arr_key);
 
         //结果
         $result = & $array;
+
         //递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             $result = & $result[$key[$i]];

@@ -122,12 +122,13 @@ final class AiLoad
         !empty(\msqphp\Environment::$autoload_classes) && $info['needful'] = array_merge($info['needful'] ?? [], \msqphp\Environment::$autoload_classes);
 
         //清空,避免对其他地方自动加载造成污染;
+        static::$composer = \msqphp\Environment::$autoload_classes;
         \msqphp\Environment::$autoload_classes = [];
 
         //取唯一值,避免重复值
         isset($info['needful']) && $info['needful'] = array_unique($info['needful']);
-        //取唯一值,避免重复值
-        isset($info['tidied']) && $info['tidied'] = array_unique($info['tidied']);
+
+        isset($info['tidied'])  && $info['tidied']  = array_unique($info['tidied']);
 
         $this->pointer['info'] = $info;
 

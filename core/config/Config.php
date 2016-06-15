@@ -13,17 +13,7 @@ final class Config
      */
     public static function init()
     {
-        if (defined('NO_CACHE')) {
-            static::loadAllConfig();
-        } else {
-            $cache_path = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'Config.php';
-            if (is_file($cache_path)) {
-                static::$config = require $cache_path;
-            } else {
-                static::loadAllConfig();
-                base\file\File::write($cache_path, '<?php return '.var_export(static::$config, true).';', true);
-            }
-        }
+        static::loadAllConfig();
     }
     /**
      * 得到配置
@@ -50,8 +40,22 @@ final class Config
      */
     private static function loadAllConfig()
     {
-        //加载所有
-        array_map('static::loadConfig', base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
+        //配置缓存路径
+        $cache_path = \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'Config.php';
+
+        //如果无缓存则删除
+        defined('NO_CACHE') && base\file\File::delete($cache_path, true);
+
+        //文件是否存在
+        if (is_file($cache_path)) {
+            //直接载入
+            static::$config = require $cache_path;
+        } else {
+            //加载全部
+            array_map('static::loadConfig', base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
+            //写入
+            base\file\File::write($cache_path, '<?php return '.var_export(static::$config, true).';', true);
+        }
     }
     private static function loadConfig(string $file)
     {
@@ -75,7 +79,7 @@ final class Config
                 static::$config[$file_info['filename']] = base\ini\Ini::decode(base\file\File::get($file));
                 break;
             default:
-                throw new ConfigException($file_info['extension'].'未知类型的config文件');
+                throw new ConfigException('配置载入出错,原因:'.(string)$file.'为未知类型的config文件');
         }
     }
 }

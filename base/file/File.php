@@ -6,19 +6,6 @@ use msqphp\traits;
 
 final class File
 {
-    const ERROR = [
-        'CanNotOperable' => '无法操作',
-        'NotExists'   => '不存在',
-        'CanNotDelete'=>'无法删除',
-        'CanNotWrite'=>'无法写入',
-        'CanNotExecutable'=>'无法执行',
-        'UnknownErro'=>'未知错误',
-        'CanNotCopy'=>'无法复制',
-        'CanNotAppend'=>'无法追加内容',
-        'CanNotRead'=>'无法读取',
-        'ParentDir'=>'父目录',
-        'AlreadyExists'=>'已经存在',
-    ];
     use traits\CallStatic;
     /**
      * 删除文件
@@ -38,18 +25,18 @@ final class File
             $parent_dir = dirname($file);
 
             if (!is_writable($parent_dir)) {
-                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
+                throw new FileException($file.'父目录,无法写入');
             }
             if (!is_executable($parent_dir)) {
-                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotExecutable']);
+                throw new FileException($file.'父目录,无法执行');
             }
 
             if (!unlink($file)) {
-                throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotDelete']);
+                throw new FileException($file.'未知错误,无法删除');
             }
         } else{
             if (!$force) {
-                throw new FileException($file.static::ERROR['NotExists'].','.static::ERROR['CanNotDelete']);
+                throw new FileException($file.'不存在,无法删除');
             }
         }
     }
@@ -63,10 +50,10 @@ final class File
     public static function read(string $file, int $len) : string
     {
         if (!is_file($file)) {
-            throw new FileException($file.static::ERROR['NotExists'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'不存在,无法读取');
         }
         if (!is_readable($file)) {
-            throw new FileException($file.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'无法操作,无法读取');
         }
 
         //读取内容
@@ -77,7 +64,7 @@ final class File
 
         //无法读取
         if(false === $content) {
-            throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'未知错误,无法读取');
         }
 
         return $content;
@@ -91,17 +78,17 @@ final class File
     public static function get(string $file) : string
     {
         if (!is_file($file)) {
-            throw new FileException($file.static::ERROR['NotExists'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'不存在,无法读取');
         }
         if (!is_readable($file)) {
-            throw new FileException($file.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'无法操作,无法读取');
         }
 
         $content = file_get_contents($file);
 
         //无法读取
         if(false === $content) {
-            throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotRead']);
+            throw new FileException($file.'未知错误,无法读取');
         }
 
         return $content;
@@ -121,16 +108,16 @@ final class File
             if ($force) {
                 static::write($file, $content, true);
             } else {
-                throw new FileException($file.static::ERROR['NotExists'].','.static::ERROR['CanNotAppend']);
+                throw new FileException($file.'不存在,无法追加内容');
             }
         } else {
         //文件存在
             if (!is_writable($file)) {
-                throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
+                throw new FileException($file.'父目录,无法写入');
             }
 
             if (false === file_put_contents($file, (string)$content, FILE_APPEND)) {
-                throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotAppend']);
+                throw new FileException($file.'未知错误,无法追加内容');
             }
         }
     }
@@ -142,7 +129,7 @@ final class File
      * @throws FileException
      * @return void
      */
-    public static function write(string $file, $content, bool $force = false, int $code = 0666)
+    public static function write(string $file, $content, bool $force = false, int $code = 0644)
     {
         //父目录
         $parent_dir = dirname($file);
@@ -151,7 +138,7 @@ final class File
         if (!is_dir($parent_dir)) {
             //错
             if (!$force) {
-                throw new FileException($file.static::ERROR['ParentDir'].static::ERROR['NotExists'].','.static::ERROR['CanNotWrite']);
+                throw new FileException($file.'父目录不存在,无法写入');
             } else {
                 //创建
                 base\dir\Dir::make($parent_dir, true);
@@ -159,13 +146,13 @@ final class File
         }
 
         if (!is_writable($parent_dir)) {
-            throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotWrite']);
+            throw new FileException($file.'父目录,无法写入');
         }
         if (!is_executable($parent_dir)) {
-            throw new FileException($file.static::ERROR['ParentDir'].','.static::ERROR['CanNotExecutable']);
+            throw new FileException($file.'父目录,无法执行');
         }
         if (false === file_put_contents($file, (string)$content, LOCK_EX) || false === chmod($file, $code)) {
-            throw new FileException($file.static::ERROR['UnknownErro'].','.static::ERROR['CanNotWrite']);
+            throw new FileException($file.'未知错误,无法写入');
         }
     }
     //写入文件别名

@@ -16,11 +16,12 @@ final class Number
      */
     public static function byte($size, $round = true) : string
     {
+        //单位进制
+        static $units = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB'];
+
         if (!is_numeric($size)) {
             throw new NumberException($size.'不是一个有效数字');
         }
-        //单位进制
-        static $units = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB'];
 
         $pos = 0;
         while ($size >= 1024) {
@@ -31,36 +32,5 @@ final class Number
         $round && $size = round($size);
         //返回结果
         return $size . $units[$pos];
-    }
-    /**
-     * 判断一个数是否为质数
-     * @param  int     $number 数
-     * @return bool
-     */
-    public static function isPrimeNumber(int $number) : bool
-    {
-        if ($number < 2) {
-            return false;
-        }
-        for ($i = 2, $max = sqrt($number); $i <= $max; ++$i) {
-            if (0 === $number % $i) {
-                return false;
-            }
-        }
-        return true;
-    }
-    /**
-     * 得到指定范围内所有质数
-     * @param  int    $from 开始
-     * @param  int    $to   结束
-     * @return array
-     */
-    public static function getPrimeNumber(int $from, int $to) : array
-    {
-        $result = [];
-        for ($i = $from; $i < $to; ++$i) {
-            static::isPrimeNumber($i) && $result[] = $i;
-        }
-        return $result;
     }
 }

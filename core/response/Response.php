@@ -36,7 +36,7 @@ final class Response
             header('refresh:'.$time.';url='.$url);
             include static::getViewPath('jump');
         } else {
-            header('location:'.$url, true, 301);
+            static::redirect($url);
         }
         exit;
     }
@@ -81,11 +81,9 @@ final class Response
     private static function getViewPath(string $filename) : string
     {
         $view = \msqphp\Environment::getPath('resources').'views'.DIRECTORY_SEPARATOR.$filename.'.html';
+        is_file($view) || $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.$filename.'.html';
         if (!is_file($view)) {
-            $view = \msqphp\Environment::getPath('framework').'resources'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR.$filename.'.html';
-            if (!is_file($view)) {
-                throw new ResponseException($view.'文件不存在');
-            }
+            throw new ResponseException($view.'文件不存在');
         }
         return $view;
     }
@@ -99,7 +97,7 @@ final class Response
     public static function alert(string $msg, string $url = '', string $charset='utf-8')
     {
         //header头为html
-        base\header\Header::type('html');
+        base\header\Header::type('html', $charset);
         //弹出信息
         $alert_msg = 'alert("'.addslashes($msg).'");';
         //跳转页面
@@ -138,7 +136,7 @@ final class Response
      *
      * @return void
      */
-    public static function json($data, $end = true)
+    public static function json($data, bool $end = true)
     {
         base\header\Header::type('json');
 

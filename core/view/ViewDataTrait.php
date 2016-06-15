@@ -56,7 +56,7 @@ trait ViewDataTrait
         $html && $value = base\filter\Filter::html($value);
 
         //赋值
-        $this->data[$key] = ['value'=>$value,'cache'=>$cache];;
+        $this->data[$key] = ['value'=>$value,'cache'=>$cache];
 
         return $this;
     }

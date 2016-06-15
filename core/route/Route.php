@@ -64,7 +64,7 @@ final class Route
     public static function bulid() : string
     {
         defined('__URL__') || define('__URL__', static::$url);
-        return __URL__;
+        return static::$url;
     }
 
     /**
@@ -76,8 +76,6 @@ final class Route
     {
         $server = & $_SERVER;
 
-        //获得所有参数(一维数组)
-        static::$params_handle = static::getParams(urldecode(ltrim($_SERVER['REQUEST_URI'], '/')));
 
         $info                  = [];
 
@@ -91,13 +89,16 @@ final class Route
         $info['domain']        = $server['SERVER_NAME'] ?? $server['HTTP_HOST'];
 
         //url赋值
-        static::$url           = ($info['ssl'] ? 'https' : 'http') . '://' . $info['domain'] . '/';
+        static::$url           = ($info['ssl'] ? 'https://' : 'http://') . $info['domain'] . '/';
 
         //当前方法
         $info['method']        = strtolower( isset($server['HTTP_X_REQUESTED_WITH']) && strtolower($server['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $server['REQUEST_METHOD'] );
 
         //赋值
         static::$info          = $info;
+
+        //获得所有参数(一维数组)
+        static::$params_handle = static::getParams(urldecode(ltrim($_SERVER['REQUEST_URI'], '/')));
 
         unset($server);
     }

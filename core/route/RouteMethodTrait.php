@@ -22,24 +22,29 @@ trait RouteMethodTrait
     //get
     public static function get($params, $func, array $args = [] , bool $autoload = false)
     {
-        static::method(['get'], $params, $func, $args, $autoload);
+        static::$matched || static::method(['get'], $params, $func, $args, $autoload);
     }
 
     //ajax
     public static function ajax($params, $func, array $args = [] , bool $autoload = false)
     {
-        static::method(['ajax'], $params, $func, $args, $autoload);
+        static::$matched || static::method(['ajax'], $params, $func, $args, $autoload);
     }
 
     //post
     public static function post($params, $func, array $args = [] , bool $autoload = false)
     {
-        static::method(['post'], $params, $func, $args, $autoload);
+        static::$matched || static::method(['post'], $params, $func, $args, $autoload);
     }
 
     //method
     public static function method(array $method, $params, $func, array $args = [], bool $autoload = false)
     {
+        if (static::$matched) {
+            return;
+        }
+
+
         if (!in_array(static::$info['method'], $method)) {
             return;
         }

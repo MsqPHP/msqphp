@@ -33,8 +33,8 @@ trait StrRandomTrait
                 $random .= '0123456789';
                 break;
         }
+        //打乱字符串后截取指定个长度
         return substr(str_shuffle(str_repeat($random, $length)), 0, $length);
-        //打乱字符串后截取4个长度
     }
     /**
      * 得到随机的加密字符
