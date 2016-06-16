@@ -28,13 +28,13 @@ class Environment
     public static function run(array $path_config)
     {
         //开始cpu状况
-        function_exists('getrusage') && strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && define('PHP_START_CPU', getrusage());
+        function_exists('getrusage') && 0 === strncasecmp(PHP_OS, 'WIN', 3) && define('PHP_START_CPU', getrusage());
 
         //开始内存状况
         function_exists('memory_get_usage') && define('PHP_START_MEM' , memory_get_usage());
 
         //配置路径
-        static::initPath($path_config);
+        static::setPath($path_config);
         unset($path_config);
 
         //获得运行环境
@@ -45,7 +45,6 @@ class Environment
 
         //如果有缓存,则初始化
         static::initAiload();
-
 
         //配置配置
         static::initConfig();
@@ -83,7 +82,7 @@ class Environment
      *
      * @return void
      */
-    public static function initPath(array $path_config)
+    public static function setPath(array $path_config)
     {
         //初始化路径
         static::$path = array_map(function (string $path) {

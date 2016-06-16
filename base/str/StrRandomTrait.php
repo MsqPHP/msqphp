@@ -18,8 +18,10 @@ trait StrRandomTrait
     public static function randomString(int $length = 4, int $type = 3) : string
     {
         if ($length < 1) {
+
             throw new StrException($length.'必须大于0');
         }
+
         $random = '';
         switch ($type) {
             case 4:
@@ -33,6 +35,7 @@ trait StrRandomTrait
                 $random .= '0123456789';
                 break;
         }
+
         //打乱字符串后截取指定个长度
         return substr(str_shuffle(str_repeat($random, $length)), 0, $length);
     }
@@ -63,12 +66,10 @@ trait StrRandomTrait
             throw new StrException($length.'必须大于0');
         }
         $string = '';
+
         while ($length > 0) {
             $size = rand(1, $length);
-
-            $bytes = random_bytes($size);
-
-            $string .= substr(str_shuffle(str_replace(['/', '+', '='], '', base64_encode($bytes))) , 0, $size);
+            $string .= substr(str_shuffle(str_replace(['/', '+', '='], '', base64_encode(random_bytes($size)))) , 0, $size);
             $length -= $size;
         }
 

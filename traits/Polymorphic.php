@@ -6,12 +6,12 @@ trait Polymorphic
     private static function polymorphic()
     {
         static $allowed = [
-            'string'   =>['string','str'],
+            'string'   =>['string','str','scalar'],
             'array'    =>['array','arr'],
-            'integer'  =>['int','integer','number'],
-            'double'   =>['float','double','number'],
+            'integer'  =>['int','integer','number','scalar'],
+            'double'   =>['float','double','number','scalar'],
             'object'   =>['object','class'],
-            'boolean'  =>['bool','boolean'],
+            'boolean'  =>['bool','boolean','scalar'],
             'NULL'     =>['null'],
             'resource' =>['resource']
         ];

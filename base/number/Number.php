@@ -14,7 +14,7 @@ final class Number
      * @param  bool    $round 是否取整
      * @return string
      */
-    public static function byte($size, $round = true) : string
+    public static function byte($size, bool $round = true) : string
     {
         //单位进制
         static $units = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB'];
@@ -24,12 +24,15 @@ final class Number
         }
 
         $pos = 0;
+
         while ($size >= 1024) {
             $size /= 1024;
             ++$pos;
         }
+
         //是否取整
         $round && $size = round($size);
+
         //返回结果
         return $size . $units[$pos];
     }

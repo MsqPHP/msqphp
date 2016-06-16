@@ -15,10 +15,6 @@ final class Error
     {
         restore_error_handler();
     }
-    public static function restore()
-    {
-        restore_error_handler();
-    }
     public static function handler(int $errno , string $errstr, string $errfile , int $errline) : bool
     {
         if ('cli' === \msqphp\Environment::getSapi()) {

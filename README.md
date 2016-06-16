@@ -30,6 +30,8 @@ msqphp轻量级php7,0框架beta 1.2版
 + QQ交流群 : 566103528
 + 开发手册 : http://www.kancloud.cn/msqphp/msqphp
 
+**开源,修改使用手册一个多月了,一句评价都没有.........**
+
 ## 理念
 
 * * * * *
@@ -143,27 +145,10 @@ msqphp轻量级php7,0框架beta 1.2版
 + pdo 否则数据库什么的就别想了
 + apache rewrite重写
 
-##**安装需求**
-+ composer 安装 更新
-+ composer 修改代码ClassLoader.php中410行includeFile函数为:
-
-    ~~~
-
-    function includeFile($file)
-    {
-        $GLOBALS['autoloader_class'][] = $file;
-        include $file;
-    }
-    ~~~
-    > 不影响框架正常使用,但可以实现智能加载,所以推荐每次更新添加代码(如果没错的话,你大概常年不会composer更新的);
-+ php 7.0及以上
-+ mbstring ^_^ 我不会像larvel一样自己写一个强大的mb_string函数库什么的
-+ pdo 否则数据库什么的就别想了
-+ apache rewrite重写
 
 ##安装
 
-**windows下好像不行,请人工复制vendor/msqphp/framework/resource/install/下文件到web目录**
+**windows下权限有问题,请人工复制vendor/msqphp/framework/resource/install/下文件到web目录**
 
 + composer.json:
 ~~~
@@ -197,17 +182,17 @@ require $root.'vendor/msqphp/framework/Framework.php';
 
 ~~~
 www  WEB部署目录（或者子目录）
-├──application           应用目录(顶级命名空间 App)
+├──application           应用目录(顶级命名空间 app)
 │  └──route.php          自定义的路由实现
 │
-├──applicationtests     应用测试目录(暂时无用)
-│  └──test.php          测试逻辑文件
+├──applicationtests       应用测试目录(暂时无用)
+│  └──test.php            测试逻辑文件
 │
-├──bootstrap            引导程序目录
-│  └──app.php           app文件(定义APP_DEBUG, 加载自动加载类, 加载框架并运行框架, 一个自定义的入口文件)
+├──bootstrap              引导程序目录
+│  └──app.php             引导程序文件(定义APP_DEBUG, 加载自动加载类, 加载框架并运行框架, 一个自定义的入口文件)
 │
 ├──config               配置目录
-│  └──config名字.php    对应的config
+│  └──config名字.php     对应的config
 │
 │
 ├──library              图书馆, 也就是你自己的类文件函数什么的, 怎么加载是你的事
@@ -223,12 +208,11 @@ www  WEB部署目录（或者子目录）
 │  ├──templates         应用类视图目录  [主题/][路由分组/][语言/]对应视图.php (允许单一视图配置对应语言的视图文件)
 │  └──views             基础视图目录目录 error.html 什么的
 │
-│
 ├──storage             仓库, 放东西的, 需要对应权限
 │  ├──cache             文件缓存目录
 │  ├──session           session缓存目录(如果文件的话)
 │  ├──log               日志目录(暂未实现)
-│  ├──framework         框架缓存目录, 一般会有config缓存,cron缓存,自动加载缓存
+│  ├──framework         框架缓存目录, 一般会有config缓存,cron缓存,智能加载缓存
 │  └──templates         模版目录
 │     ├──cache          中间件缓存
 │     └──last           最终缓存 非静态html 纯php代码+html代码并且经过压缩(也就是没有注释换行什么的文件缓存)

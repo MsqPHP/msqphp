@@ -23,7 +23,7 @@ final class Session
     //保存所有session
     private $sessions  = [];
 
-
+    private $started   = false;
     //当前操作session(所有操作型函数以此为基础)
     private $pointer   = [];
 
@@ -48,12 +48,18 @@ final class Session
         $class_name = __NAMESPACE__.'\\handlers\\'.$handler;
         //注册并传参配置config
         session_set_save_handler(new $class_name($config['handlers_config'][$handler]), true);
+
+    }
+    public function start()
+    {
         //session名设置
         session_name($config['name']);
         //session开始
         session_start();
 
         $this->sessions = & $_SESSION;
+
+        $this->started = true;
     }
     /**
      * 初始化当前操作session
@@ -62,6 +68,7 @@ final class Session
     public function init() : self
     {
         $this->pointer = [];
+        $this->started || $this->start();
         return $this;
     }
     public function key(string $key)
@@ -106,8 +113,9 @@ final class Session
     {
         return ($this->pointer['prefix'] ?? $this->config['prefix']).$this->pointer['key'];
     }
-    public function __destruct()
+    public function close()
     {
-        session_destroy();
+        $this->started && session_write_close();
+        $this->started = false;
     }
 }

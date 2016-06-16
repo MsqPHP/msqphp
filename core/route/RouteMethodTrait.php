@@ -52,40 +52,42 @@ trait RouteMethodTrait
         foreach ((array)$params as $param) {
 
             if (static::checkParam($param)) {
-
-                static::$matched = true;
-
-                if ($autoload) {
-
-                    $aiload = core\aiload\AiLoad::getInstance()->init()->key(md5(static::$url.implode('/', (array)$params).'/'.implode('/', $method)));
-
-                    \msqphp\Environment::$autoload_changed && $aiload->delete();
-
-                    $aiload->load();
-                }
-
-                if (is_string($func)) {
-
-                    static::callUserClassFunc($func, $args);
-
-                } elseif ($func instanceof \Closure) {
-
-                    call_user_func_array($func, $args);
-
-                } else {
-                    throw new RouteException('错误的回调函数');
-                }
-                if ($autoload) {
-
-                    if ($aiload->changed()) {
-                        $aiload->update()->save()->end();
-                    } else {
-                        rand(0,5000) === 1000 && $aiload->delete();
-                        $aiload->end();
-                    }
-                }
-
+                continue;
             }
+
+            static::$matched = true;
+
+            if ($autoload) {
+
+                $aiload = core\aiload\AiLoad::getInstance()->init()->key(md5(static::$url.implode('/', (array)$params).'/'.implode('/', $method)));
+
+                \msqphp\Environment::$autoload_changed && $aiload->delete();
+
+                $aiload->load();
+            }
+
+            if (is_string($func)) {
+
+                static::callUserClassFunc($func, $args);
+
+            } elseif ($func instanceof \Closure) {
+
+                call_user_func_array($func, $args);
+
+            } else {
+                throw new RouteException('错误的回调函数');
+            }
+
+            if ($autoload) {
+
+                if ($aiload->changed()) {
+                    $aiload->update()->save()->end();
+                } else {
+                    rand(0,5000) === 1000 && $aiload->delete();
+                    $aiload->end();
+                }
+            }
+
         }
 
     }
