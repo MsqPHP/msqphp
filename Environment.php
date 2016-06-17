@@ -25,7 +25,7 @@ class Environment
      *
      * @return void
      */
-    public static function run(array $path_config)
+    public static function run(array $path_config) : void
     {
         //开始cpu状况
         function_exists('getrusage') && 0 !== strncasecmp(PHP_OS, 'WIN', 3) && define('PHP_START_CPU', getrusage());
@@ -87,7 +87,7 @@ class Environment
      *
      * @return void
      */
-    public static function setPath(array $path_config)
+    public static function setPath(array $path_config) : void
     {
         //初始化路径
         static::$path = array_map(function (string $path) {
@@ -105,7 +105,7 @@ class Environment
      *
      * @return void
      */
-    private static function initAiload()
+    private static function initAiload() : void
     {
         //引用composer加载文件数组(需要自己修改代码实现)
         static::$autoload_classes = & $GLOBALS['autoloader_class'];
@@ -123,7 +123,7 @@ class Environment
      *
      * @return void
      */
-    private static function initConfig()
+    private static function initConfig() : void
     {
         try {
 
@@ -148,7 +148,7 @@ class Environment
      *
      * @return void
      */
-    private static function initDebug()
+    private static function initDebug() : void
     {
         //错误处理方式
         if (0 === APP_DEBUG || 5 === APP_DEBUG) {
@@ -191,7 +191,7 @@ class Environment
      *
      * @return void
      */
-    private static function endAiload()
+    private static function endAiload() : void
     {
         //获得实例
         $autoload = core\aiload\AiLoad::getInstance();
