@@ -5,8 +5,10 @@ class Framework
 {
     public static function install(string $root)
     {
-        //引用自动加载类
-        require_once __DIR__.'/../../autoload.php';
+        if (!defined('COMPOSER_AUTOLOAD') || !COMPOSER_AUTOLOAD) {
+            require __DIR__.'/core/autoload/Autoload.php';
+            core\autoload\Autoload::register();
+        }
 
         //根目录
         $root = realpath($root) . DIRECTORY_SEPARATOR;
