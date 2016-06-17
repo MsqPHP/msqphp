@@ -10,7 +10,9 @@ trait DatabaseOperateTrait
 
             $result = empty($prepare) ? static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC) : static::prepare($sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
 
-            static::$times['sqls'][] = ['sql'=>$sql,'time'=>microtime(true)-$start];
+            $end = microtime(true);
+            static::$times['sqls'][] = ['sql'=>$sql,'time'=>$end-$start];
+            static::$times['total'] += $end-$start;
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -26,7 +28,9 @@ trait DatabaseOperateTrait
             } else {
                 $result = static::prepare($sql, $prepare)->fetch(\PDO::FETCH_ASSOC);
             }
-            static::$times['sqls'][] = ['sql'=>$sql,'time'=>microtime(true)-$start];
+            $end = microtime(true);
+            static::$times['sqls'][] = ['sql'=>$sql,'time'=>$end-$start];
+            static::$times['total'] += $end-$start;
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -37,7 +41,9 @@ trait DatabaseOperateTrait
         try {
             $start = microtime(true);
             $result = empty($prepare) ? static::sqlQuery($sql)->fetchColumn() : static::prepare($sql, $prepare)->fetchColumn();
-            static::$times['sqls'][] = ['sql'=>$sql,'time'=>microtime(true)-$start];
+            $end = microtime(true);
+            static::$times['sqls'][] = ['sql'=>$sql,'time'=>$end-$start];
+            static::$times['total'] += $end-$start;
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -49,7 +55,9 @@ trait DatabaseOperateTrait
         try {
             $start = microtime(true);
             $result = empty($prepare) ? static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC) : static::prepare($sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
-            static::$times['sqls'][] = ['sql'=>$sql,'time'=>microtime(true)-$start];
+            $end = microtime(true);
+            static::$times['sqls'][] = ['sql'=>$sql,'time'=>$end-$start];
+            static::$times['total'] += $end-$start;
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
@@ -60,7 +68,9 @@ trait DatabaseOperateTrait
         try {
             $start = microtime(true);
             $result = empty($prepare) ? static::sqlExec($sql) : static::prepare($sql, $prepare)->rowCount();
-            static::$times['sqls'][] = ['sql'=>$sql,'time'=>microtime(true)-$start];
+            $end = microtime(true);
+            static::$times['sqls'][] = ['sql'=>$sql,'time'=>$end-$start];
+            static::$times['total'] += $end-$start;
             return $result === false ? 0 : $result;
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());

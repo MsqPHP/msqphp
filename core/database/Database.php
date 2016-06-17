@@ -24,7 +24,7 @@ final class Database
                 static::$pdo = new \PDO($connect_info['dsn'], $connect_info['username'], $connect_info['password'], $config['params']);
                 static::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                 $end = microtime(true);
-                static::$times['init'] = $end-$start;
+                static::$times = ['init' => $end-$start, 'total'=>$end-$start];
             } catch (\PDOException $e) {
                 throw new DatabaseException($e->getMessage());
             }

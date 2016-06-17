@@ -6,11 +6,15 @@ msqphp beta 1.2
 * * * * *
 
 
-##使用须知
+## 介绍
 
-msqphp轻量级php7,0框架beta 1.2版
+php7.0 轻量级框架
 
-开源,免费,无需求,函数随意改,代码随意拆
+暂时为beta版本
+
+开源协议什么的不懂,但开源,免费,随意拆,随意使用
+
+**除版权外不负责任何责任**
 
 **未经实际项目测试,请慎重使用**
 
@@ -22,9 +26,6 @@ msqphp轻量级php7,0框架beta 1.2版
 
 **框架代码改进中**
 
-**框架为测试版本,除版权外不负责任何责任**
-
-**TAT,好吧,写代码去了,成品出来再说**
 
 + git : https://github.com/MsqPHP/msqphp
 + QQ交流群 : 566103528
@@ -36,9 +37,9 @@ msqphp轻量级php7,0框架beta 1.2版
 
 * * * * *
 
-+ 多而不乱,逻辑清晰
-
 + 简单,并到极致
+
++ 多而不乱,逻辑清晰
 
 + 灵活,小巧,不束缚
 
@@ -58,7 +59,7 @@ msqphp轻量级php7,0框架beta 1.2版
 
     >traits等
 
-+ composer依赖
++ composer支持
     >(虽然是废话)但这真的是一个很大的特性
 
     >并感谢composer
@@ -71,21 +72,10 @@ msqphp轻量级php7,0框架beta 1.2版
 
     >生产环境大概为  2到3个
 
-+ aiload 智能加载
-    
-    >**注:由于用composer加载类,所以需要需改composer类代码**    
-    
-    >* * * * *
-    
-    >引入类库过多?类拆分过细?文件加载过多不再是问题
-    
-    >* * * * *
-    
-    >**需要加载列表文件缓存**
-    
-    >**框架主要文件智能加载自动开启**
-    
-    >**路由控制器智能加载则按需开启**
+
++ aiload 智能加载 加强版 按需加载??惰性加载,不知道
+
+    >**注:由于用composer加载类,所以需要需改composer类代码**
 
 + 灵活,强大,简单,逻辑清晰的路由类
     > 自己去看route相关介绍
@@ -94,16 +84,16 @@ msqphp轻量级php7,0框架beta 1.2版
     > 视图三层缓存
 
     > + **固定值替换**
-        + 零件->模块
+        + 零件->模块　(模版引擎解析,固定值或缓存值替换)
 
     > + **模块拼接**
-        + 小模块->大模块->成品
+        + 小模块->大模块->成品   (积木拼接)
 
-    > + **真静态**        
+    > + **真静态**
         + 成品->商品(直接展示,路由重写都不经过)
 
-    > 像搭积木一样从零件开始拼接模块
-    
+    > 像搭积木一样从零件开始拼接模块,展示模块
+
     > 视图多语,多主题,真静态,伪静态,中间件缓存等简易实现
 
 + 最容易的扩展方式
@@ -128,52 +118,86 @@ msqphp轻量级php7,0框架beta 1.2版
 
 ##**安装需求**
 
-+ composer 安装 更新
-+ composer 修改代码ClassLoader.php中410行includeFile函数为:
-
-    ~~~
-
-    function includeFile($file)
-    {
-        $GLOBALS['autoloader_class'][] = $file;
-        include $file;
-    }
-    ~~~
-    > 不影响框架正常使用,但可以实现智能加载,所以推荐每次更新添加代码(如果没错的话,你大概常年不会composer更新的);
 + php 7.0及以上
 + mbstring ^_^ 我不会像larvel一样自己写一个强大的mb_string函数库什么的
 + pdo 否则数据库什么的就别想了
 + apache rewrite重写
 
+##**框架获得**
 
-##安装
++ **composer**
 
-**windows下权限有问题,请人工复制vendor/msqphp/framework/resource/install/下文件到web目录**
-
-+ composer.json:
-~~~
-{
-    "require": {
-        "php": ">=7.0.0",
-        "msqphp/framework": "1.0.*"
-    },
-    "autoload": {
-        "psr-4": {
-            "app\\": "application/",
+    + composer.json:
+    
+        ~~~
+        {
+            "require": {
+                "php": ">=7.0.0",
+                "msqphp/framework": "1.0.*"
+            },
+            "autoload": {
+                "psr-4": {
+                    "app\\": "application/",
+                }
+            },
+            "minimum-stability": "dev"
         }
-    },
-    "minimum-stability": "dev"
-}
-~~~
-+ composer update
+        ~~~
+    + composer update
+
++ **git**
+    + 下载git压缩包
+    + 解压放置到web/msqphp目录下
+
+
+##**安装**
+
+框架路径:
+
+**composer则框架位置在web/vendor/msqphp/framweok/**
+
+**否则推荐放于web/msqphp/**
+
+> 如果非composer安装,需要人工修改入口文件中框架路径
+
+
 + 配置入口目录目录下public,在入口目录下写入以下代码:
-~~~
-<?php
-$root = dirname(__DIR__);
-require $root.'vendor/msqphp/framework/Framework.php';
-\msqphp\Framework::install($root);
-~~~
+
+    ~~~
+
+    <?php
+    $root = dirname(__DIR__);
+
+    //引入框架下的Framework.php
+
+    require 框架路径'/Framework.php';
+
+    \msqphp\Framework::install($root);
+
+    ~~~
+
+    > 明确表示权限相关是个坑,web目录需要写+读权限??
+
+    > 如果无法安装
+
+    > 可以人工复制框架路径/resource/install/下文件到web目录
+
 + 保存并运行
+
+##**composer加载类是否使用**
+
+如果不想使用composer类,只使用框架本身什么的需要修改
+bootstrap/app.php
+将常量定义为false或者删除
+并将引用加载composer自动加载类注释
+~~~
+define('COMPOSER_AUTOLOAD', false);
+
+//composer自动加载类
+
+// require $root.'vendor/autoload.php';
+
+~~~
 + 再次刷新即可
 
 
@@ -222,6 +246,37 @@ www  WEB部署目录（或者子目录）
 │
 ├──composer.json         composer定义文件
 ~~~
+
+##**框架结构**
+
+~~~
+
+├──msqphp                msqphp框架
+│  └──framework          框架
+│    │
+│    ├──base             基类(放置一些基础类,全部为静态类静态方法,trait万能静态call)
+│    ├──core             核心类(放置一些核心类,以基类为基础,互相依赖,主要为框架实现)
+│    ├──vendor           扩展类(提供一些不必要但可能使用的功能,例如图片处理,上传功能等等)
+│    ├──traits           接口类??trait类集合,提供类基础构造组件,万能call,instance等等
+│    │
+│    ├──resource         基础视图资源,安装资源
+│    │
+│    ├──test             测试类及框架测试
+│    │
+│    ├──Environment.php  框架环境类 主运行逻辑负责
+│    │
+│    ├──App.php          应用方式模式运行
+│    ├──Cli.php          命令行模式运行
+│    ├──Test.php         测试入口文件
+│    ├──Framework.php    框架安装,更新等框架本身操作
+│    │
+│    ├──composer.json    composer,不解释
+│    ├──composer.lock    composer,不解释
+│    └──README.md        git
+
+~~~
+
+
 
 ##**应用目录结构**
 ###*多模块mavc(a可取)*
@@ -344,35 +399,6 @@ Route::group('module', 'home', function () {
         ...Route::ajax();
     });
 });
-
-~~~
-
-##**框架结构**
-
-~~~
-
-├──msqphp                msqphp框架
-│  └──framework          框架
-│    │
-│    ├──base             基类(放置一些基础类,全部为静态类静态方法,trait万能静态call)
-│    ├──core             核心类(放置一些核心类,以基类为基础,互相依赖,主要为框架实现)
-│    ├──vendor           扩展类(提供一些不必要但可能使用的功能,例如图片处理,上传功能等等)
-│    ├──traits           接口类??trait类集合,提供类基础构造组件,万能call,instance等等
-│    │
-│    ├──resource         基础视图资源,安装资源
-│    │
-│    ├──test             测试类及框架测试
-│    │
-│    ├──Environment.php  框架环境类 主运行逻辑负责
-│    │
-│    ├──App.php          应用方式模式运行
-│    ├──Cli.php          命令行模式运行
-│    ├──Test.php         测试入口文件
-│    ├──Framework.php    框架安装,更新等框架本身操作
-│    │
-│    ├──composer.json    composer,不解释
-│    ├──composer.lock    composer,不解释
-│    └──README.md        git
 
 ~~~
 

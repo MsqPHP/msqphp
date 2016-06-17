@@ -12,12 +12,12 @@ namespace msqphp\base\file;
 return function (string $from, string $to, bool $force = false) {
     //是否存在
     if (!is_file($from)) {
-        throw new FileException($from.static::ERROR['NotExists'].','.static::ERROR['CanNotCopy']);
+        throw new FileException($from.static::ERROR['NotExists'].',无法赋值');
     }
 
     //是否可操作
-    if (!is_executable($from) || !is_writable($from)) {
-        throw new FileException($from.static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
+    if (!is_readable($from)) {
+        throw new FileException($from.static::ERROR['CanNotOperable'].',无法赋值');
     }
 
     //对应文件是否存在
@@ -25,19 +25,18 @@ return function (string $from, string $to, bool $force = false) {
         if ($force) {
             static::delete($to, true);
         } else {
-            throw new FileException($to.static::ERROR['AlreadyExists'].','.static::ERROR['CanNotCopy']);
+            throw new FileException($to.static::ERROR['AlreadyExists'].',无法赋值');
         }
     }
 
     //对应文件父目录是否可操作
-    $to_dir = dirname($to);
 
-    if (!is_writable($to_dir) || !is_executable($to_dir)) {
-        throw new FileException($to.static::ERROR['ParentDir'].static::ERROR['CanNotOperable'].','.static::ERROR['CanNotCopy']);
+    if (!is_writable(dirname($to))) {
+        throw new FileException($to.static::ERROR['ParentDir'].static::ERROR['CanNotOperable'].',无法赋值');
     }
 
     //复制
     if (!copy($from, $to)) {
-        throw new FileException($from.static::ERROR['UnknownErro'].','.static::ERROR['CanNotCopy']);
+        throw new FileException($from.static::ERROR['UnknownErro'].',无法赋值');
     }
 };

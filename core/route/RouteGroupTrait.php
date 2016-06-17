@@ -132,18 +132,27 @@ trait RouteGroupTrait
      */
     public static function group(string $group, string $value, \Closure $func, array $args = [])
     {
-        static::$group[$group] === $value && call_user_func_array($func, $args);
+        if ($value === static::$group[$group]) {
+            unset($group, $value);
+            call_user_func_array($func, $args);
+        }
     }
 
     //匹配语言
     public static function language(string $language, \Closure $func, array $args = [])
     {
-        static::$info['language'] === $language && call_user_func_array($func, $args);
+        if ($language === static::$info['language']) {
+            unset($language);
+            call_user_func_array($func, $args);
+        }
     }
 
     //匹配主题
     public static function theme(string $theme, \Closure $func, array $args = [])
     {
-        static::$info['theme'] === $theme && call_user_func_array($func, $args);
+        if ($theme === static::$info['theme']) {
+            unset($theme);
+            call_user_func_array($func, $args);
+        }
     }
 }

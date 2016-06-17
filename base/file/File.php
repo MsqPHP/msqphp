@@ -22,13 +22,8 @@ final class File
     {
         if (is_file($file)) {
 
-            $parent_dir = dirname($file);
-
-            if (!is_writable($parent_dir)) {
-                throw new FileException($file.'父目录,无法写入');
-            }
-            if (!is_executable($parent_dir)) {
-                throw new FileException($file.'父目录,无法执行');
+            if (!is_writable($file)) {
+                throw new FileException($file.'文件不可写,无法删除');
             }
 
             if (!unlink($file)) {
@@ -129,31 +124,38 @@ final class File
      * @throws FileException
      * @return void
      */
-    public static function write(string $file, $content, bool $force = false, int $code = 0644)
+    public static function write(string $file, $content, bool $force = false)
     {
-        //父目录
-        $parent_dir = dirname($file);
+        if (is_file($file)) {
+            if (!is_writable($file)) {
+                throw new FileException($file.'无法操作,无法写入');
+            }
+        } else {
+            //父目录
+            $parent_dir = dirname($file);
 
-        //目录不存在
-        if (!is_dir($parent_dir)) {
-            //错
-            if (!$force) {
-                throw new FileException($file.'父目录不存在,无法写入');
-            } else {
-                //创建
-                base\dir\Dir::make($parent_dir, true);
+            //目录不存在
+            if (!is_dir($parent_dir)) {
+                //错
+                if (!$force) {
+                    throw new FileException($file.'父目录不存在,无法写入');
+                } else {
+                    //创建
+                    base\dir\Dir::make($parent_dir, true);
+                }
+            }
+
+            if (!is_writable($parent_dir)) {
+                throw new FileException($file.'父目录,无法写入');
+            }
+            if (!is_executable($parent_dir)) {
+                throw new FileException($file.'父目录,无法执行');
             }
         }
-
-        if (!is_writable($parent_dir)) {
-            throw new FileException($file.'父目录,无法写入');
-        }
-        if (!is_executable($parent_dir)) {
-            throw new FileException($file.'父目录,无法执行');
-        }
-        if (false === file_put_contents($file, (string)$content, LOCK_EX) || false === chmod($file, $code)) {
+        if (false === file_put_contents($file, (string)$content, LOCK_EX)) {
             throw new FileException($file.'未知错误,无法写入');
         }
+
     }
     //写入文件别名
     public static function save(string $file, $content, bool $force = false, int $code = 0640)

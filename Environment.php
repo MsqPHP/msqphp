@@ -28,10 +28,10 @@ class Environment
     public static function run(array $path_config)
     {
         //开始cpu状况
-        function_exists('getrusage') && 0 === strncasecmp(PHP_OS, 'WIN', 3) && define('PHP_START_CPU', getrusage());
+        function_exists('getrusage') && 0 !== strncasecmp(PHP_OS, 'WIN', 3) && define('PHP_START_CPU', getrusage());
 
         //开始内存状况
-        function_exists('memory_get_usage') && define('PHP_START_MEM' , memory_get_usage());
+        define('PHP_START_MEM' , memory_get_usage());
 
         //配置路径
         static::setPath($path_config);
@@ -40,11 +40,16 @@ class Environment
         //获得运行环境
         static::$sapi = PHP_SAPI === 'cli' ? 'cli' : 'cgi';
 
+        if (!defined('COMPOSER_AUTOLOAD') || !COMPOSER_AUTOLOAD) {
+            require __DIR__.'/core/autoload/Autoload.php';
+            core\autoload\Autoload::register();
+        }
+
         //配置环境
         static::initDebug();
 
         //如果有缓存,则初始化
-        static::initAiload();
+        // static::initAiload();
 
         //配置配置
         static::initConfig();
@@ -53,7 +58,7 @@ class Environment
         date_default_timezone_set(core\config\Config::get('framework.timezone'));
 
         //如果有缓存,则结束
-        static::endAiload();
+        // static::endAiload();
 
         //命令行模式
         if ('cli' === static::$sapi) {
@@ -192,17 +197,18 @@ class Environment
         $autoload = core\aiload\AiLoad::getInstance();
 
         //改变过
-        if (static::$autoload_changed = $autoload->changed()) {
-
-            //更新保存并结束
-            $autoload->update()->save()->end();
-        } else {
+        if (static::$autoload_changed = $autoload->last()) {
 
             //随机删除
-            rand(0,5000) === 1000 && $autoload->delete();
+            rand(0,5000) === 1000 && $autoload->deleteAll();
 
             //结束
             $autoload->end();
+
+        } else {
+
+            //更新保存并结束
+            $autoload->update()->end();
         }
     }
     /**

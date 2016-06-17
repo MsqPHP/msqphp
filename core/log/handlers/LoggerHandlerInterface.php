@@ -3,15 +3,19 @@ namespace msqphp\core\log\handlers;
 
 interface LoggerHandlerInterface
 {
+    /**
+     * 配置参数
+     *
+     * @param array $config [description]
+     */
     public function __construct(array $config);
     /**
-     * Logs with an arbitrary level.
      *
      * @param mixed $level
      * @param string $message
-     * @return null
+     * @return void
      */
-    public function log(string $level, string $message);
+    public function record(string $level, string $message);
     public function emergency(string $message);
     public function alert(string $message);
     public function critical(string $message);
@@ -21,4 +25,5 @@ interface LoggerHandlerInterface
     public function info(string $message);
     public function debug(string $message);
     public function exception(string $message);
+    public function success(string $message);
 }

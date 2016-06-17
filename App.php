@@ -11,10 +11,12 @@ class App
     public static function run()
     {
         //执行定时任务
-        if (!defined('NO_CAHCE') && core\config\Config::get('framework.cron')) {
+        require __DIR__.'/core/cron/Cron.php';
+        if (core\config\Config::get('framework.cron')) {
+
             $path = Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron'.DIRECTORY_SEPARATOR.'cron.log';
-            if (is_file($path) &&  filemtime($path) < time() - core\config\Config::get('framework.cron_intervals')) {
-                require __DIR__.'/core/cron/Cron.php';
+
+            if (!is_file($path) || filemtime($path) + core\config\Config::get('framework.cron_intervals') < time()) {
                 core\cron\Cron::getInstance()->run();
             }
             unset($path);
@@ -60,7 +62,37 @@ class App
      */
     public static function end()
     {
+        if (APP_DEBUG === 0) {
+            core\log\Log::getInstance()->init()->message('运行成功')->content(static::getSimalInfo())->level('success')->recode();
+        } elseif (APP_DEBUG === 1) {
+            core\log\Log::getInstance()->init()->message('运行成功')->content(static::getSimalInfo())->level('success')->recode();
+            core\response\Response::dumpArray(static::getFullInfo());
+        } else {
+            core\response\Response::dumpArray(static::getFullInfo());
+        }
+    }
+    private static function getSimalInfo() : array
+    {
+        $end_info = [];
         //结束调用,产生框架运行信息;
+        defined('PHP_INIT_TIME') && $end_time = microtime(true);
+
+        if (isset($end_time)) {
+            $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_INIT_TIME , 12) . '秒';
+            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
+            $end_info[] = "\t内存峰值: " . base\number\Number::byte(memory_get_peak_usage(), false);
+        }
+
+        if (class_exists('\msqphp\core\database\Database', false) && !empty($times = core\database\Database::getTimes())) {
+            $times = core\database\Database::getTimes();
+            $end_info[] = "\t".'sql语句:'.count($times['sqls']).'条';
+            $end_info[] = "\t".'sql总用时:'.(string) round($times['total'], 12).'秒';
+        }
+
+        return $end_info;
+    }
+    private static function getFullInfo() : array
+    {
         defined('PHP_INIT_TIME') && $end_time = microtime(true);
         defined('PHP_START_MEM') && $end_mem = memory_get_usage();
         defined('PHP_START_CPU') && $end_cpu = getrusage();
@@ -78,23 +110,19 @@ class App
             defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
             unset($end_time);
         }
-        if (class_exists('\msqphp\core\database\Database', false)) {
+        if (class_exists('\msqphp\core\database\Database', false) && !empty($times = core\database\Database::getTimes())) {
             $end_info[] = 'sql信息:';
-            $sqls       = core\database\Database::getSqls();
-            $times      = core\database\Database::getTimes();
-            $total      = $times['init'];
-            $end_info[] = "\t".'sql初始化:'.$times['init'];
-            $end_info[] = "\t".'sql语句:'.count($sqls).'条';
-            foreach($times['sqls'] as $info) {
-                $total += $info['time'];
-                $end_info[] = "\t".$info['sql']."\t\t".'用时'.$info['time'];
-            }
-            $end_info[] = "\t".'sql总用时:'.$total;
-            unset($sqls);
+            $end_info[] = "\t".'sql初始化用时:'.$times['init'];
+            $end_info[] = "\t".'sql语句:'.count($times['sqls']).'条';
+
+            array_map(function ($sql_info) use (& $end_info) {
+                $end_info[] = "\t".$sql_info['sql']."\t\t".'用时'.$sql_info['time'];
+            }, $times['sqls']);
+
+            $end_info[] = "\t".'sql总用时:'.$times['total'];
             unset($times);
-            unset($info);
-            unset($total);
         }
+
         if (isset($end_mem)) {
             $end_info[] = '内存信息:';
             $end_info[] = "\t开始内存: " . base\number\Number::byte(PHP_START_MEM, false);
@@ -103,6 +131,7 @@ class App
             $end_info[] = "\t内存峰值: " . base\number\Number::byte(memory_get_peak_usage(), false);
             unset($end_mem);
         }
+
         if (isset($end_cpu)) {
             $end_info[] = 'cpu信息:';
             $end_info[] = "\t块输出操作    : 开始:" . PHP_START_CPU['ru_oublock']. ", \t结束:" . $end_cpu['ru_oublock'];
@@ -112,6 +141,8 @@ class App
             $end_info[] = "\t被动上下文切换: 开始:" . PHP_START_CPU['ru_nivcsw'] . ", \t结束:" . $end_cpu['ru_nivcsw'];
             $end_info[] = "\t页回收        : 开始:" . PHP_START_CPU['ru_minflt'] . ", \t结束:" . $end_cpu['ru_minflt'];
             $end_info[] = "\t页失效        : 开始:" . PHP_START_CPU['ru_majflt'] . ", \t结束:" . $end_cpu['ru_majflt'];
+            $end_info[] = "\t用户用时      : " . ($end_cpu['ru_utime.tv_sec'] - PHP_START_CPU['ru_utime.tv_sec'] + ($end_cpu['ru_utime.tv_usec'] - PHP_START_CPU['ru_utime.tv_usec']) / 1000000) . '秒';
+            $end_info[] = "\t系统用时      : " . ($end_cpu['ru_stime.tv_sec'] - PHP_START_CPU['ru_stime.tv_sec'] + ($end_cpu['ru_stime.tv_usec'] - PHP_START_CPU['ru_stime.tv_usec']) / 1000000) . '秒';
             unset($end_cpu);
         }
         if (function_exists('get_defined_constants')) {
@@ -140,17 +171,15 @@ class App
             unset($file);
             unset($byte);
         }
-        if (!empty(Environment::$autoload_classes)) {
-            $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count(Environment::$autoload_classes);
+        $composer = array_merge(Environment::$autoload_classes, core\aiload\AiLoad::$composer);
+        if (!empty($composer)) {
+            $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count($composer);
             $end_info[] = 'composer加载文件列表:';
-            foreach (Environment::$autoload_classes as $file) {
+            foreach ($composer as $file) {
                 $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
             }
         }
-        if (0 === APP_DEBUG || 5 === APP_DEBUG) {
-            core\log\Log::getInstance()->init()->message(implode(PHP_EOL, $end_info))->type('succes')->recode();
-        } else {
-            core\response\Response::dumpArray($end_info, true);
-        }
+
+        return $end_info;
     }
 }

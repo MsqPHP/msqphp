@@ -12,11 +12,7 @@ trait Instance
      */
     public static function getInstance() : self
     {
-        if (null === static::$instance) {
-            return static::$instance = new static();
-        } else {
-            return static::$instance;
-        }
+        return static::$instance = static::$instance ?? new static();
     }
     /**
      * 销毁当前对象实例

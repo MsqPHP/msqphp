@@ -14,55 +14,65 @@ class File implements LoggerHandlerInterface
     public function __construct(array $config)
     {
         $config = array_merge($this->config, $config);
+
         if (!is_dir($config['path'])) {
             throw new LoggerHandlerException('日志目录不存在');
-        } else {
-            $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
         }
+        if (!is_writable($config['path'])) {
+            throw new LoggerHandlerException('日志目录不可写');
+        }
+
+        $config['path'] = realpath($config['path']) . DIRECTORY_SEPARATOR;
+
         $this->config = $config;
     }
-    private function getFilePath(string $level) : string
+    public function record(string $level, string $message, array $context = [])
     {
-        return $this->config['path'].date('Y-m-d-H-i-s').'_'.$level.$this->config['extension'];
-    }
-    public function log(string $level, string $message, array $context = [])
-    {
-        base\file\File::append($this->getFilePath($level), $message . PHP_EOL, true);
+        $path = $this->config['path'].date('Y-m-d').DIRECTORY_SEPARATOR.$level.$this->config['extension'];
+        $message = '['.date('Y-m-d H:i:s').']' . $level . ':' .$message .PHP_EOL .
+        (empty($context) ? '' : '{' . PHP_EOL. implode(PHP_EOL, $context) . PHP_EOL . '}' . PHP_EOL);
+        base\file\File::append($path, $message, true);
     }
     public function emergency(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('emergency'), $message);
+        static::record('emergency', $message, $context = []);
     }
     public function alert(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('alert'), $message);
+        static::record('alert', $message, $context = []);
     }
     public function critical(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('critical'), $message);
+        static::record('critical', $message, $context = []);
     }
     public function error(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('error'), $message);
+        static::record('error', $message, $context = []);
     }
     public function warning(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('warning'), $message);
+        static::record('warning', $message, $context = []);
     }
     public function notice(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('notice'), $message);
+        static::record('notice', $message, $context = []);
     }
     public function info(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('info'), $message);
+        static::record('info', $message, $context = []);
     }
     public function debug(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('debug'), $message);
+        static::record('debug', $message, $context = []);
     }
     public function exception(string $message, array $context = [])
     {
-        base\file\File::append($this->getFilePath('exception'), $message);
+        static::record('exception', $message, $context = []);
     }
+    public function success(string $message, array $context = [])
+    {
+        static::record('success', $message, $context);
+    }
+
+
 }

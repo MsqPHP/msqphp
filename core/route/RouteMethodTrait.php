@@ -51,19 +51,14 @@ trait RouteMethodTrait
 
         foreach ((array)$params as $param) {
 
-            if (static::checkParam($param)) {
+            if (!static::checkParam($param)) {
                 continue;
             }
 
             static::$matched = true;
 
             if ($autoload) {
-
-                $aiload = core\aiload\AiLoad::getInstance()->init()->key(md5(static::$url.implode('/', (array)$params).'/'.implode('/', $method)));
-
-                \msqphp\Environment::$autoload_changed && $aiload->delete();
-
-                $aiload->load();
+                // core\aiload\AiLoad::getInstance()->init()->key(md5(static::$url.implode('/', (array)$params).'/'.implode('/', $method)))->load();
             }
 
             if (is_string($func)) {
@@ -79,15 +74,15 @@ trait RouteMethodTrait
             }
 
             if ($autoload) {
-
-                if ($aiload->changed()) {
-                    $aiload->update()->save()->end();
-                } else {
-                    rand(0,5000) === 1000 && $aiload->delete();
-                    $aiload->end();
-                }
+                // $aiload = core\aiload\AiLoad::getInstance();
+                // if ($aiload->last()) {
+                //     rand(0,5000) === 1000 && $aiload->delete();
+                //     $aiload->end();
+                // } else {
+                //     $aiload->update()->end();
+                // }
             }
-
+            break;
         }
 
     }

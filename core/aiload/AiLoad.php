@@ -21,6 +21,8 @@ final class AiLoad
 {
     use traits\Instance;
 
+    public static $composer = [];
+
     private $pointer = [];
 
     public function init() : self
@@ -38,7 +40,7 @@ final class AiLoad
         $this->pointer['info'] = [];
 
         //文件不存在,自动加载信息为空,直接返回
-        if (defined('NO_CACHE') || !is_file($file = $this->getFile())) {
+        if (defined('NO_CACHE') || !is_file($file = $this->getFile($this->pointer['key']))) {
             return $this;
         }
 
@@ -61,6 +63,7 @@ final class AiLoad
         $needful = [];
         //整理过后的列表
         $tidied  = [];
+
         //载入整理过文件的函数
         $require_tidied_file = function (string $file) use (& $tidied) {
             require $file;
@@ -89,31 +92,30 @@ final class AiLoad
 
         return $this;
     }
+
     public function end()
     {
         static::unsetInstance();
     }
-    public function changed() : bool
+
+    public function last() : bool
     {
         return !empty(\msqphp\Environment::$autoload_classes) || !isset($this->pointer['info']['last']);
     }
-    public function save() : self
+
+    private function getFile(string $key) : string
     {
-        if (defined('NO_CACHE')) {
-            return $this;
-        }
-        $file = $this->getFile();
-        base\file\File::write($file, '<?php'.PHP_EOL.'return '.var_export($this->pointer['info'], true).';', true);
-        return $this;
+        return \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload'.DIRECTORY_SEPARATOR.md5($key).'.php';
     }
-    private function getFile() : string
-    {
-        return \msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload'.DIRECTORY_SEPARATOR.$this->pointer['key'].'.php';
-    }
+
     public function delete() : self
     {
-        base\file\File::delete($this->getFile(), true);
+        base\file\File::delete($this->getFile($this->pointer['key']), true);
         return $this;
+    }
+    public function deleteAll()
+    {
+        base\dir\Dir::empty(\msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'autoload', true);
     }
     public function update() : self
     {
@@ -122,7 +124,8 @@ final class AiLoad
         !empty(\msqphp\Environment::$autoload_classes) && $info['needful'] = array_merge($info['needful'] ?? [], \msqphp\Environment::$autoload_classes);
 
         //清空,避免对其他地方自动加载造成污染;
-        static::$composer = \msqphp\Environment::$autoload_classes;
+        static::$composer = array_merge(static::$composer, \msqphp\Environment::$autoload_classes);
+
         \msqphp\Environment::$autoload_classes = [];
 
         //取唯一值,避免重复值
@@ -132,6 +135,10 @@ final class AiLoad
 
         $this->pointer['info'] = $info;
 
+
+        base\file\File::write($this->getFile($this->pointer['key']), '<?php'.PHP_EOL.'return '.var_export($this->pointer['info'], true).';', true);
+
         return $this;
+
     }
 }

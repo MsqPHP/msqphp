@@ -12,7 +12,7 @@ class Framework
         $root = realpath($root) . DIRECTORY_SEPARATOR;
 
         //lib目录
-        $lib_path = $root . 'library' . DIRECTORY_SEPARATOR . 'msqphp' . DIRECTORY_SEPARATOR . 'framework';
+        $lib_path = $root . 'library' . DIRECTORY_SEPARATOR . 'msqphp' . DIRECTORY_SEPARATOR . 'framework' . DIRECTORY_SEPARATOR;
 
         //安装资源目录
         $install_path = __DIR__.DIRECTORY_SEPARATOR.'resource'.DIRECTORY_SEPARATOR.'install'.DIRECTORY_SEPARATOR;
@@ -35,11 +35,15 @@ class Framework
             if ('public' === $key || base\dir\Dir::isEmpty($path, true)) {
                 base\dir\Dir::copy($install_path.$key, $path, true);
             }
+            if ('public' === $key || 'storage' === $key) {
+                chmod($path, 0666);
+            } else {
+                chmod($path, 0444);
+            }
         }
 
-
         //lib目录对应目录创建
-        array_map(function ($file) {
+        array_map(function (string $dir) use ($lib_path) {
             if (base\str\Str::endsWith($dir, ['methods', 'gets', 'staticMethods', 'handlers', 'drivers'])) {
                 $dir = str_replace(__DIR__.DIRECTORY_SEPARATOR, $lib_path, $dir);
                 base\dir\Dir::make($dir, true);

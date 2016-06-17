@@ -18,7 +18,7 @@ return function (string $from, string $to, bool $force = false) {
     }
 
     //是否可操作
-    if (!is_writable($from) || !is_executable($from)) {
+    if (!is_readable($from)) {
         throw new DirException($from.' 无法操作,无法复制');
     }
 
@@ -36,7 +36,7 @@ return function (string $from, string $to, bool $force = false) {
     $to_parent = dirname($to);
 
     //目标父目录是否可操作
-    if (!is_writable($to_parent) || !is_executable($to_parent)) {
+    if (!is_writable($to_parent)) {
         throw new DirException($to.' 父目录无法操作');
     }
 

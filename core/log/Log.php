@@ -18,6 +18,7 @@ final class Log
     const INFO      = 'info';
     const DEBUG     = 'debug';
     const EXCEPTION = 'exception';
+    const SUCCESS   = 'success';
 
     private $handler = null;
     private $config = [
@@ -51,13 +52,19 @@ final class Log
     {
         return $this->level($type);
     }
+    public function content(array $content) : self
+    {
+        $this->pointer['content'] = $content;
+        return $this;
+    }
     public function recode()
     {
         $pointer = $this->pointer;
         $level = $pointer['level'] ?? '';
         $message = $pointer['message'] ?? '';
+        $content = $pointer['content'] ?? [];
         if (in_array(strtolower($level), $this->config['level'])) {
-            $this->handler->log($level, $message);
+            $this->handler->record($level, $message, $content);
         }
     }
     private function initHandler(string $type, array $config)

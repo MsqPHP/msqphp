@@ -39,7 +39,7 @@ final class Dir
 
             //父目录是否可写
             if (!is_writable($parent_dir)) {
-                throw new DirException($dir.'上级目录不可操作, 无法创建');
+                throw new DirException($dir.'上级目录'.$parent_dir.'不可写入, 无法创建目录');
             }
 
             //创建目录
