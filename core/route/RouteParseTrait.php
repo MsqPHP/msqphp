@@ -32,7 +32,7 @@ trait RouteParseTrait
             // 分割path和query
             static::$parse_info['path']  = static::deletePathSuffix(substr($path_and_query, 0, $pos));
             static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
-            static::parseQuery($query);
+            !empty($query) && static::parseQuery($query);
         }
 
         static::$pending_path = explode('/', static::$parse_info['path']);
@@ -84,6 +84,7 @@ trait RouteParseTrait
         }
         return static::$parse_info['path'];
     }
+    // 获得查询语句(get参数)
     private static function getQuery() : string
     {
         if (!isset(static::$parse_info['query'])) {
@@ -91,10 +92,12 @@ trait RouteParseTrait
         }
         return static::$parse_info['query'];
     }
+    // 获得访问方法
     private static function getMethod() : string
     {
         return static::$parse_info['method'] = static::$parse_info['method'] ?? strtolower( isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $_SERVER['REQUEST_METHOD'] );
     }
+    // 获得协议
     private static function getProtocol() : string
     {
         if (!isset(static::$parse_info['protocol'])) {
@@ -106,18 +109,22 @@ trait RouteParseTrait
         }
         return static::$parse_info['protocol'];
     }
+    // 获得域名
     private static function getDomain() : string
     {
         return static::$parse_info['domain'] = static::$parse_info['domain'] ?? $_SERVER['$_SERVER_NAME'] ?? $_SERVER['HTTP_HOST'];
     }
+    // 获得端口
     private static function getPort() : int
     {
         return static::$parse_info['port'] = (int) static::$parse_info['port'] ?? $_SERVER['SERVER_PORT'];
     }
+    // 获得ip
     private static function getIp() : string
     {
         return static::$parse_info['ip'] = static::$parse_info['ip'] ?? base\ip\Ip::get();
     }
+    // 获得referer
     private static function getReferer() : string
     {
         return static::$parse_info['referer'] = static::$parse_info['referer'] ?? $_SERVER['HTTP_REFERER'];

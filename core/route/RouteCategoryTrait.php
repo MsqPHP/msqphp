@@ -7,71 +7,83 @@ trait RouteCategoryTrait
 {
     private static $category_msg = [];
 
-    use RouteUseCategoryTrait, RouteAddCategoryTrait;
+    use RouteUseCategoryTrait, RouteAddCategoryTrait, RouteUseCategoryTrait;
 
     // 得到当前的分组信息
     public static function getGroupInfo() : array
     {
         return static::$category_msg['group'];
     }
-}
-
-
-trait RouteAddCategoryTrait
-{
     /**
-     * 多语支持 || 多主题支持
-     * @param   array      $info = [
-     *     'allowed'   => string(路由规则)  |  array(允许值),
-     *     'default'   => string(默认值),
-     * ];
-     */
-    public static function addLanguage(array $info) : void
-    {
-        static::$category_msg['language'] = static::getAndAddAllowedValue('language', $info['allowed'], $info['default']);
-    }
-    public static function addTheme(array $info) : void
-    {
-        static::$category_msg['theme'] = static::getAndAddAllowedValue('theme', $info['allowed'], $info['default']);
-    }
-
-    /**
-     * 增加一个url分组信息
-     * 将获取url参数数组中第一个参数
-     * 如果在且允许,则取值并从移除
-     * 否则取默认值
+     * 得到允许值,用于addLanguage,addTheme,addGroup
+     * 如果非默认取值则添加值当前url参数
+     * 定义对应常量
      *
-     * @param  array $info 分组信息
-     * 关联数组;
-     * $info = [
-     *    'name'      =>string(组名)'module',
-     *    'allowed'   =>string(路由规则) || array(允许值数组)
-     *    'default'   =>string('组默认值')
-     *    ['namespace' =>true(与组值相同) || string('固定值') ]
-     *    (可选,将在当前namespace基础上添加一个命名空间,基础值为app);
-     * ];
+     * @param  array  $info 信息['allowed'=>string(路由规则)|array(指定值),'default',默认值];
+     *
+     * @return string
+     */
+    private static function getAndAddAllowedCategoryValue(string $name, $allowed, string $default) : string
+    {
+        // 如果当前url参数仍有值 并且 检测成功
+        if (isset(static::$pending_path[0]) && static::checkAllowedCategoryValue(static::$pending_path[0], $allowed)) {
+            // 取值
+            $result = array_shift(static::$pending_path);
+
+            // 追加至Url
+            static::$url = static::$url === '' ? static::getProtocol().'://'.static::getDomain().'/'.$result.'/' : $result.'/';
+        } else {
+            // 取默认
+            $result = $default;
+        }
+
+        // 添加对应常量
+        static::addCategoryConstant($name, $result);
+
+        return $result;
+    }
+    /**
+     * 添加一个分类常量
+     *
+     * @param  string  $name   常量名称
+     * @param  string  $value  常量值
      *
      * @return void
      */
-    public static function addGroup(array $info) : void
+    private static function addCategoryConstant(string $name, string $value) : void
     {
-        // 赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
-        static::$category_msg['group'][] = static::$category_msg['group'][$info['name']] = $group = static::getAndAddAllowedValue($info['name'], $info['allowed'], $info['default']);
+        // 定义常量
+        $constant = '__'.strtoupper($name).'__';
 
-        // 如果命名空间存在, 取其值
-        if (isset($info['namespace'])) {
-            // bool等于组值
-            if (true === $info['namespace']) {
-                static::$namespace .= trim($group, '\\').'\\';
-            } elseif (is_string($info['namespace'])) {
-            // 否则为过固定值
-                static::$namespace .= trim($info['namespace'], '\\').'\\';
-            } else {
-                static::exception('路由分组的命名空间类型未知,应为true(与组值相同)或者string(固定值');
-            }
-        }
+        defined($constant) || define($constant, $value);
+        // 添加到
+        static::$category_msg['constant'][$constant] = $value;
     }
 
+    /**
+     * 分类允许值检测
+     *
+     * @param  string $may   可能值
+     * @param  miexd  $value 指定值
+     *
+     * @return bool
+     */
+    private static function checkAllowedCategoryValue(string $may, $value) : bool
+    {
+        // 如果是个字符串,则检测规则
+        if (is_string($value)) {
+            return static::checkRoule($may, $value);
+        } elseif (is_array($value)) {
+        // 如果是个数组, 判断是否是数组中的某个值
+            return in_array($may, $value);
+        } else {
+            static::exception($may.'未知的检测类型,检测类型应为数组或路由规则名称');
+        }
+    }
+}
+
+trait RouteSetCategoryTrait
+{
     public static function setGroup(string $group, string $value, $namespace = null) : void
     {
         static::$category_msg['group'][] = static::$category_msg['group'][$group] = $value;
@@ -88,74 +100,72 @@ trait RouteAddCategoryTrait
             }
         }
     }
-
-    /**
-     * 得到允许值,用于addLanguage,addTheme,addGroup
-     * 如果非默认取值则添加值当前url参数
-     * 定义对应常量
-     *
-     * @param  array  $info 信息['allowed'=>string(路由规则)|array(指定值),'default',默认值];
-     *
-     * @return string
-     */
-    private static function getAndAddAllowedValue(string $name, $allowed, string $default) : string
+    public static function setLanguage(string $language) : void
     {
-        // 如果当前url参数仍有值 并且 检测成功
-        if (isset(static::$pending_path[0]) && static::checkAllowed(static::$pending_path[0], $allowed)) {
-            // 取值
-            $result = array_shift(static::$pending_path);
-
-            // 追加至Url
-            static::$url .= $result . '/';
-        } else {
-            // 取默认
-            $result = $default;
-        }
-
-        static::addCategoryConstant($name, $result);
-
-        return $result;
+        static::$category_msg['language'] = $language;
+        static::addCategoryConstant('language', $language);
+    }
+    public static function setTheme(string $theme) : void
+    {
+        static::$category_msg['theme'] = $theme;
+        static::addCategoryConstant('theme', $theme);
+    }
+}
+trait RouteAddCategoryTrait
+{
+    /**
+     * 多语支持 || 多主题支持
+     * @param   array      $info = [
+     *     'allowed'   => string(路由规则)  |  array(允许值一维数组),
+     *     'default'   => string(默认值),
+     * ];
+     */
+    public static function addLanguage(array $info) : void
+    {
+        static::$category_msg['language'] = static::getAndAddAllowedCategoryValue('language', $info['allowed'], $info['default']);
+    }
+    public static function addTheme(array $info) : void
+    {
+        static::$category_msg['theme'] = static::getAndAddAllowedCategoryValue('theme', $info['allowed'], $info['default']);
     }
 
     /**
-     * 添加一个分类常量
+     * 增加一个url分组信息
+     * 将获取待处理路径第一个参数
+     * 如果有且允许,则取值并从移除
+     * 否则取默认值
      *
-     * @param  string  $name   常量名称
-     * @param  string  $value  常量值
+     * @param  array $info 分组信息
+     * 关联数组;
+     * $info = [
+     *    'name'      =>string(组名)'module',
+     *    'allowed'   =>string(路由规则) || array(允许值一维数组)
+     *    'default'   =>string('组默认值')
+     *    ['namespace' =>true(与组值相同) || string('固定值') ]
+     *    (可选,将在当前namespace基础上添加一个命名空间,基础值为app);
+     * ];
      *
      * @return void
      */
-    private static function addCategoryConstant(string $name, string $value) : void
+    public static function addGroup(array $info) : void
     {
-        // 定义常量
-        $constant = '__'.strtoupper($name).'__';
-        defined($constant) || define($constant, $value);
+        // 赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
+        static::$category_msg['group'][] = static::$category_msg['group'][$info['name']] = $group = static::getAndAddAllowedCategoryValue($info['name'], $info['allowed'], $info['default']);
 
-        static::$category_msg['constant'][$constant] = $value;
-    }
-
-    /**
-     * 允许值检测
-     *
-     * @param  string $may   可能值
-     * @param  miexd  $value 指定值
-     *
-     * @return bool
-     */
-    private static function checkAllowed(string $may, $value) : bool
-    {
-        // 如果是个字符串,则检测规则
-        if (is_string($value)) {
-            return static::checkRoule($may, $value);
-        } elseif (is_array($value)) {
-        // 如果是个数组, 判断是否是数组中的某个值
-            return in_array($may, $value);
-        } else {
-            static::exception($may.'未知的检测类型,检测类型应为数组或路由规则名称');
+        // 如果命名空间存在, 取其值
+        if (isset($info['namespace'])) {
+            // bool等于组值
+            if (true === $info['namespace']) {
+                static::$namespace .= trim($group, '\\').'\\';
+            } elseif (is_string($info['namespace'])) {
+            // 否则为过固定值
+                static::$namespace .= trim($info['namespace'], '\\').'\\';
+            } else {
+                static::exception('路由分组的命名空间类型未知,应为true(与组值相同)或者string(固定值');
+            }
         }
     }
 }
-
 trait RouteUseCategoryTrait
 {
     /**

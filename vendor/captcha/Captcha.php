@@ -74,12 +74,12 @@ final class Captcha
             $_text = substr($chars, $i, 1);
             imagettftext($image, $_size, $_angle, $_x, $_y, $_color, $_font, $_text);
         }
+        //7.点干扰
         if (isset($pointer['pixel'])) {
             for ($i = $pointer['pixel']; $i >= 0; --$i) {
                 imagesetpixel($image, random_int(0, $width-1), random_int(0, $height-1), $balck);
             }
         }
-        //7.点干扰
         //8.直线干扰
         if (isset($pointer['line'])) {
             for ($i = $pointer['line']; $i >= 0; --$i) {
@@ -87,6 +87,7 @@ final class Captcha
                 imageline($image, random_int(0, $width-1), random_int(0, $height-1), random_int(0, $width-1), random_int(0, $height-1), $color);
             }
         }
+
         //9.导出
         base\header\Header::type('gif');
         base\header\Header::code(200);

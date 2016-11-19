@@ -64,8 +64,7 @@ trait RouteMethodTrait
             if (static::checkCondition($condition)) {
                 // 匹配成功
                 static::$matched = true;
-                static::$method_info['method'] = $method;
-                static::$method_info['condition'] = $conditions;
+                static::$method_info = ['method' => $method, 'condition' => $conditions];
                 unset($method, $conditions);
                 static::callFunction($func, $args, $aiload);
                 return;
@@ -78,14 +77,12 @@ trait RouteMethodTrait
     {
         if ($query[0] === '?') {
             $delimiter_else = '#';
-            $delimiter_now  = '?';
             $source         = $_GET;
         } elseif ($query[0] === '#') {
             $delimiter_else = '?';
-            $delimiter_now  = '#';
             $source         = $_POST;
         } else {
-            static::exception('route匹配时出错,错误的args传参');
+            static::exception('route匹配解析时出错,错误的url查询(get参数)数据');
         }
 
         // ?get&get2#post&post2?get3#post3
@@ -208,30 +205,30 @@ trait RouteMethodCheckTrait
         $target_path = explode('/', $path);
         $pending_path = static::$pending_path ?: [''];
 
-        if (count($target_path) !== count($pending_path)) {
+        if (count($target_path) !== $len = count($pending_path)) {
             return false;
         }
 
-        if ($target_path[0] === $pending_path[0]) {
-            array_shift($target_path);
-            array_shift($pending_path);
-        } else {
+        if ($target_path[0] !== $pending_path[0]) {
             return false;
         }
 
-        $may = [];
-
-        while (isset($target_path[0])) {
-            $pos = strpos($target_path[0], '(');
-            $name = substr($target_path[0],0,$pos);
-            $roule_key = substr($target_path[0],$pos +1, -1);
-            if (static::checkRoule($pending_path[0], $roule_key)) {
-                $_GET[$name] = static::$info['get'][$name] = $pending_path[0];
-                array_shift($target_path);
-                array_shift($pending_path);
-            } else {
-                return false;
+        for ($i = 1; $i < $len; ++$i ) {
+            if (false !== $pos = strpos($target_path[0], '(')) {
+                $name = substr($target_path[0],0,$pos);
+                $roule_key = substr($target_path[0],$pos +1, -1);
+                if (static::checkRoule($pending_path[0], $roule_key)) {
+                    $_GET[$name] = $pending_path[0];
+                    continue;
+                }
+            } elseif(isset($target_path[1]) && $pending_path[0] === $target_path[0]) {
+                if (static::checkRoule($pending_path[1], $target_path[1])) {
+                    $_GET[$pending_path[0]] = $pending_path[1];
+                    ++$i;
+                    continue;
+                }
             }
+            return false;
         }
 
         return true;
@@ -242,10 +239,11 @@ trait RouteMethodCheckTrait
             [$query, $args_name, $source] = static::getArgsInfoByQuery($query);
 
             foreach ($args_name as $arg_name) {
-                $pos = strpos($arg_name, '(');
-                // 检测
-                if (static::checkRoule($source[substr($arg_name,0,$pos)], substr($arg_name,$pos +1, -1)) === false) {
-                    return false;
+                if (false !== $pos = strpos($arg_name, '(')) {
+                    // 检测
+                    if (false === static::checkRoule($source[substr($arg_name,0,$pos)], substr($arg_name,$pos +1, -1))) {
+                        return false;
+                    }
                 }
             }
         }

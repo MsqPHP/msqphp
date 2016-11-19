@@ -21,7 +21,7 @@ final class Route
     private static $url           = '';
 
     // 待处理路径
-    private static $pending_path  = '';
+    private static $pending_path  = [];
 
     // 当前命名空间
     private static $namespace     = '\\app\\';
@@ -38,16 +38,13 @@ final class Route
     // route运行
     public static function run() : void
     {
-        // url赋值
-        static::$url           = static::getProtocol() . '://' . static::getDomain() . '/';
-        // 初始化
-        static::parsePathAndQuery();
         // 路由流程文件
         $file = \msqphp\Environment::getPath('application') . 'route.php';
         is_file($file) || static::exception('路由解析失败,原因:路由流程文件'.$file.'不存在');
         // 载入文件
         require $file;
     }
+
     // 构建并获取url常量
     public static function bulid() : string
     {
