@@ -67,45 +67,51 @@ final class Template
         $file_path      = '([\\w\\/\\.:-]+)';
         // 字母和下划线组合
         $letters_and_   = '([A-Za-z_]+)';
+        // 函数
+        $func = $name.'\\('.'([\s\S]*)'.'\\)';
 
         // 一下均假设 左定界符为<{,右定界符为}>
         static::$pattern = [
             //               <{include 'file_path'}>
-            'include'     => $preg_start . 'include'.$blank.$file_path . $preg_end,
+            'include'     => $preg_start.'include'.$blank.$file_path .$preg_end,
             //               <{constant.常量名}>
-            'constant_a'  => $preg_start . 'constant\\.'.$letters_and_ . $preg_end,
+            'constant_a'  => $preg_start.'constant\\.'.$letters_and_ .$preg_end,
             //               <{cont.常量名}>
-            'constant_b'  => $preg_start . 'cont\\.'.$letters_and_ . $preg_end,
+            'constant_b'  => $preg_start.'cont\\.'.$letters_and_ .$preg_end,
             //               <{language.语言名}>
-            'language_a'  => $preg_start . 'language\\.'.$letters_and_ . $preg_end,
+            'language_a'  => $preg_start.'language\\.'.$letters_and_ .$preg_end,
             //               <{lang.语言名}>
-            'language_b'  => $preg_start . 'lang\\.([A-Za-z_]+)' . $preg_end,
+            'language_b'  => $preg_start.'lang\\.([A-Za-z_]+)' .$preg_end,
             //               <{$变量名}>
-            'var'         => $preg_start . $var . $preg_end,
+            'var'         => $preg_start.$var.$preg_end,
             //               <{$变量名[键][键].....}>
-            'array_a'     => $preg_start . $var .'([\\[\\w\'\\"\\]]+)' . $preg_end,
+            'array_a'     => $preg_start.$var.'([\\[\\w\'\\"\\]]+)'.$preg_end,
             //               <{$变量名.键.键.....}>
-            'array_b'     => $preg_start . $var .'([\\.\\w]+)' . $preg_end,
+            'array_b'     => $preg_start.$var.'([\\.\\w]+)'.$preg_end,
             //               <{函数名(任意值)}>
-            'func'        => $preg_start . $name.'\\('.'([\s\S]*)'.'\\)' . $preg_end,
+            'func'        => $preg_start.$func.$preg_end,
             //               <{foreach $array as $value}>
-            'foreach_a'   => $preg_start . 'foreach'.$blank.$var.$blank.'as'.$blank.$var . $preg_end,
+            'foreach_a'   => $preg_start.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$preg_end,
             //               <{foreach $array as $key => $value}>
-            'foreach_b'   => $preg_start . 'foreach'.$blank.$var.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var . $preg_end,
+            'foreach_b'   => $preg_start.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var.$preg_end,
             //               <{endforeach}> || <{/endforeach}>
-            'foreach_end' => $preg_start . '(\\/endforeach|endforeach)' . $preg_end,
+            'foreach_end' => $preg_start.'(\\/endforeach|endforeach)'.$preg_end,
             //               <{if $变量名 比较符 $变量名}>
-            'if_a'        => $preg_start . 'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$var . $preg_end,
+            'if_a'        => $preg_start.'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$var.$preg_end,
             //               <{if $变量名 比较符 值}>
-            'if_b'        => $preg_start . 'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber . $preg_end,
+            'if_b'        => $preg_start.'if'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber.$preg_end,
+            //               <{if 函数}>
+            'if_c'        => $preg_start.'if'.$blank.$func.$may_blank.$preg_end,
             //               <{elseif $变量名 比较符 $变量名}>
-            'elseif_a'    => $preg_start . 'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$var . $preg_end,
+            'elseif_a'    => $preg_start.'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$var.$preg_end,
             //               <{elseif $变量名 比较符 值}>
-            'elseif_b'    => $preg_start . 'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber . $preg_end,
+            'elseif_b'    => $preg_start.'elseif'.$may_blank.$var.$may_blank.$compare.$may_blank.$stringOrNumber.$preg_end,
+            //               <{if 函数}>
+            'elseif_c'    => $preg_start.'elseif'.$blank. $func.$may_blank.$preg_end,
             //               <{else}>
-            'else'        => $preg_start . 'else' . $preg_end,
+            'else'        => $preg_start.'else'.$preg_end,
             //               <{endif}> || <{/endif}>
-            'endif'       => $preg_start . '(\\/endif|endif)' . $preg_end,
+            'endif'       => $preg_start.'(\\/endif|endif)'.$preg_end,
         ];
     }
     /**

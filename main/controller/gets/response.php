@@ -1,4 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\controller;
 
-return app()->response;
+use msqphp\core;
+
+return core\response\Response::class;

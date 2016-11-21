@@ -6,7 +6,7 @@ class CallTest extends \msqphp\test\Test
     public function testStart() : void
     {
         $this->init();
-        $this->object(new \msqphp\test\traits\resource\TestClass);
+        $this->object(new \msqphp\test\core\traits\resource\TestClass);
         $this->testThis();
     }
     public function testCallFunc1() : void

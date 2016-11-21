@@ -3,17 +3,24 @@ namespace msqphp;
 
 final class App
 {
-    /**
-     * 框架运行
-     *
-     * @return void
-     */
+    // 应用运行
     public static function run() : void
     {
+        register_shutdown_function(['\\msqphp\\App', 'shutDown']);
         static::runRoute();
+
+    }
+
+    // 关闭调用
+    public static function shutDown() : void
+    {
         // 记录或者打印信息
         if (APP_DEBUG) {
-            core\response\Response::dumpArray(static::getFullInfo());
+            if ('' !== core\response\Response::$type || 'html' !== core\response\Response::$type) {
+                return;
+            } else {
+                core\response\Response::dumpArray(static::getFullInfo());
+            }
         } else {
             $content = static::getSimalInfo();
             app()->log->message('运行成功' . PHP_EOL . (empty($content) ? '' : '{' . PHP_EOL. implode(PHP_EOL, $content) . PHP_EOL . '}'))
@@ -21,7 +28,6 @@ final class App
                       ->recode();
         }
     }
-
     public static function runRoute() : void
     {
         define('ROUTE_CONTROLLER_START', microtime(true));
@@ -99,9 +105,8 @@ final class App
             $end_info   = array_merge($end_info, $file_info);
             unset($file_info, $files, $all_size, $file, $byte);
         }
-        $composer = core\loader\Loader::getLoadedClasses();
 
-        if (!empty($composer)) {
+        if (!empty($composer = core\loader\Loader::getLoadedClasses())) {
             $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count($composer);
             $end_info[] = 'composer加载文件列表:';
             foreach ($composer as $file) {

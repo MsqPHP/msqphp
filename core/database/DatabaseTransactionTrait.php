@@ -6,18 +6,18 @@ trait DatabaseTransactionTrait
     // 开始事物
     public static function beginTransaction() : void
     {
-        static::$pdo->beginTransaction();
+        static::getHandler()->beginTransaction();
     }
 
     // 提交事物
     public static function commit() : void
     {
-        static::$pdo->commit();
+        static::getHandler()->commit();
     }
 
     // 回滚事物
     public static function rollBack() : void
     {
-        static::$pdo->rollBack();
+        static::getHandler()->rollBack();
     }
 }

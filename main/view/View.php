@@ -191,30 +191,17 @@ abstract class View
     // 展示
     public function show() : void
     {
-
-        $______tpl_show_files = $this->getAllComponnt();
-
-        $tpl_arr = [];
+        $data = [];
 
         // 遍历赋值
-        foreach ($this->data->getAll() as $tpl_key => $tpl_value) {
-            $tpl_arr[$tpl_key] = $tpl_value['value'];
+        foreach ($this->data->getAll() as $key => ['value'=>$value]) {
+            $data[$key] = $value;
         }
-        // 打散
-        extract($tpl_arr, EXTR_OVERWRITE);
 
-        // 静态则ob, 否则直接require
         if ($this->static_html === null) {
-            foreach ($______tpl_show_files as $______tpl_show_file) {
-                require $______tpl_show_file;
-            }
+            core\response\Response::dumpHtmlFiles($this->getAllComponnt(), $data, false);
         } else {
-            ob_start();
-            ob_implicit_flush(0);
-            foreach ($______tpl_show_files as $______tpl_show_file) {
-                require $______tpl_show_file;
-            }
-            $this->static_html->addContent(ob_get_flush());
+            $this->static_html->addContent(core\response\Response::dumpHtmlFiles($this->getAllComponnt(), $data, true));
         }
     }
 

@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\test;
 
+use msqphp\core;
+
 trait TestStaticTrait
 {
     final protected static function checkFunction($func_info, array $args = [], $result = null) : void
@@ -20,7 +22,6 @@ trait TestStaticTrait
         } else {
             throw new TestException('测试函数为位置类型,请检查是否代码是否正确');
         }
-
         $str = '函数：' . $func_name . str_repeat('&nbsp;', strlen($func_name) < 30 ? 30 - strlen($func_name) : 0);
 
         try {
@@ -30,7 +31,7 @@ trait TestStaticTrait
         }
 
         if ($result === $func_result || is_a($result, '\Closure') && $result($func_result)) {
-            app()->response::dump($str, '测试成功;');
+            core\response\Response::dump($str, '测试成功;');
         } else {
             $info = [
                 $str . '测试失败;',
@@ -42,7 +43,7 @@ trait TestStaticTrait
                 $func_result,
             ];
 
-            app()->response::dumpArray($info);
+            core\response\Response::dumpArray($info);
 
             throw new TestException('测试发生错误,请检验代码');
         }
@@ -60,13 +61,13 @@ trait TestStaticTrait
     final protected static function testObjectProperty($obj, string $property, $value) : void
     {
         if ($obj->$property === $value) {
-            app()->response::dump('属性:'.get_class($obj).'->$'.$property, '测试成功');
+            core\response\Response::dump('属性:'.get_class($obj).'->$'.$property, '测试成功');
         } else {
-            app()->response::dump('属性:'.get_class($obj).'->$'.$property, '测试失败');
-            app()->response::dump('结果应为：');
-            app()->response::dump($value);
-            app()->response::dump('实际结果：');
-            app()->response::dump($obj->$property);
+            core\response\Response::dump('属性:'.get_class($obj).'->$'.$property, '测试失败');
+            core\response\Response::dump('结果应为：');
+            core\response\Response::dump($value);
+            core\response\Response::dump('实际结果：');
+            core\response\Response::dump($obj->$property);
             throw new TestException('测试发生错误,请检验代码');
         }
     }
@@ -78,13 +79,13 @@ trait TestStaticTrait
     final protected static function testClassStaticProperty(string $class, string $property, $value) : void
     {
         if ($class::$property === $value) {
-            app()->response::dump('属性:'.get_class($class).'::$'.$property, '测试成功');
+            core\response\Response::dump('属性:'.get_class($class).'::$'.$property, '测试成功');
         } else {
-            app()->response::dump('属性:'.get_class($class).'::$'.$property, '测试失败');
-            app()->response::dump('结果应为：');
-            app()->response::dump($value);
-            app()->response::dump('实际结果：');
-            app()->response::dump($class::$property);
+            core\response\Response::dump('属性:'.get_class($class).'::$'.$property, '测试失败');
+            core\response\Response::dump('结果应为：');
+            core\response\Response::dump($value);
+            core\response\Response::dump('实际结果：');
+            core\response\Response::dump($class::$property);
             throw new TestException('测试发生错误,请检验代码');
         }
     }

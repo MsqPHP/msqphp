@@ -15,25 +15,23 @@ trait ModelOperateTrait
     }
     public function exists() : bool
     {
-        return null !== core\database\Database::getColumn($this->getExistsQuery(), ($this->pointer['prepare'] ?? []));
+        return null !== core\database\Database::getColumn($this->getExistsQuery(), $this->getPrepare());
     }
     public function getOne()
     {
-        $this->limit(1);
-        return core\database\Database::getOne($this->getSelectQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::getOne($this->limit(1)->getSelectQuery(), $this->getPrepare());
     }
     public function getColumn()
     {
-        $this->limit(1);
-        return core\database\Database::getColumn($this->getSelectQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::getColumn($this->limit(1)->getSelectQuery(), $this->getPrepare());
     }
     public function get()
     {
-        return core\database\Database::get($this->getSelectQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::get($this->getSelectQuery(), $this->getPrepare());
     }
     public function add()
     {
-        return core\database\Database::exec($this->getInsertQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::exec($this->getInsertQuery(), $this->getPrepare());
     }
     public function set()
     {
@@ -41,13 +39,12 @@ trait ModelOperateTrait
     }
     public function update()
     {
-        return core\database\Database::exec($this->getUpdateQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::exec($this->getUpdateQuery(), $this->getPrepare());
     }
     public function delete()
     {
-        return core\database\Database::exec($this->getDeleteQuery(), ($this->pointer['prepare'] ?? []));
+        return core\database\Database::exec($this->getDeleteQuery(), $this->getPrepare());
     }
-
     public function transaction(\Closure $func, array $args = []) : void
     {
         try {

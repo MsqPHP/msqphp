@@ -31,10 +31,47 @@ final class Error
     public static function register() : void
     {
         set_error_handler('\msqphp\core\error\Error::handler', E_ALL);
+        set_exception_handler('\msqphp\core\error\Error::exceptionHandler');
     }
     public static function unregister() : void
     {
         restore_error_handler();
+    }
+    public static function exceptionHandler($e) : void
+    {
+        echo '<style type="text/css">*{margin: 0;padding: 0;}.exception{width: 80%;display: block;margin:0 auto;}.exception h3 {border: none;background: #F3F3F3;border-radius: 10px 10px 10px 10px;font-size: 1em;line-height: 3em;text-align: center;margin: 1em 0;}.exception .table{background: #F3F3F3;border: none;border-radius: 10px 10px 10px 10px;font-size: 1em;width: 100%;display: block;padding: 1em 0;margin:0 auto;}.exception table{margin:0 auto;}.exception .table h4{text-align: center;}.exception th{text-align: center;}.exception td{background: #FFFFCC;}.exception tr .num,.exception tr .line{width: 2em;text-align: center;}</style>';
+        echo '<div class="exception">';
+        echo '<h3>' . $e->getMessage() . '</h3>';
+        echo '<div class="table">
+                <h4>PHP DEBUG</h4>
+                <table align="center" border="1" cellspacing="0">
+                    <tr>
+                        <th class="num">No.</th>
+                        <th class="file">File</th>
+                        <th class="line">Line</th>
+                        <th class="code">Code</th>
+                    </tr>
+        ';
+
+        $trace = $e->getTrace();
+
+        array_unshift($trace, ['num'=>0, 'file'=>$e->getFile(),'line'=>$e->getLine(),'function'=>'throw']);
+
+        for($i = 0, $l=count($trace);$i<$l;++$i) {
+            $num = $i;
+            $file = $trace[$i]['file'] ?? '';
+            $line = $trace[$i]['line'] ?? '';
+            $code = isset($trace[$i]['type']) ? $trace[$i]['class'] . $trace[$i]['type'] . $trace[$i]['function'] . '()' : $trace[$i]['function'] . '()';
+        
+            echo '<tr>';
+            echo '<td class="num">'   . $num . '</td>';
+            echo '<td class="file">' . $file . '</td>';
+            echo '<td class="line">' . $line . '</td>';
+            echo '<td class="code">' . $code . '</td>';
+            echo '</tr>';
+        }
+
+        echo '</table></div></div>';
     }
     public static function handler(int $errno , string $errstr, string $errfile , int $errline) : bool
     {

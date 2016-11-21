@@ -6,7 +6,7 @@ class CallStaticTest extends \msqphp\test\Test
     public function testStart() : void
     {
         $this->init();
-        $this->class('\msqphp\test\traits\resource\TestClass');
+        $this->class('\msqphp\test\core\traits\resource\TestClass');
         $this->testThis();
     }
     public function testCallStaticFunc1() : void

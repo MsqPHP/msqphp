@@ -117,7 +117,9 @@ final class Cron
     private static function isLocked() : bool
     {
         if (static::$lock_handler === null) {
-            $resource = fopen(static::getLockFilePath(), 'w');
+            $file = static::getLockFilePath();
+            !is_file($file) && base\file\File::write($file, '');
+            $resource = fopen($file, 'w');
             if (flock($resource, LOCK_EX)) {
                 static::$lock_handler = $resource;
                 return false;

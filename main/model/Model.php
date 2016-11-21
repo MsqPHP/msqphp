@@ -16,10 +16,9 @@ abstract class Model
     public function __construct()
     {
         $this->config = app()->config->get('model');
-        core\database\Database::connect();
     }
-    public function __destruct()
+    protected function exception(string $message) : void
     {
-         core\database\Database::close();
+        throw new ModelException($message);
     }
 }

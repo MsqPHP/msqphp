@@ -12,7 +12,7 @@ final class Config
     private $config = [];
 
     // 初始化
-    public function __construct()
+    private function __construct()
     {
         $this->loadAllConfigFile();
     }
@@ -55,7 +55,7 @@ final class Config
             // 加载全部
             array_map([$this, 'loadConfigFIle'], base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
             // 写入
-            base\file\File::write($cache_path, '<?php return '.var_export($this->config, true).';', true);
+            HAS_CACHE && base\file\File::write($cache_path, '<?php return '.var_export($this->config, true).';', true);
         }
     }
 

@@ -2,12 +2,18 @@
 namespace msqphp\test\core\cache;
 
 use msqphp\base;
+use msqphp\main;
 
 class CacheTest extends \msqphp\test\Test
 {
     public function testStart() : void
     {
         $this->init();
+        // 获得配置对象
+        $config = app()->config;
+        // 获得当前cache配置
+        $cache_config = $config->get('cache');
+        // 设置cache配置为测试配置
         app()->config->set('cache', [
                 // 是否允许多缓存处理器
                 'multi'            =>  true,
@@ -39,12 +45,20 @@ class CacheTest extends \msqphp\test\Test
                     ],
                 ],
         ]);
+        // 清空测试目录,以防上次测试失败,留有残余
         base\dir\Dir::empty(__DIR__.'/storage/cache');
-        $this->object(app()->cache);
+        // 赋值一个新的缓存对象
+        $this->object(new main\cache\Cache());
         $this->testThis($this);
+        // 还原cache配置
+        $config->set('cache', $cache_config);
     }
     public function testFile() : void
     {
+        // 如果无缓存,则无法保存文件,无法进行测试.
+        if (!HAS_CACHE) {
+            return;
+        }
         $this->clear();
         $this->chain([
             ['init', 'File'],
@@ -55,7 +69,7 @@ class CacheTest extends \msqphp\test\Test
             ['value', 1],
             ['set'],
         ])->result(null)->test();
-        $this->method('exists')->args(bull)->result(true)->test();
+        $this->method('exists')->args(null)->result(true)->test();
         $this->method('get')->args()->result(1)->test();
         $this->method('increment')->args()->result(2)->test();
         $this->method('get')->args()->result(2)->test();

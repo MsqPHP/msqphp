@@ -181,13 +181,9 @@ trait TemplateMoreTrait
                 $compare = $if_match[2];
                 // 变量符
                 $var_b = $if_match[3];
-                // 如果缓存,替换为对应值
-                $var_a = isset($data[$var_a]) && $data[$var_a]['cache'] ? $data[$var_a]['value'] : '$' . $var_a;
-                $var_b = isset($data[$var_b]) && $data[$var_b]['cache'] ? $data[$var_b]['value'] : '$' . $var_b;
-
                 // 结果是否缓存(即判断两个变量是否都缓存)
                 if (isset($data[$var_a]) && $data[$var_a]['cache'] && isset($data[$var_b]) && $data[$var_b]['cache']) {
-                    // 比较值为真
+                    // 比较值为真,为假则该段永为假,忽略
                     if (static::compare($data[$var_a]['value'], $data[$var_b]['value'], $compare)) {
                         // 直接结束,如果结果为空,直接替换为对应数据,否则以else结尾
                         $result_if[] = empty($result_if) ? static::commpile($if[0]['content'], $data, $language) : '<?php else: ?>' . static::commpile($if[0]['content'], $data, $language) . '<?php endif;?>';
@@ -195,6 +191,9 @@ trait TemplateMoreTrait
                         break;
                     }
                 } else {
+                    // 如果缓存,替换为对应值
+                    $var_a = isset($data[$var_a]) && $data[$var_a]['cache'] ? $data[$var_a]['value'] : '$' . $var_a;
+                    $var_b = isset($data[$var_b]) && $data[$var_b]['cache'] ? $data[$var_b]['value'] : '$' . $var_b;
                     // 添加一个if|elseif语句段
                     $result_if[] = '<?php ' . (empty($result_if) ? 'if' : 'elseif') . '('.static::phpValueTotext($var_a).$compare.static::phpValueTotext($var_b).') : ?>' . static::commpile($if[0]['content'], $data, $language);
                 }
@@ -208,7 +207,7 @@ trait TemplateMoreTrait
                 $var_b = static::textToPhpValue($if_match[3]);
                 // 是否缓存
                 if (isset($data[$var_a]) && $data[$var_a]['cache']) {
-                    // 比较值为真
+                    // 比较值为真,为假则该段永为假,忽略
                     if (static::compare($data[$var_a]['value'], $var_b, $compare)) {
                         // 直接结束,如果结果为空,直接替换为对应数据,否则以else结尾
                         $result_if[] = empty($result_if) ? static::commpile($if[0]['content'], $data, $language) : '<?php else: ?>' . static::commpile($if[0]['content'], $data, $language) . '<?php endif;?>';
@@ -218,12 +217,45 @@ trait TemplateMoreTrait
                     $result_if[] = '<?php ' . (empty($result_if) ? 'if' : 'elseif') . '($'.$var_a.$compare.static::phpValueTotext($var_b).') : ?>' . static::commpile($if[0]['content'], $data, $language);
                 }
             // else形式
-            } elseif (0 !== preg_match(static::$pattern['else'])) {
+            } elseif (0 !== preg_match(static::$pattern['if_c'], $if[0]['tag'], $if_match) || 0 !== preg_match(static::$pattern['elseif_c'], $if[0]['tag'], $if_match)) {
+                // 函数名称
+                $func_name = $if_match[1];
+                // 函数是否缓存
+                $cached = null;
+                // 获取函数参数
+                $args = array_map('trim', explode(',', $if_match[2]));
+
+                // 得到参数列表,可以为空,若果参数缓存则直接替换
+                $args = $args === [''] ? [] : array_map(function (string $value) use ($data, & $cached) {
+                    // 如果$开头,则为变量
+                    if (isset($value[0]) && '$' === $value[0]) {
+                        // 去掉$
+                        $arg_name = substr($value, 1);
+                        if (isset($data[$arg_name]) && $data[$arg_name]['cache']) {
+                            $cached === null && $cached = true;
+                            return $data[$arg_name]['value'];
+                        } else {
+                            $cached = false;
+                            return $value;
+                        }
+                    } else {
+                        // 返回值
+                        return static::textToPhpValue($value);
+                    }
+                }, $args);
+
+                if ($cached) {
+                    if (call_user_func_array($func_name, $args)) {
+                        $result_if[] = empty($result_if) ? static::commpile($if[0]['content'], $data, $language) : '<?php else: ?>' . static::commpile($if[0]['content'], $data, $language) . '<?php endif;?>';
+                    }
+                } else {
+                    $result_if[] = '<?php ' . (empty($result_if) ? 'if' : 'elseif') . '('.$func_name.'('.implode(',', array_map('static::phpValueTotext',$args)).')) : ?>' . static::commpile($if[0]['content'], $data, $language);
+                }
+            } elseif (0 !== preg_match(static::$pattern['else'], $if[0]['tag'], $if_match)) {
                 $result_if[] = empty($result_if) ? static::commpile($if[0]['content'], $data, $language) : '<?php else: ?>' . static::commpile($if[0]['content'], $data, $language) . '<?php endif;?>';
             } else {
                 static::exception('错误的if语句');
             }
-
             array_shift($if);
 
             // 如果执行到最后,则添加一个endif结尾

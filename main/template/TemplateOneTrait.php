@@ -117,30 +117,24 @@ trait TemplateOneTrait
             // 获取函数参数
             $args = array_map('trim', explode(',', $matches[2]));
 
-            // 为空
-            if ($args === ['']) {
-                $args = [];
-            } else {
-                // 得到参数列表,可以为空,若果参数缓存则直接替换
-                $args = array_map(function (string $value) use ($data, & $cached) {
-                    // 如果$开头,则为变量
-                    if (isset($value[0]) && '$' === $value[0]) {
-                        // 去掉$
-                        $arg_name = substr($value, 1);
-                        if (isset($data[$arg_name]) && $data[$arg_name]['cache']) {
-                            $cached === null && $cached = true;
-                            return $data[$arg_name]['value'];
-                        } else {
-                            $cached = false;
-                            return $value;
-                        }
+            // 得到参数列表,可以为空,若果参数缓存则直接替换
+            $args = $args === [''] ? [] : array_map(function (string $value) use ($data, & $cached) {
+                // 如果$开头,则为变量
+                if (isset($value[0]) && '$' === $value[0]) {
+                    // 去掉$
+                    $arg_name = substr($value, 1);
+                    if (isset($data[$arg_name]) && $data[$arg_name]['cache']) {
+                        $cached === null && $cached = true;
+                        return $data[$arg_name]['value'];
                     } else {
-                        // 返回值
-                        return static::textToPhpValue($value);
+                        $cached = false;
+                        return $value;
                     }
-                    // 参数
-                }, $args);
-            }
+                } else {
+                    // 返回值
+                    return static::textToPhpValue($value);
+                }
+            }, $args);
 
             return $cached ? (string) call_user_func_array($func_name, $args) : '<?php echo (string) '.$func_name.'('.implode(',', array_map('static::phpValueTotext',$args)).');?>';
 

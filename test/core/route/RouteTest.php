@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\test\core\route;
 
-class RouteTest extends \msqphp\test\Test
+final class RouteTest extends \msqphp\test\Test
 {
     public function testStart() : void
     {

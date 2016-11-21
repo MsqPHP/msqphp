@@ -1,13 +1,21 @@
 <?php declare(strict_types = 1);
-namespace msqphp\test\core\template;
+namespace msqphp\test\main\template;
 
 class TemplateTest extends \msqphp\test\Test
 {
     public function testStart() : void
     {
-        $this->class('\msqphp\core\template\Template')->method('commpile');
-        app()->config->set('template',['left_delimiter'=>'<{','right_delimiter'=>'}>',]);
+        $this->class('\msqphp\main\template\Template')->method('commpile');
+        // 配置对象
+        $config = app()->config;
+        // 得到当前模版配置
+        $template_config = $config->get('template');
+        // 设置测试值
+        $config->set('template',['left_delimiter'=>'<{','right_delimiter'=>'}>',]);
+        // 测试
         $this->testThis();
+        // 还原配置值
+        $config->set('template', $template_config);
     }
     public function testParVar() : void
     {
@@ -111,7 +119,9 @@ class TemplateTest extends \msqphp\test\Test
         $vars = ['arr'=>['cache'=>true, 'value'=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]]];
         $language = [];
         $result = '1234567890';
-        $this->args($content, $vars, $language)->result($result)->test();
+        $this->args($content, $vars, $language)
+             ->result($result)
+             ->test();
     }
     public function testParForeach1() : void
     {
@@ -139,7 +149,6 @@ class TemplateTest extends \msqphp\test\Test
     }
     public function testIf() : void
     {
-        //  exit;
         $content = '<{if $a === \'a\'}><{$a}><{endif}>';
         $vars = ['a'=>['value'=>'a','cache'=>true]];
         $language = [];
@@ -156,11 +165,18 @@ class TemplateTest extends \msqphp\test\Test
     }
     public function testIf3() : void
     {
-        //  exit;
         $content = '<{if $a === \'a\'}><{$a}><{endif}>';
         $vars = ['a'=>['value'=>'a','cache'=>false]];
         $language = [];
         $result = '<?php if($a===\'a\') : ?><?php echo $a;?><?php endif;?>';
+        $this->args($content, $vars, $language)->result($result)->test();
+    }
+    public function testIf4() : void
+    {
+        $content = '<{if isset($a)}><{$a}><{endif}>';
+        $vars = ['a'=>['value'=>'a','cache'=>false]];
+        $language = [];
+        $result = '<?php if(isset($a)) : ?><?php echo $a;?><?php endif;?>';
         $this->args($content, $vars, $language)->result($result)->test();
     }
 }

@@ -10,7 +10,7 @@ class GetTest extends \msqphp\test\Test
     }
     public function testCallFunc1() : void
     {
-        $this->object(new \msqphp\test\traits\resource\TestClass)
+        $this->object(new \msqphp\test\core\traits\resource\TestClass)
              ->property('testGet1')
              ->value(true)
              ->test();

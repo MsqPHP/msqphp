@@ -75,7 +75,7 @@ trait CookieOperateTrait
 
         return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
     }
-    private function getVal(string $type = '') : string
+    private function getVal(string $type = '')
     {
         $pointer = $this->pointer;
 
@@ -88,7 +88,6 @@ trait CookieOperateTrait
             isset(static::$cookies[$key]) || static::exception('cookie值不存在');
             $value = static::$cookies[$key];
         }
-
         // 是否需要解码
         if ('encode' === $type) {
             if ((isset($pointer['encode']) && $pointer['encode']) || static::$config['encode']) {

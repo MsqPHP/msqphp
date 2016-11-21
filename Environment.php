@@ -64,18 +64,14 @@ final class Environment
      */
     public static function setPath(array $path_config) : void
     {
-        // 初始化路径
-        static::$path = array_map(function (string $path) : string {
-
+        foreach ($path_config as $name => $path) {
             // 存在或报错
             if (!is_dir($path)) {
                 throw new \Exception('框架环境初始化错误,原因:' . $path . '目录不存在');
             }
-
             // 是目录则realpath
-            return realpath($path) . DIRECTORY_SEPARATOR;
-
-        }, $path_config);
+            isset(static::$path[$name]) && static::$path[$name] = realpath($path) . DIRECTORY_SEPARATOR;
+        }
     }
 
     /**

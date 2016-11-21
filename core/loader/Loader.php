@@ -12,6 +12,6 @@ final class Loader
     // 抛出异常
     private static function exception(string $message) : void
     {
-        static::exception($message);
+        throw new LoaderException($message);
     }
 }

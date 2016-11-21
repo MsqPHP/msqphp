@@ -33,7 +33,7 @@ class Container implements \ArrayAccess
                 return $info['shared'] === true ? $this->instances[$name] = call_user_func_array($info['object'], []) : call_user_func_array($info['object'], []);
             // 否则取null
             } else {
-                return null;
+                throw new ContainerException($name . '并不存在于容器中');
             }
         } else {
             return $this->createObj($name, $params);

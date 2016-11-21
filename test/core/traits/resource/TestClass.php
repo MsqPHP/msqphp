@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\test\traits\resource;
+namespace msqphp\test\core\traits\resource;
 
 use \msqphp\core\traits;
 
