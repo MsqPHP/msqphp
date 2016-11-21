@@ -3,6 +3,29 @@ namespace msqphp\main\model;
 
 trait ModelSqlTrait
 {
+    private function getExistsQuery() : string
+    {
+        $pointer = $this->pointer;
+        $sql = 'SELECT ';
+        if (isset($pointer['field'])) {
+            $sql .= rtrim(implode(',', $pointer['field']), ',') . ' ';
+        } else {
+            throw new ModelException('错误的sql查询,未指定查询值');
+        }
+        if (isset($pointer['table'])) {
+            $sql .= 'FROM '.rtrim(implode(',', $pointer['table']), ',') . ' ';
+        } else {
+            throw new ModelException('错误的sql查询,未指定表名');
+        }
+        if (isset($pointer['value'])) {
+            $sql .= 'WHERE ';
+            for ($i =0,$l=count($pointer['value']);$i<$l;++$i) {
+                $sql.=$pointer['field'][$i] . '=' . $pointer['value'][$i] . ' and ';
+            }
+            $sql = substr($sql, 0, -4);
+        }
+        return $sql;
+    }
     private function getInsertQuery() : string
     {
         $pointer = $this->pointer;
@@ -36,7 +59,7 @@ trait ModelSqlTrait
                     $sql.='`'.$value[0].'` '. $value[1].$value[2] . ' and ';
                 }
             }
-            $sql = substr($sql, 0, strlen($sql)-4);
+            $sql = substr($sql, 0, -4);
         } else {
             $sql .= 'WHERE 1 ';
         }
@@ -50,7 +73,7 @@ trait ModelSqlTrait
                         $sql .= '`'.$this->table.'`.`'.$v[0].'` = `'.$key.'`.`'.$v[1].'` AND ';
                     }
                 }
-                $sql = substr($sql, 0, strlen($sql)-4);
+                $sql = substr($sql, 0, -4);
             }
         }
         if (isset($pointer['having'])) {
@@ -62,7 +85,7 @@ trait ModelSqlTrait
                     $sql.='`'.$value[0].'` '. $value[1].$value[2] . ' and ';
                 }
             }
-            $sql = substr($sql, 0, strlen($sql)-4);
+            $sql = substr($sql, 0, -4);
         }
         if (isset($pointer['order'])) {
             $sql .= 'ORDER BY ';
@@ -102,7 +125,7 @@ trait ModelSqlTrait
                     $sql.='`'.$value[0].'` '. $value[1].$value[2] . ' and ';
                 }
             }
-            $sql = substr($sql, 0, strlen($sql)-4);
+            $sql = substr($sql, 0, -4);
         } else {
             throw new ModelException('错误的sql更新语句,where键值不匹配');
         }

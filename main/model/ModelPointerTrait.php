@@ -17,9 +17,9 @@ trait ModelPointerTrait
         }, func_get_args());
         return $this;
     }
-    public function value($value, $type = null) : self
+    public function value($value, ?string $type = null) : self
     {
-        if (null === $type) {
+        if (null !== $type) {
             $pre_name = ':prepare' . (string) count($this->pointer['prepare'] ?? []);
             if (is_string($type)) {
                 $type = 'int' === strtolower($type) ? \PDO::PARAM_INT : \PDO::PARAM_STR;

@@ -23,7 +23,7 @@ final class Error
             // 开启日志记录
             ini_set('log_errors', 'On');
             // 日志文件
-            ini_set('error_log', static::getPath('storage').'error.log');
+            ini_set('error_log', \msqphp\Environment::getPath('storage').'error.log');
         }
         // 载入错误类,设置错误函数处理方式
         static::register();
@@ -38,12 +38,15 @@ final class Error
     }
     public static function handler(int $errno , string $errstr, string $errfile , int $errline) : bool
     {
-        if ('cli' === \msqphp\Environment::getRunMode()) {
-            echo '错误代码:'.$errno."\n".'错误信息:'.$errstr."\n".'错误文件:'.$errfile."\n".'错误行号:'.$errline."\n";
+        if (APP_DEBUG) {
+            if ('cli' === \msqphp\Environment::getRunMode()) {
+                echo '错误代码:'.$errno."\n".'错误信息:'.$errstr."\n".'错误文件:'.$errfile."\n".'错误行号:'.$errline."\n";
+            } else {
+                echo '<style type="text/css">.error{border: 1px solid black;}.error td {border: 1px solid black;}</style><table class="error"><tr><td>文件</td><td>行号</td><td>错误代码</td><td>错误信息</td></tr><tr><td>'.$errfile.'</td><td>'.$errline.'</td><td>'.$errno.'</td><td>'.$errstr.'</td></tr></table>';
+            }
         } else {
-            echo '<style type="text/css">.error{border: 1px solid black;}.error td {border: 1px solid black;}</style><table class="error"><tr><td>文件</td><td>行号</td><td>错误代码</td><td>错误信息</td></tr><tr><td>'.$errfile.'</td><td>'.$errline.'</td><td>'.$errno.'</td><td>'.$errstr.'</td></tr></table>';
+            app()->log->level('error')->message('错误代码:'.$errno."\n".'错误信息:'.$errstr."\n".'错误文件:'.$errfile."\n".'错误行号:'.$errline."\n")->recode();
         }
-        app()->log->level('error')->message('错误代码:'.$errno."\n".'错误信息:'.$errstr."\n".'错误文件:'.$errfile."\n".'错误行号:'.$errline."\n")->recode();
         return true;
     }
 }

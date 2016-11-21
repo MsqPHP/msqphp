@@ -159,20 +159,24 @@ www  WEB部署目录（或者子目录）
 │  └──test.php          测试逻辑文件
 │
 ├──bootstrap            引导程序目录
-│  ├──environment.php   框架环境搭建.包括但不限于智能加载及自动加载,定时任务处理,路径设置等
-│  ├──user.php          全局函数,常量等用户自定义文件
 │  ├──framework         框架类代码
 │  │  ├──base.php       框架基础
+│  │  ├──base_app.php   如果需要,可以单独定义框架基础
+│  │  ├──base_test.php  如果需要,可以单独定义框架基础
+│  │  ├──base_cli.php   如果需要,可以单独定义框架基础
+│  │  ├──loader.php     自动加载函数
 │  │  ├──function.php   框架函数
+│  │  ├──user.php       全局函数,常量等用户自定义文件
 │  │  └──init.php       框架初始化
 │  │
-│  └──mode
-│     ├──app.php        应用模式
-│     ├──test.php       测试模式
-│     └──cli.php        命令行模式
+│  ├──app.php        应用模式
+│  ├──test.php       测试模式
+│  └──cli.php        命令行模式
 │
 ├──config               配置目录
-│  └──config名字.php    对应的config
+│  ├──default           默认配置
+│  └──user              用户配置
+│     └──config名字.php 对应的config配置
 │
 │
 ├──library              图书馆, 也就是你自己的类文件函数什么的, 怎么加载是你的事
@@ -185,7 +189,7 @@ www  WEB部署目录（或者子目录）
 │
 ├──resources            资源目录
 │  ├──language          应用类语言目录  语言/[路由分组/]对应视图.php
-│  ├──templates         应用类视图目录  [路由分组/][语言/][主题/]对应视图.php (允许单一视图配置对应语言的视图文件)
+│  ├──templates         应用类视图目录  [语言/][主题/][路由分组/]对应视图.php (允许单一视图配置对应语言的视图文件)
 │  └──views             基础视图目录目录 error.html 什么的
 │
 │

@@ -7,13 +7,14 @@ trait RouteCategoryTrait
 {
     private static $category_msg = [];
 
-    use RouteUseCategoryTrait, RouteAddCategoryTrait, RouteUseCategoryTrait;
+    use RouteUseCategoryTrait, RouteAddCategoryTrait, RouteSetCategoryTrait;
 
     // 得到当前的分组信息
     public static function getGroupInfo() : array
     {
         return static::$category_msg['group'];
     }
+
     /**
      * 得到允许值,用于addLanguage,addTheme,addGroup
      * 如果非默认取值则添加值当前url参数
@@ -31,7 +32,7 @@ trait RouteCategoryTrait
             $result = array_shift(static::$pending_path);
 
             // 追加至Url
-            static::$url = static::$url === '' ? static::getProtocol().'://'.static::getDomain().'/'.$result.'/' : $result.'/';
+            static::$url .= $result.'/';
         } else {
             // 取默认
             $result = $default;
@@ -42,6 +43,7 @@ trait RouteCategoryTrait
 
         return $result;
     }
+
     /**
      * 添加一个分类常量
      *

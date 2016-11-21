@@ -122,14 +122,16 @@ trait SessionOperateTrait
     // 获取
     public function get()
     {
-        if (isset($this->pointer['key'])) {
-            return static::$sessions[$this->getKey()];
-        }
+        return static::$sessions[$this->getKey()];
+    }
+    public function getAll() : array
+    {
         return static::$sessions;
     }
     // 设置
     public function set()
     {
+        isset($this->pointer['value']) || static::exception('未设置对应session值');
         static::$sessions[$this->getKey()] = $this->pointer['value'];
     }
     // 删除
@@ -146,6 +148,7 @@ trait SessionOperateTrait
     // 获得真是键
     private function getKey() : string
     {
+        isset($this->pointer['key']) || static::exception('未设置对应session键');
         return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
     }
 }

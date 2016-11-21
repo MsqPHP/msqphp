@@ -87,9 +87,9 @@ final class Log
     {
         return $this->level($type);
     }
-    public function content(array $content) : self
+    public function context($context) : self
     {
-        $this->pointer['content'] = $content;
+        $this->pointer['context'] = $context;
         return $this;
     }
     public function recode() : void
@@ -97,9 +97,9 @@ final class Log
         $pointer = $this->pointer;
         $level = $pointer['level'] ?? '';
         $message = $pointer['message'] ?? '';
-        $content = $pointer['content'] ?? [];
+        $context = $pointer['context'] ?? null;
         if (in_array(strtolower($level), static::$config['level'])) {
-            static::$handler->record($level, $message, $content);
+            static::$handler->record($level, $message, $context);
         }
     }
 }

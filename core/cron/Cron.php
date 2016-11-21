@@ -6,14 +6,7 @@ use msqphp\core\traits;
 
 final class Cron
 {
-    use CronLogTrait;
-    use CronPathTrait;
-    use CronMethodTrait;
-
-    private static $info = null;
-    private static $next_time = -1;
-    private static $lock = false;
-
+    private static $lock_handler = null;
     /**
      * 添加任务
      *
@@ -26,9 +19,7 @@ final class Cron
      */
     public static function add(string $name, string $type, string $value, int $time) : void
     {
-        base\file\File::append(static::getCacheFilePath(), '[' . $name . '](' . $type . '@#' . $time . '){' . $value . '}');
-
-        $time < static::getNextRunTime() && static::tidy();
+        base\file\File::append(static::getCacheFilePath(), $time . '[' . $name . '](' . $type . '@' . $value . ')' . PHP_EOL, true);
     }
 
     // 执行定时任务
@@ -38,40 +29,65 @@ final class Cron
 
         // 现在时间大于等于下一次执行时间,则运行
         if ($now >= static::getNextRunTime()) {
-            // 获取任务信息
-            $info = static::getInfo();
             // show($info);exit;
-            if (false === static::$lock) {
-                // 当存在任务且任务执行时间大于当前时间,则运行任务
-                while (isset($info[0]) && $now >= $info[0]['time']) {
-                    // 调用方法并移除
-                    static::runMethod(array_shift($info));
+            if (false === static::isLocked()) {
+                // 获取任务信息
+                $info_file = static::getInfoFilePath();
+                $cache_file = static::getCacheFilePath();
+                $cache_use_file = static::getCacheUseFilePath();
+                is_file($cache_file) && base\file\File::rename($cache_file, $cache_use_file);
+                $info = [];
+                if (is_file($info_file)) {
+                    $fp = fopen($info_file, 'r');
+                    while (false !== $cron_one = fgets($fp)) {
+                        $cron_one = static::readInfo($cron_one);
+                        if ($cron_one['time'] <= $now) {
+                            // 调用方法并移除
+                            CronMethod::runMethod($cron_one);
+                        } else {
+                            break;
+                        }
+                    }
+                    while (false !== $cron_one = fgets($fp)) {
+                        $info[] = static::readInfo($cron_one);
+                    }
+                    fclose($fp);
                 }
-                static::$info = $info;
-                static::tidy();
+                $cache=[];
+                if (is_file($cache_use_file)) {
+                    $fp = fopen($cache_use_file, 'r');
+                    while (false !== $cron_one = fgets($fp)) {
+                        $cron_one = static::readInfo($cron_one);
+                        if ($cron_one['time'] <= $now) {
+                            // 调用方法并移除
+                            CronMethod::runMethod($cron_one);
+                        } else {
+                            $cache[] = $cron_one;
+                        }
+                    }
+                    fclose($fp);
+                    base\file\File::delete($cache_use_file);
+                }
+                $content = static::toString(static::merage($info, static::sort($cache)));
+                // 清空缓存并写入
+                base\file\File::write($info_file, $content);
+                // 获取下次运行时间
+                $next_time = (int) (isset($content[0]) ? substr($content, strpos($content, '[') -1) : $now + 3600);
+                $next_time < static::getNextRunTime() && base\file\File::write(static::getNextRunTimeFilePath(), $next_time);
+                static::unlocked();
             } else {
                 static::recordLog(date('Y-m-d H:i:s').'文件锁入,跳过运行');
             }
+            static::recordLog(date('Y-m-d H:i:s').'运行过一次定时任务');
         }
-        static::recordLog(date('Y-m-d H:i:s').'运行过一次定时任务');
     }
-
-    // 整理定时任务
-    public static function tidy() : void
+    private static function toString(array $info) : string
     {
-        $info = static::getInfo();
-        if (false === static::$lock) {
-            // 获取合并后的信息
-            static::$info      = $info      = static::merage($info, static::sort(static::getCacheInfo()));
-            // 获取下次运行时间
-            static::$next_time = $next_time = isset($info[0]) ? $info[0]['time'] : 0;
-            // 清空缓存并写入
-            base\file\File::write(static::getInfoFilePath(), serialize($info));
-            base\file\File::write(static::getNextRunTimeFilePath(), $next_time);
-            base\file\File::empty(static::getCacheFilePath());
-        } else {
-            static::recordLog(date('Y-m-d H:i:s').'文件锁入,跳过运行');
+        $result = '';
+        for ($i = 0,$l = count($info); $i < $l; ++$i) {
+            $result.= $info[$i]['time'] . '[' . $info[$i]['name'] . '](' . $info[$i]['type'] . '@' . $info[$i]['value'] . ')' . PHP_EOL;
         }
+        return $result;
     }
     private static function merage(array $info, array $append) : array
     {
@@ -98,70 +114,98 @@ final class Cron
         return array_merge(static::sort($left), [$mid], static::sort($right));
     }
 
-    // 获取数据
-    private static function getInfo() : array
+    private static function isLocked() : bool
     {
-        if (null !== static::$info) {
-            return static::$info;
-        }
-        $info_file = static::getInfoFilePath();
-        $info = [];
-        if (is_file($info_file)) {
-            $resource = fopen($info_file, 'r+');
+        if (static::$lock_handler === null) {
+            $resource = fopen(static::getLockFilePath(), 'w');
             if (flock($resource, LOCK_EX)) {
-                $result = fread($resource, filesize($info_file) + 1);
-                $info = $result === '' ? [] : unserialize($result);
-                flock($resource, LOCK_UN);
-                fclose($resource);
+                static::$lock_handler = $resource;
+                return false;
             } else {
-                static::$lock = true;
+                fclose($resource);
+                return true;
             }
+        } else {
+            return false;
         }
-        return static::$info = $info;
+    }
+    private static function unlocked() : void
+    {
+        fclose(static::$lock_handler);
     }
     // 得到下一次运行时间
     private static function getNextRunTime() : int
     {
-        // 如果载入过
-        if (static::$next_time !== -1) {
-            // 返回
-            return static::$next_time;
-        } else {
-            // 文件存在则载入,否则取0
-            $next_file = static::getNextRunTimeFilePath();
-            return static::$next_time = is_file($next_file) ? (int) base\file\File::get($next_file) : time();
-        }
+        $next_file = static::getNextRunTimeFilePath();
+        return is_file($next_file) ? (int) base\file\File::get($next_file) : time();
     }
-    // 获取缓存信息
-    private static function getCacheInfo() : array
+
+    private static function readInfo(string $text) : array
     {
-        $cache_file = static::getCacheFilePath();
-
-        if (!is_file($cache_file)) {
-            return [];
-        }
-
-        $cache = base\file\File::get($cache_file);
-
         $info = [];
+        [$left, $right] = explode('](', $text, 2);
+        [$time, $name] = explode('[', $left, 2);
+        [$type, $value] = explode('@', $right, 2);
+        $value = substr($value, 0, -1);
+        return ['time'=>$time,'name'=>$name,'value'=>$value,'type'=>$type];
+    }
 
-        // 例: [删除文件](deleteFile@#1245454545){D:\msqphp\a.txt}
-        // []之间为任务名,()中@#前为任务类型,后面为执行时间,{}中为值
-        while (isset($cache[0]) && $cache[0] === '[') {
-            if (false !== $pos = strpos($cache, ']')) {
-                $name = substr($cache, 1 , $pos - 1);
-                if (false !== $pos_next = strpos($cache, ')')) {
-                    [$type, $time] = explode('@#', substr($cache, $pos + 2, $pos_next - $pos - 2));
-                    if (false !== $pos_last = strpos($cache, '}')) {
-                        $value = substr($cache, $pos_next + 2, -1);
-                        $info[] = ['name'  => $name, 'value' => $value, 'time'  => (int) $time, 'type'  => $type];
-                        $cache = substr($cache, $pos_last + 1);
-                        continue;
-                    }
-                }
-            }
-            throw new CronException('错误的cron缓存格式,解析失败');
+    private static $path = '';
+    // 得到定时任务文件目录
+    private static function getPath() : string
+    {
+        if (static::$path === '') {
+            static::$path = \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cron' . DIRECTORY_SEPARATOR;
         }
-        return $info;
+        return static::$path;
+    }
+
+    // 得到定时任务信息文件路径
+    private static function getInfoFilePath() : string
+    {
+        return static::getPath() . 'cron.php';
+    }
+
+    // 得到定时任务日志文件路径
+    private static function getLogFilePath() : string
+    {
+        return static::getPath() . date('Ymd') . DIRECTORY_SEPARATOR . 'cron_log.txt';
+    }
+
+    // 得到定时任务下次运行时间文件路径
+    private static function getNextRunTimeFilePath() : string
+    {
+        return static::getPath() . 'cron_next_time.txt';
+    }
+    // 得到定时任务缓存文件路径
+    private static function getCacheFilePath() : string
+    {
+        return static::getPath() . 'cron_cache.txt';
+    }
+     // 得到定时任务缓存文件路径
+    private static function getCacheUseFilePath() : string
+    {
+        return static::getPath() . 'cron_cache_use.txt';
+    }
+    // lock文件
+    private static function getLockFilePath() : string
+    {
+        return static::getPath() . 'cron.lock';
+    }
+
+    /**
+     * 日志写入
+     *
+     * @param  string $message 信息
+     *
+     * @return void
+     */
+    public static function recordLog(string $message) : void
+    {
+        try {
+            base\file\File::append(static::getLogFilePath(), $message . PHP_EOL, true);
+        } catch(base\file\FileException $e) {
+            throw new CronException('定时任务日志记录出错,错误原因:' . $e->getMessage());
+        }
     }
 }

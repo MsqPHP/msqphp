@@ -5,6 +5,8 @@ final class Environment
 {
     // 框架版本
     private const vension = 2.0;
+    // 运行模式
+    private static $run_mode = '';
 
     // 所有目录存放
     private static $path = [
@@ -36,12 +38,10 @@ final class Environment
     // 获取当前运行环境
     public static function getRunMode() : string
     {
-        static $runMode = '';
-
-        if ('' === $runMode) {
+        if (static::$run_mode === '') {
             switch (PHP_SAPI) {
                 case 'cli':
-                    $runMode = 'cli';
+                    static::$run_mode = 'cli';
                     break;
                 case 'cgi':
                 case 'cgi-fcgi':
@@ -49,10 +49,10 @@ final class Environment
                 case 'apache2filter':
                 case 'apache2handler':
                 default :
-                    $runMode = 'web';
+                    static::$run_mode = 'web';
             }
         }
-        return $runMode;
+        return static::$run_mode;
     }
 
     /**

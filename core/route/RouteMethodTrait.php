@@ -126,10 +126,8 @@ trait RouteMethodRunTrait
     private static function callFunction($func, array $args = [], bool $aiload) : void
     {
         if ($aiload) {
-            $aiload_class = app()->aiload;
-            $aiload_class->init()
-                   ->key(md5(static::$url.var_export(static::$method_info,true)))
-                   ->load();
+            $loader = app()->loader;
+            $loader->key(md5(static::$url.var_export(static::$method_info,true)))->load();
         }
 
         // 字符串
@@ -143,12 +141,12 @@ trait RouteMethodRunTrait
         }
 
         if ($aiload) {
-            if ($aiload_class->last()) {
-                random_int(1, 1000) === 1000 && $aiload_class->delete();
+            if ($loader->last()) {
+                random_int(1, 1000) === 1000 && $loader->delete();
             } else {
-                $aiload_class->update();
+                $loader->update();
             }
-            unset($aiload_class);
+            unset($loader);
         }
     }
 
@@ -168,7 +166,6 @@ trait RouteMethodRunTrait
         } else {
             $query = '';
         }
-
         $class_name = static::$namespace . $class;
 
         static::$method_info['function'] = [
@@ -178,7 +175,7 @@ trait RouteMethodRunTrait
             'args'   => $args,
         ];
 
-        call_user_func_array([new $class_name(), $method], static::getArgsByQuery($query, $args));
+        call_user_func_array([new $class_name, $method], static::getArgsByQuery($query, $args));
     }
 }
 

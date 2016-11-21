@@ -15,8 +15,8 @@ final class App
         if (APP_DEBUG) {
             core\response\Response::dumpArray(static::getFullInfo());
         } else {
-            app()->log->message('运行成功')
-                      ->content(static::getSimalInfo())
+            $content = static::getSimalInfo();
+            app()->log->message('运行成功' . PHP_EOL . (empty($content) ? '' : '{' . PHP_EOL. implode(PHP_EOL, $content) . PHP_EOL . '}'))
                       ->level('success')
                       ->recode();
         }

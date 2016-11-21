@@ -29,52 +29,51 @@ class File implements LoggerHandlerInterface
         $this->config = $config;
     }
 
-    public function record(string $level, string $message, array $context = [])
+    public function record(string $level, string $message, $context = null)
     {
         base\file\File::append(
             $this->config['path'].date('Y-m-d').DIRECTORY_SEPARATOR.$level.random_int(1, $this->config['files']).$this->config['extension']
-            , '['.date('Y-m-d H:i:s').']' . $level . ':' .$message .PHP_EOL .(empty($context) ? '' : '{' . PHP_EOL. implode(PHP_EOL, $context) . PHP_EOL . '}' . PHP_EOL)
+            , '['.date('Y-m-d H:i:s').']' . $level . ':' .$message .PHP_EOL
             , true
         );
     }
-
-    public function emergency(string $message, array $context = [])
+    public function emergency(string $message, $context = null)
     {
-        static::record('emergency', $message, $context = []);
+        static::record('emergency', $message, $context);
     }
-    public function alert(string $message, array $context = [])
+    public function alert(string $message, $context = null)
     {
-        static::record('alert', $message, $context = []);
+        static::record('alert', $message, $context);
     }
-    public function critical(string $message, array $context = [])
+    public function critical(string $message, $context = null)
     {
-        static::record('critical', $message, $context = []);
+        static::record('critical', $message, $context);
     }
-    public function error(string $message, array $context = [])
+    public function error(string $message, $context = null)
     {
-        static::record('error', $message, $context = []);
+        static::record('error', $message, $context);
     }
-    public function warning(string $message, array $context = [])
+    public function warning(string $message, $context = null)
     {
-        static::record('warning', $message, $context = []);
+        static::record('warning', $message, $context);
     }
-    public function notice(string $message, array $context = [])
+    public function notice(string $message, $context = null)
     {
-        static::record('notice', $message, $context = []);
+        static::record('notice', $message, $context);
     }
-    public function info(string $message, array $context = [])
+    public function info(string $message, $context = null)
     {
-        static::record('info', $message, $context = []);
+        static::record('info', $message, $context);
     }
-    public function debug(string $message, array $context = [])
+    public function debug(string $message, $context = null)
     {
-        static::record('debug', $message, $context = []);
+        static::record('debug', $message, $context);
     }
-    public function exception(string $message, array $context = [])
+    public function exception(string $message, $context = null)
     {
-        static::record('exception', $message, $context = []);
+        static::record('exception', $message, $context);
     }
-    public function success(string $message, array $context = [])
+    public function success(string $message, $context = null)
     {
         static::record('success', $message, $context);
     }

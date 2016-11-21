@@ -10,6 +10,7 @@ final class Config
 
     // 配置
     private $config = [];
+
     // 初始化
     public function __construct()
     {

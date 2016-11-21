@@ -14,12 +14,13 @@ trait ResponseJumpTrait
      */
 
     // 页面重定向
-    public static function redirect(string $url, int $code = 301) : void
+    public static function redirect(string $url, int $code = 301, bool $exit = true) : void
     {
         header('location:'.$url, true, $code);
+        $exit && exit;
     }
     // 页面跳转
-    public static function jump(string $url, int $time = 0, string $message = '') : void
+    public static function jump(string $url, int $time = 0, string $message = '', bool $exit = true) : void
     {
         $message = $message ?: '系统将在'.$time.'秒之后自动跳转到<a href="'.$url.'">'.$url.'</a>！';
         if($time > 0) {
@@ -28,24 +29,28 @@ trait ResponseJumpTrait
         } else {
             static::redirect($url);
         }
+        $exit && exit;
     }
     // 错误信息显示
-    public static function error(string $msg, int $time = 3, string $url = '') : void
+    public static function error(string $msg, int $time = 3, string $url = '', bool $exit = true) : void
     {
         include static::getViewPath('error');
+        $exit && exit;
     }
     // 成功信息显示
-    public static function success(string $msg, int $time = 3, string $url = '') : void
+    public static function success(string $msg, int $time = 3, string $url = '', bool $exit = true) : void
     {
         include static::getViewPath('success');
+        $exit && exit;
     }
     // 不可用页面(维护)
-    public static function unavailable() : void
+    public static function unavailable(bool $exit = true) : void
     {
         include static::getViewPath('unavailable');
+        $exit && exit;
     }
     // JS窗口提示并跳转
-    public static function alert(string $msg, string $url = '', string $charset = 'utf-8') : void
+    public static function alert(string $msg, string $url = '', string $charset = 'utf-8', bool $exit = true) : void
     {
         // header头为html
         base\header\Header::type('html', $charset);
@@ -55,6 +60,7 @@ trait ResponseJumpTrait
         $go_url = empty($url) ? 'history.go(-1);' : 'window.location.href = "'.$url.'";';
         // 输出
         echo '<meta charset="',$charset,'"><script type="text/javascript">',$alert_msg,$go_url,'</script>';
+        $exit && exit;
     }
 
     /**

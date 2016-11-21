@@ -3,7 +3,7 @@ namespace msqphp\core\cron;
 
 use msqphp\base;
 
-trait CronMethodTrait
+final class CronMethod
 {
     /**
      * @param array  $info = [
@@ -17,7 +17,7 @@ trait CronMethodTrait
      * @return void
      */
 
-    private static function runMethod(array $info) : void
+    public static function runMethod(array $info) : void
     {
         switch ($info['type']) {
             case 'deleteFile':
@@ -42,6 +42,6 @@ trait CronMethodTrait
             throw new CronException('定时任务执行失败,文件'.$info['value'].'无法删除,原因:'.$e->getMessage());
         }
 
-        static::recordLog(date('Y-m-d H:i:s')."\t".'[任务名:]'.$info['name']."\t\t".'[值:]删除文件:'.$info['value']);
+        Cron::recordLog(date('Y-m-d H:i:s')."\t".'[任务名:]'.$info['name']."\t\t".'[值:]删除文件:'.$info['value']);
     }
 }

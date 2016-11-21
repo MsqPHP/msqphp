@@ -15,7 +15,7 @@ trait ModelOperateTrait
     }
     public function exists() : bool
     {
-        return '' === core\database\Database::getColumn($this->getSelectQuery(), ($this->pointer['prepare'] ?? []));
+        return null !== core\database\Database::getColumn($this->getExistsQuery(), ($this->pointer['prepare'] ?? []));
     }
     public function getOne()
     {
@@ -48,30 +48,16 @@ trait ModelOperateTrait
         return core\database\Database::exec($this->getDeleteQuery(), ($this->pointer['prepare'] ?? []));
     }
 
-    //
-    public function begin()
+    public function transaction(\Closure $func, array $args = []) : void
     {
-        core\database\Database::beginTransaction();
-    }
-    public function beginTransaction()
-    {
-        core\database\Database::beginTransaction();
-    }
-    public function commit()
-    {
-        core\database\Database::commit();
-    }
-    public function rollBack()
-    {
-        core\database\Database::rollBack();
-    }
-    public function cancel()
-    {
-        core\database\Database::rollBack();
-    }
-    public function end()
-    {
-        core\database\Database::commit();
+        try {
+            core\database\Database::beginTransaction();
+            call_user_func($func, $args);
+            core\database\Database::commit();
+        } catch (ModelException | core\database\DatabaseException $e) {
+            core\database\Database::rollBack();
+            throw $e;
+        }
     }
     public function lastInsertId() : int
     {

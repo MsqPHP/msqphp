@@ -79,17 +79,11 @@ trait RouteParseTrait
 
     private static function getPath() : string
     {
-        if (!isset(static::$parse_info['path'])) {
-            static::parsePathAndQuery();
-        }
         return static::$parse_info['path'];
     }
     // 获得查询语句(get参数)
     private static function getQuery() : string
     {
-        if (!isset(static::$parse_info['query'])) {
-            static::parsePathAndQuery();
-        }
         return static::$parse_info['query'];
     }
     // 获得访问方法

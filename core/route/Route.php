@@ -38,6 +38,8 @@ final class Route
     // route运行
     public static function run() : void
     {
+        static::parsePathAndQuery();
+        static::$url = static::getProtocol().'://'.static::getDomain().'/';
         // 路由流程文件
         $file = \msqphp\Environment::getPath('application') . 'route.php';
         is_file($file) || static::exception('路由解析失败,原因:路由流程文件'.$file.'不存在');

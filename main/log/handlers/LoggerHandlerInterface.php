@@ -15,15 +15,15 @@ interface LoggerHandlerInterface
      * @param string $message
      * @return void
      */
-    public function record(string $level, string $message);
-    public function emergency(string $message);
-    public function alert(string $message);
-    public function critical(string $message);
-    public function error(string $message);
-    public function warning(string $message);
-    public function notice(string $message);
-    public function info(string $message);
-    public function debug(string $message);
-    public function exception(string $message);
-    public function success(string $message);
+    public function record(string $level, string $message, $context);
+    public function emergency(string $message, $context);
+    public function alert(string $message, $context);
+    public function critical(string $message, $context);
+    public function error(string $message, $context);
+    public function warning(string $message, $context);
+    public function notice(string $message, $context);
+    public function info(string $message, $context);
+    public function debug(string $message, $context);
+    public function exception(string $message, $context);
+    public function success(string $message, $context);
 }

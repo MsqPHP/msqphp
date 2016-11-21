@@ -27,7 +27,7 @@ return function (string $old_path, string $new_path, bool $force = true) : void
     // 目标目录是否存在
     if (is_file($new_path)) {
         if ($force) {
-            static::delete($to_dir, false);
+            static::delete($new_path, false);
         } else {
             static::exception($new_path.'对应文件已存在, 无法重命名');
         }

@@ -12,10 +12,10 @@ trait CookieOperateTrait
         return isset(static::$cookies[$this->getKey()]);
     }
 
-    // 得到当前操作cookie值 或者 得到全部cookie值
+    // 得到当前操作cookie值
     public function get()
     {
-        return isset($this->pointer['key']) ? $this->getVal('decode') : static::$cookies;
+        return $this->getVal('decode');
     }
 
     // 设置cookie值
@@ -48,7 +48,17 @@ trait CookieOperateTrait
         unset(static::$cookies[$key]);
     }
 
+    // 得到全部cookie值
+    public function getAll() : array
+    {
+        return static::$cookies;
+    }
     // 清空cookie
+    public function deleteAll() : void
+    {
+        $this->clear();
+    }
+
     public function clear() : void
     {
         // 遍历
