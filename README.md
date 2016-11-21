@@ -101,7 +101,8 @@ php7.1 轻量级框架
             "autoload": {
                 "psr-4": {
                     "app\\": "application/",
-                    "test\\": "test/"
+                    "test\\": "test/",
+                    "msqphp\\": "library/msqphp/framework/"
                 }
             },
             "minimum-stability": "dev"
