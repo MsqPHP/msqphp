@@ -20,10 +20,10 @@ trait RouteRouleTrait
     {
         // 规则存在
         // 如果是string则正则,否则调用函数
-        return isset(static::$key[$key]) && (
-            is_string(static::$key[$key])
-            ? 0 !== preg_match(static::$key[$key], $value)
-            : call_user_func_array(static::$key[$key], $value)
+        return isset(static::$roule[$key]) && (
+            is_string(static::$roule[$key])
+            ? 0 !== preg_match(static::$roule[$key], $value)
+            : call_user_func_array(static::$roule[$key], [$value])
         );
     }
 

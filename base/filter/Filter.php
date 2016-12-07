@@ -50,6 +50,10 @@ final class Filter
             return array_map('static::slashes', $value);
         } elseif (is_int($value) || is_float($value)) {
             return (string)$value;
+        } elseif (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        } elseif (is_null($value)) {
+            return 'null';
         } else {
             static::exception('不支持的格式');
         }
@@ -69,6 +73,10 @@ final class Filter
             return array_map('static::slashes', $value);
         } elseif (is_int($value) || is_float($value)) {
             return (string)$value;
+        } elseif (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        } elseif (is_null($value)) {
+            return 'null';
         } else {
             static::exception('不支持的格式');
         }

@@ -3,6 +3,7 @@ namespace msqphp\main\log;
 
 final class Log
 {
+    use LogStaticTrait, LogPointerAndOperateTrait;
     const EMERGENCY = 'emergency';
     const ALERT     = 'alert';
     const CRITICAL  = 'critical';
@@ -14,37 +15,36 @@ final class Log
     const EXCEPTION = 'exception';
     const SUCCESS   = 'success';
 
-    private static $handler = null;
-    private static $config = [
-    ];
-
-    private $pointer = [];
-    public function __construct()
-    {
-        $this->init();
-    }
     // 抛出异常
     private static function exception(string $message) : void
     {
         throw new LogException($message);
     }
+}
+
+trait LogStaticTrait
+{
+    // 处理器
+    private static $handler = null;
+    // 配置
+    private static $config = [];
+
+    // 静态类初始化
     private static function initStatic() : void
     {
         // 初始化过直接返回
         static $inited = false;
 
-        if ($inited) {
-            return;
+        if (!$inited) {
+            $inited = true;
+            // 初始化配置
+            static::$config  = $config = array_merge(static::$config,app()->config->get('log'));
+            // 获得处理器
+            static::$handler = static::initHandler($config['default_handler'], $config['handlers_config'][$config['default_handler']]);
         }
-        $inited = true;
+    }
 
-        static::initCnnfigAndGetHandler();
-    }
-    private static function initCnnfigAndGetHandler() : void
-    {
-        static::$config  = $config = array_merge(static::$config,app()->config->get('log'));
-        static::$handler = static::initHandler($config['default_handler'], $config['handlers_config'][$config['default_handler']]);
-    }
+    // 初始化处理器
     private static function initHandler(string $type, array $config) : handlers\LoggerHandlerInterface
     {
         // 载入默认处理器接口文件
@@ -61,6 +61,17 @@ final class Log
         $class = __NAMESPACE__.'\\handlers\\'.$type;
         // 创建类
         return new $class($config);
+    }
+}
+
+trait LogPointerAndOperateTrait
+{
+
+    private $pointer = [];
+
+    public function __construct()
+    {
+        $this->init();
     }
 
     public function init() : self
@@ -96,10 +107,8 @@ final class Log
     {
         $pointer = $this->pointer;
         $level = $pointer['level'] ?? '';
-        $message = $pointer['message'] ?? '';
-        $context = $pointer['context'] ?? null;
         if (in_array(strtolower($level), static::$config['level'])) {
-            static::$handler->record($level, $message, $context);
+            static::$handler->record($level, $pointer['message'] ?? '', $pointer['context'] ?? null);
         }
     }
 }

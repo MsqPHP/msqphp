@@ -30,7 +30,6 @@ trait ModelPointerTrait
 
     private function addPrepare($value, string $type) : string
     {
-        $pre_name = ':prepare' . (string) count($this->pointer['prepare'] ?? []);
         switch (strtolower($type)) {
             case 'int':
                 $type = \PDO::PARAM_INT;
@@ -38,10 +37,11 @@ trait ModelPointerTrait
             case 'str':
             case 'string':
                 $type = \PDO::PARAM_STR;
-            default:
-                # code...
                 break;
+            default:
+                $this->exception('未知类型');
         }
+        $pre_name = ':prepare' . (string) count($this->pointer['prepare'] ?? []);
         $this->pointer['prepare'][$pre_name] = [$value, $type];
         return $pre_name;
     }

@@ -3,6 +3,17 @@ namespace msqphp\main\model;
 
 trait ModelSqlTrait
 {
+    protected function getSql(string $type) : string
+    {
+        switch ($type) {
+            case 'exists':
+                return $this->getExistsQuery();
+            case 'select':
+            default:
+                return $this->getSelectQuery();
+        }
+    }
+
     private function getExistsQuery() : string
     {
         $pointer = $this->pointer;

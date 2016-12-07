@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
-use msqphp\base;
+use msqphp\base\file\File;
 
 /**
  * 通过文件相关时间删除文件
@@ -35,6 +35,6 @@ return function (string $dir, string $type, int $expire = 3600, string $ext = ''
     // 遍历获取所有文件
     foreach(static::getAllFileByType($dir, $ext, $pre) as $file) {
         // 过期删除
-        $func($file) < $expire && base\file\File::delete($file);
+        $func($file) < $expire && File::delete($file);
     }
 };

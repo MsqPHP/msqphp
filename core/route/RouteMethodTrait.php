@@ -66,7 +66,9 @@ trait RouteMethodTrait
                 static::$matched = true;
                 static::$method_info = ['method' => $method, 'condition' => $conditions];
                 unset($method, $conditions);
+                define('USER_FUNC_START', microtime(true));
                 static::callFunction($func, $args, $aiload);
+                define('USER_FUNC_END', microtime(true));
                 return;
             }
         }
@@ -211,16 +213,16 @@ trait RouteMethodCheckTrait
         }
 
         for ($i = 1; $i < $len; ++$i ) {
-            if (false !== $pos = strpos($target_path[0], '(')) {
-                $name = substr($target_path[0],0,$pos);
-                $roule_key = substr($target_path[0],$pos +1, -1);
-                if (static::checkRoule($pending_path[0], $roule_key)) {
-                    $_GET[$name] = $pending_path[0];
+            if (false !== $pos = strpos($target_path[$i], '(')) {
+                $name = substr($target_path[$i],0,$pos);
+                $roule_key = substr($target_path[$i],$pos +1, -1);
+                if (static::checkRoule($pending_path[$i], $roule_key)) {
+                    $_GET[$name] = $pending_path[$i];
                     continue;
                 }
-            } elseif(isset($target_path[1]) && $pending_path[0] === $target_path[0]) {
-                if (static::checkRoule($pending_path[1], $target_path[1])) {
-                    $_GET[$pending_path[0]] = $pending_path[1];
+            } elseif(isset($target_path[$i+1]) && $pending_path[$i] === $target_path[$i]) {
+                if (static::checkRoule($pending_path[$i+1], $target_path[$i+1])) {
+                    $_GET[$pending_path[$i]] = $pending_path[$i+1];
                     ++$i;
                     continue;
                 }

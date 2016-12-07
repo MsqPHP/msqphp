@@ -7,8 +7,10 @@ final class App
     public static function run() : void
     {
         register_shutdown_function(['\\msqphp\\App', 'shutDown']);
-        static::runRoute();
 
+        is_file(Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron_run') || Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'run']);
+        // is_file(static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'queue_run') || Cli::runPhpFile(static::getPath('bootstrap').'cli.php', ['queue', 'run']);
+        static::runRoute();
     }
 
     // 关闭调用
@@ -16,10 +18,10 @@ final class App
     {
         // 记录或者打印信息
         if (APP_DEBUG) {
-            if ('' !== core\response\Response::$type || 'html' !== core\response\Response::$type) {
+            if (null !== core\response\Response::$type && 'html' !== core\response\Response::$type) {
                 return;
             } else {
-                core\response\Response::dumpArray(static::getFullInfo());
+                core\response\Response::debugArray(static::getFullInfo());
             }
         } else {
             $content = static::getSimalInfo();
@@ -30,7 +32,7 @@ final class App
     }
     public static function runRoute() : void
     {
-        define('ROUTE_CONTROLLER_START', microtime(true));
+        define('ROUTE_START', microtime(true));
         //加载路由并运行
         require __DIR__.'/core/route/RouteRouleTrait.php';
         require __DIR__.'/core/route/RouteCategoryTrait.php';
@@ -40,7 +42,7 @@ final class App
         require __DIR__.'/core/route/RouteStaticTrait.php';
         require __DIR__.'/core/route/Route.php';
         core\route\Route::run();
-        define('ROUTE_CONTROLLER_END', microtime(true));
+        define('ROUTE_END', microtime(true));
     }
     private static function getSimalInfo() : array
     {
@@ -51,7 +53,7 @@ final class App
 
         if (isset($end_time)) {
             $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_START_TIME , 12) . '秒';
-            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
+            defined('ROUTE_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_END - ROUTE_START, 12) . '秒';
             $end_info[] = "\t内存峰值: " . base\number\Number::byte(memory_get_peak_usage(), false);
         }
 
@@ -70,9 +72,9 @@ final class App
             $end_info[] = "\t现在时间戳      : " . (string) round(microtime(true)                , 12) . '秒';
             $end_info[] = "\t现在时间        : " . date('Y-m-d H:i:s');
             $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_START_TIME , 12) . '秒';
-            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t框架实际用时    : " . (string) round($end_time      - PHP_START_TIME - ROUTE_CONTROLLER_END + ROUTE_CONTROLLER_START, 12) . '秒';
-            defined('CRON_START')           && $end_info[] = "\t定时任务用时    : " . (string) round(CRON_END - CRON_START, 12) . '秒';
-            defined('ROUTE_CONTROLLER_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_CONTROLLER_END - ROUTE_CONTROLLER_START, 12) . '秒';
+            defined('ROUTE_END') &&                             $end_info[] = "\t框架实际用时    : " . (string) round($end_time      - PHP_START_TIME - ROUTE_END + ROUTE_START, 12) . '秒';
+            defined('ROUTE_END') && defined('USER_FUNC_END') && $end_info[] = "\t路由用时        : " . (string) round(ROUTE_END      - ROUTE_START - USER_FUNC_END + USER_FUNC_START, 12) . '秒';
+            defined('USER_FUNC_END') &&                         $end_info[] = "\t用户函数用时    : " . (string) round(USER_FUNC_END - USER_FUNC_START, 12) . '秒';
             unset($end_time);
         }
 

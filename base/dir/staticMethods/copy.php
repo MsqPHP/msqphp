@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
-use msqphp\base;
+use msqphp\base\file\File;
 
 /**
  * 复制目录
@@ -41,8 +41,9 @@ return function (string $from, string $to, bool $force = false) {
     foreach (static::getDirList($from, false) as $dir) {
         static::copy($from.$dir, $to.$dir, true);
     }
+
     // 复制文件
     foreach (static::getFileList($from, false) as $file) {
-        base\file\File::copy($from.$file, $to.$file, true);
+        File::copy($from.$file, $to.$file, true);
     }
 };

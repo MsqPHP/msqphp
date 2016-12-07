@@ -13,6 +13,16 @@ final class Header
         throw new HeaderException($message);
     }
 
+    public static function header(string $header, bool $replace = true, int $code = null) : void
+    {
+        header($header, $replace, $code);
+    }
+
+    public static function cache(int $time) : void
+    {
+        exit('not complete');
+    }
+
     // 没有缓存
     public static function noCache() : void
     {
@@ -74,12 +84,8 @@ final class Header
             505 => 'HTTP Version Not Supported',
             509 => 'Bandwidth Limit Exceeded'
         ];
-        if (isset($status_info[$code])) {
-            header('HTTP/1.1 '.$code.' '.$status_info[$code]);
-            header('Status:'.$code.' '.$status_info[$code]);
-        } else {
-            throw new HeaderException($code.'暂未支持');
-        }
+        isset($status_info[$code]) || static::exception($code.'html状态码暂未支持');
+        header('Status:'.$code.' '.$status_info[$code]);
     }
 
     /**
@@ -230,13 +236,10 @@ final class Header
             'avi'     => 'video/x-msvideo',
             'movie'   => 'video/x-sgi-movie',
             'ice'     => 'x-conference/x-cooltalk',
-            'json' => 'application/json',
+            'json'    => 'application/json',
         ];
-        if (isset($headers[$type])) {
-            header('Content-Type:' . $headers[$type] . '; charset='.$charset);
-        } else {
-            throw new HeaderException($type.'暂未支持');
-        }
+        isset($headers[$type]) || static::exception($type.'header类型暂未支持');
+        header('Content-Type:' . $headers[$type] . '; charset='.$charset);
     }
 
     /**
@@ -250,9 +253,7 @@ final class Header
      */
     public static function download(string $filepath, string $filename = '', string $type = '') : void
     {
-        if (!is_file($file) || !is_writable($file)) {
-            throw new HeaderException('无法发送下载头,原因:'.(string)$file.'不存在或不可读');
-        }
+        !is_readable($file) || static::exception('无法发送下载头,原因:'.(string)$file.'无法读取');
 
         static::type($type ?: pathinfo($filepath, PATHINFO_EXTENSION));
 

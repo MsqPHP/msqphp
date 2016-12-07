@@ -253,6 +253,7 @@ trait TemplateMoreTrait
                 }
             } elseif (0 !== preg_match(static::$pattern['else'], $if[0]['tag'], $if_match)) {
                 $result_if[] = empty($result_if) ? static::commpile($if[0]['content'], $data, $language) : '<?php else: ?>' . static::commpile($if[0]['content'], $data, $language) . '<?php endif;?>';
+                break;
             } else {
                 static::exception('错误的if语句');
             }

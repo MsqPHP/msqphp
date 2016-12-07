@@ -7,6 +7,7 @@ trait DatabaseHandlerTrait
     private static $config = [];
     private static $handler = null;
     private static $handlers = [];
+
     // 获取连接信息
     private static function getConnectInfo(array $config) : array
     {
@@ -28,19 +29,22 @@ trait DatabaseHandlerTrait
                 static::exception('未知的数据库类型');
         }
     }
-    public static function getHandler(string $name = '')
+
+    public static function getHandler(?string $name = null)
     {
-        if ('' === $name) {
-            return static::$handler = static::$handler ?? static::initHandler('');
+        if (null === $name) {
+            return static::$handler = static::$handler ?? static::initHandler();
         }
 
-        return static::$handlers[$name] = static::$handlers[$name] ?? static::initHandler($name);;
+        return static::$handlers[$name] = static::$handlers[$name] ?? static::initHandler(null);;
     }
+
     public static function setHandler(string $name)
     {
         static::$handler = static::getHandler($name);
     }
-    private static function initHandler(string $name)
+
+    private static function initHandler(?string $name = null)
     {
         try {
             $config = static::getConfig($name);
@@ -53,12 +57,13 @@ trait DatabaseHandlerTrait
             static::exception($name.'数据库初始化失败,原因:'.$e->getMessage());
         }
     }
-    private static function getConfig(string $name)
+
+    private static function getConfig(?string $name = null)
     {
         if ([] === static::$config) {
             static::$config = $config = app()->config->get('database');
         }
-        if ('' === $name) {
+        if (null === $name) {
             return static::$config;
         } else {
             isset(static::$config[$name]) || static::exception('数据库'.$name.'配置不存在');

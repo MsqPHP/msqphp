@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
-use msqphp\base;
+use msqphp\base\file\File;
 
 /**
  * 通过文件名称删除文件
@@ -17,6 +17,6 @@ use msqphp\base;
  */
 return function (string $dir, string $type, string $pre = '') : void {
     foreach (static::getAllFileByType($dir, $type, $pre) as $file) {
-        base\file\File::delete($file, true);
+        File::delete($file, true);
     }
 };

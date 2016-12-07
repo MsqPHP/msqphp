@@ -45,12 +45,13 @@ trait ModelOperateTrait
     {
         return core\database\Database::exec($this->getDeleteQuery(), $this->getPrepare());
     }
-    public function transaction(\Closure $func, array $args = []) : void
+    public function transaction(\Closure $func, array $args = [])
     {
         try {
             core\database\Database::beginTransaction();
-            call_user_func($func, $args);
+            $result = call_user_func($func, $args);
             core\database\Database::commit();
+            return $result;
         } catch (ModelException | core\database\DatabaseException $e) {
             core\database\Database::rollBack();
             throw $e;

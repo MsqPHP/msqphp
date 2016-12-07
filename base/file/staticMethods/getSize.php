@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\file;
 
-use msqphp\base;
+use msqphp\base\number\Number;
 
 /**
  * 得到文件大小
@@ -27,7 +27,7 @@ return function (string $file, bool $round = true, bool $unit = true) {
 
     $round && $size = round($size);
 
-    $unit  && $size = base\number\Number::byte($size);
+    $unit  && $size = Number::byte($size);
 
     return $size;
 };

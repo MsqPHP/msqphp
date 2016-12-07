@@ -3,7 +3,7 @@ namespace msqphp\core\container;
 
 use msqphp\core\traits;
 
-class Container implements \ArrayAccess
+class Container
 {
     use traits\Instance;
 
@@ -15,14 +15,14 @@ class Container implements \ArrayAccess
     //获取服务
     public function get(string $name, array $params = [])
     {
-        //先从已经实例化的列表中查找
+        //已存在,直接返回
         if (isset($this->instances[$name])) {
             return $this->instances[$name];
         }
 
-        //检测有没有注册该服务
+        //是否已绑定
         if (!isset($this->bindings[$name])) {
-            // 文件是否存在
+            // 对应文件是否存在
             $file = __DIR__ . DIRECTORY_SEPARATOR . 'binds' . DIRECTORY_SEPARATOR . $name . '.php';
             // 判断用户扩展目录下是否存在
             is_file($file) || $file = \msqphp\Environment::getPath('library') . 'core' . DIRECTORY_SEPARATOR . 'container' . DIRECTORY_SEPARATOR . 'binds' . DIRECTORY_SEPARATOR . $name . '.php';
@@ -30,15 +30,18 @@ class Container implements \ArrayAccess
             if (is_file($file)) {
                 $info = require $file;
                 // 分享复制当实例集合中,否则直接返回
-                return $info['shared'] === true ? $this->instances[$name] = call_user_func_array($info['object'], []) : call_user_func_array($info['object'], []);
-            // 否则取null
+                $this->registerService($name, $info['object'], $info['shared']);
+                // 重新获取
+                return $this->get($name, $params);
+            // 否则异常,取一个未知的容器值
             } else {
                 throw new ContainerException($name . '并不存在于容器中');
             }
-        } else {
-            return $this->createObj($name, $params);
         }
+
+        return $this->createObject($name, $params);
     }
+
     /**
      * 创建对象
      *
@@ -51,25 +54,20 @@ class Container implements \ArrayAccess
     {
         $concrete = $this->bindings[$name]['class'];//对象具体注册内容
 
-        $object = null;
-
-        //匿名函数方式
+        // 闭包函数
         if ($concrete instanceof \Closure) {
-            $object = call_user_func_array($concrete,$params);
+            $object = call_user_func_array($concrete, $params);
+        //匿名函数方式
+        } elseif (is_object($concrete)) {
+            $object = $concrete;
         //字符串方式
         } elseif (is_string($concrete)) {
-            if (empty($params)) {
-                $object = new $concrete;
-            } else {
-                //带参数的类实例化，使用反射
-                $class = new \ReflectionClass($concrete);
-                $object = $class->newInstanceArgs($params);
-            }
+            $object = empty($params) ? new $concrete : call_user_func_array([new \ReflectionClass($concrete),'newInstanceArgs'], $params);
+        } else {
+            $object = null;
         }
-
         //如果是共享服务，则写入_instances列表，下次直接取回
         $this->bindings[$name]['shared'] === true && $this->instances[$name] = $object;
-
         return $object;
     }
 
@@ -80,7 +78,7 @@ class Container implements \ArrayAccess
     }
 
     //卸载服务
-    public function remove(string $name) : bool
+    public function remove(string $name) : void
     {
         unset($this->bindings[$name],$this->instances[$name]);
     }
@@ -101,33 +99,7 @@ class Container implements \ArrayAccess
     private function registerService(string $name, $class, bool $shared = false): void
     {
         $this->remove($name);
-        if (!($class instanceof \Closure) && is_object($class)) {
-            $this->instances[$name] = $class;
-        } else {
-            $this->bindings[$name] = ['class' => $class, 'shared' => $shared];
-        }
-    }
-    //ArrayAccess接口
-
-    //检测服务是否存在
-    public function offsetExists($name)
-    {
-        return $this->has($name);
-    }
-    //以$di[$name]方式获取服务
-    public function offsetGet($name)
-    {
-        return $this->get($name);
-    }
-    //以$di[$name]=$value方式注册服务，非共享
-    public function offsetSet($name, $value)
-    {
-        return $this->set($name,$value);
-    }
-    //以unset($di[$name])方式卸载服务
-    public function offsetUnset($name)
-    {
-        return $this->remove($name);
+        $this->bindings[$name] = ['class' => $class, 'shared' => $shared];
     }
 
     // 对象接口
@@ -137,7 +109,7 @@ class Container implements \ArrayAccess
     }
     public function __set(string $name, $value)
     {
-        return $this->setShared($name);
+        return $this->setShared($name, $value);
     }
     public function __unset(string $name)
     {

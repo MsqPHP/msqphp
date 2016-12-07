@@ -39,7 +39,6 @@ final class Route
     public static function run() : void
     {
         static::parsePathAndQuery();
-        static::$url = static::getProtocol().'://'.static::getDomain().'/';
         // 路由流程文件
         $file = \msqphp\Environment::getPath('application') . 'route.php';
         is_file($file) || static::exception('路由解析失败,原因:路由流程文件'.$file.'不存在');
@@ -50,7 +49,8 @@ final class Route
     // 构建并获取url常量
     public static function bulid() : string
     {
-        defined('__URL__') || define('__URL__', static::$url);
-        return static::$url;
+        $url = static::getProtocol().'://'.static::getDomain().'/'.static::$url;
+        defined('__URL__') || define('__URL__', $url);
+        return $url;
     }
 }

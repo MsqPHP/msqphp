@@ -95,4 +95,13 @@ final class Data
     {
         $this->data = [];
     }
+    public function getKeyValueData() : array
+    {
+        $result = [];
+        // 遍历赋值
+        foreach ($this->data as $key => ['value'=>$value]) {
+            $result[$key] = $value;
+        }
+        return $result;
+    }
 }

@@ -29,6 +29,9 @@ final class CronMethod
             case 'clearView':
                 static::clearView();
                 break;
+            case 'callback':
+                static::callback();
+                break;
             default:
                 throw new CronException($info[0]['type'].'未知的事件code码');
         }

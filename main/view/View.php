@@ -10,7 +10,7 @@ abstract class View
     // 当前配置
     protected $config      = [];
     // 当前组件
-    protected $component   = [];
+    protected $tpl   = [];
     protected $data        = null;
     protected $theme       = null;
     protected $group       = null;
@@ -84,7 +84,7 @@ abstract class View
             case 'package' :
                 return $this->config['tpl_package_path']   . $middle . $this->config['tpl_package_ext'];
             default :
-                $this->exception('获取模版路劲错误,未知的模版类型:'.$type);
+                $this->exception('获取模版路径错误,未知的模版类型:'.$type);
         }
     }
 
@@ -109,57 +109,65 @@ abstract class View
     // 添加一个原料
     public function material(string $material) : self
     {
-        $this->component[] = ['type'=>'material', 'name' => $material];
-        return $this;
+        return $this->addTpl($material, 'material');
     }
 
     // 添加一个零件
     public function part(string $part) : self
     {
-        $this->component[] = ['type'=>'part', 'name' => $part];
-        return $this;
+        return $this->addTpl($part, 'part');
     }
     // 添加一个组件
     public function package(string $package) : self
     {
-        $this->component[] = ['type'=>'package', 'name' => $package];
+        return $this->addTpl($package, 'package');
+    }
+    // 添加一个视图
+    private function addTpl(string $name, string $type) : self
+    {
+        $this->tpl[] = ['type'=>$type, 'name' => $name];
         return $this;
     }
-
     // 加工一个原件 material->part
     public function process(string $part_name, int $expire = 7200) : void
     {
-        $material_info = array_pop($this->component);
-
-        if ('material' !== $material_info['type']) {
-            $this->exception('模版文件无法加工,原因:当前视图组件中最后一个不为原料视图');
-        }
-
+        // 原材料信息
+        $material_info = array_pop($this->tpl);
+        // 是否为原材料
+        'material' === $material_info['type'] || $this->exception('模版文件无法加工,原因:当前视图组件中最后一个不为原料视图');
+        // 获得并检查文件是否存在
         $material_file = $this->getTplFilePath($material_info['name'], 'material');
-
         is_file($material_file) || $this->exception('模版文件无法加工,原因:'.$material_info['name'].'模版不存在,模版文件位置应为'.$material_file);
-
+        // 获得编译后零件信息
         $part_file = $this->getTplFilePath($part_name, 'part');
-
-        base\file\File::write(
-            $part_file,
-            main\template\Template::commpile(
-                base\file\File::get($material_file),
-                $this->data->getAll(),
-                $this->language === null ? $this->language->getData($part_name, $this->group->get()) : []
-            ),
-            true
-        );
-
-        0 !== $expire && core\cron\Cron::add($part_file.'视图缓存定时删除', 'deleteFile', $part_file, HAS_VIEW ? time()+$expire : 0);
+        // 开始头,表明过期时间
+        $begin = '<?php /*'.(0 !== $expire ? (string)(time()+$expire) : '0000000000').'*/?>';
+        // 写入对应信息
+        base\file\File::write($part_file, $begin.main\template\Template::commpile(
+            // 文件内容
+            base\file\File::get($material_file),
+            // 模版数据
+            $this->data->getAll(),
+            // 语言数据
+            $this->language === null ? $this->language->getData($part_name, $this->group->get()) : []
+        ));
     }
-
+    private function isExpired(string $file) : bool
+    {
+        if (!HAS_VIEW || !is_file($file)) {
+            return false;
+        }
+        if (time() > (int) substr(base\file\File::read($file, 21), 8, 10)) {
+            base\file\File::delete($file);
+            return false;
+        }
+        return true;
+    }
     // 原材料是否加工过,也可以理解为零件是否存在
     public function processed(string $part_name) : bool
     {
-        return HAS_VIEW && is_file($this->getTplFilePath($part_name, 'part'));
+        return $this->isExpired($this->getTplFilePath($part_name, 'part'));
     }
-
     // 拼装 part->package
     public function assemble(string $package_name, int $expire = 3600) : void
     {
@@ -167,56 +175,48 @@ abstract class View
 
         $package_file = $this->getTplFilePath($package_name, 'package');
 
-        $result = '';
+        $result = '<?php /*'.(0 !== $expire ? (string)(time()+$expire) : '0000000000').'*/?>';
 
         foreach ($material as $file) {
-            $result .= base\file\File::get($file);
+            $result .= substr(base\file\File::get($file), 22);
         }
 
         base\file\File::write($package_file, $result, true);
 
         unset($result);
 
-        0 !== $expire && core\cron\Cron::add($package_file.'视图缓存定时删除', 'deleteFile', $package_file, HAS_VIEW ? time()+$expire : 0);
-
-        $this->component = [];
+        $this->tpl = [];
     }
 
     // 是否拼装过,也可以理解为组件是否存在
     public function assembled(string $package_name) : bool
     {
-        return HAS_VIEW && is_file($this->getTplFilePath($package_name, 'package'));
+        return $this->isExpired($this->getTplFilePath($package_name, 'package'));
     }
 
     // 展示
     public function show() : void
     {
-        $data = [];
-
-        // 遍历赋值
-        foreach ($this->data->getAll() as $key => ['value'=>$value]) {
-            $data[$key] = $value;
-        }
-
         if ($this->static_html === null) {
-            core\response\Response::dumpHtmlFiles($this->getAllComponnt(), $data, false);
+            core\response\Response::htmlFiles($this->getAllComponnt(), $this->data->getKeyValueData(), false, false);
         } else {
-            $this->static_html->addContent(core\response\Response::dumpHtmlFiles($this->getAllComponnt(), $data, true));
+            $this->static_html->addContent(core\response\Response::htmlFiles($this->getAllComponnt(), $this->data->getKeyValueData(), false, true));
         }
     }
 
     private function getAllComponnt() : array
     {
         $result = [];
-        foreach ($this->component as ['type'=>$type, 'name'=>$name]) {
+        foreach ($this->tpl as ['type'=>$type, 'name'=>$name]) {
+            // 获得对应文件路径
             $file = $this->getTplFilePath($name, $type);
+            // 如果是零件,  文件不存在或者无视图缓存重新加工
             if ('part' === $type && (!is_file($file) || !HAS_VIEW)) {
-                $this->component[] = ['type'=>'material', 'name'=>$name];
-                $this->process($name);
+                $this->material($name)->process($name);
             }
-            if (!is_file($file)) {
-                $this->exception('视图组装失败,原因组件'.(string)$name.'不存在');
-            }
+            // 如果文件不存在
+            is_file($file) || $this->exception('视图' .($type === 'part' ? '零件' : '组件').(string)$name.'不存在,文件路径为'.$file);
+            // 添加到结果数组中
             $result[] = $file;
         }
         return $result;

@@ -32,7 +32,7 @@ class File implements LoggerHandlerInterface
     public function record(string $level, string $message, $context = null)
     {
         base\file\File::append(
-            $this->config['path'].date('Y-m-d').DIRECTORY_SEPARATOR.$level.random_int(1, $this->config['files']).$this->config['extension']
+            $this->config['path'].(APP_DEBUG ? 'debug' . DIRECTORY_SEPARATOR : '').date('Y-m-d').DIRECTORY_SEPARATOR.$level.random_int(1, $this->config['files']).$this->config['extension']
             , '['.date('Y-m-d H:i:s').']' . $level . ':' .$message .PHP_EOL
             , true
         );

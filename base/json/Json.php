@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\json;
 
+use msqphp\core\traits;
+
 final class Json
 {
     use traits\CallStatic;

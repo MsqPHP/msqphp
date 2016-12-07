@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\file;
 
-use msqphp\base;
+use msqphp\base\dir\Dir;
 
 /**
  * 文件重命名

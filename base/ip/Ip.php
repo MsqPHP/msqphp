@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\ip;
 
-use msqphp\base;
 use msqphp\core\traits;
 
 final class Ip
@@ -53,13 +52,27 @@ final class Ip
 
         return static::$ip;
     }
-
-    // 过的数字化后的ip
+    // 获取ip地址
+    public static function getString() : string
+    {
+        return static::get();
+    }
+    // 获得数字化后的ip
     public static function getInt() : int
     {
         return static::$intip = (0 === static::$intip ? ip2long(static::get()) : static::$intip);
     }
-
+    // 将ip地址整形化
+    public static function toInt(string $ip) : int
+    {
+        static::check($ip) || static::exception('非法ip,无法转换为整型');
+        return ip2long($ip);
+    }
+    // 将整型ip地址还原
+    public static function toString(int $ip) : string
+    {
+        return long2ip($ip);
+    }
     public static function getHostByName(string $host) : string
     {
         return gethostbyname($host);

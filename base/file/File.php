@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\file;
 
-use msqphp\base;
+use msqphp\base\dir\Dir;
 use msqphp\core\traits;
 
 final class File
@@ -54,12 +54,9 @@ final class File
 
         // 读取内容
         $fp = fopen($file, 'r');
-        $content = fread($fp, $len);
+        (false === $content = fread($fp, $len)) && static::exception($file.'未知错误,无法读取');
         fclose($fp);
         unset($fp);
-
-        // 无法读取
-        false === $content && static::exception($file.'未知错误,无法读取');
 
         return (string) $content;
     }
@@ -73,10 +70,8 @@ final class File
         // 可读或异常
         is_readable($file) || static::exception($file.'无法操作,无法读取');
 
-        $content = file_get_contents($file);
-
         // 无法读取
-        false === $content && static::exception($file.'未知错误,无法读取');
+        (false === $content = file_get_contents($file)) && static::exception($file.'未知错误,无法读取');
 
         return (string) $content;
     }
@@ -125,7 +120,7 @@ final class File
                     static::exception($file.'父目录不存在,无法写入');
                 } else {
                     // 创建
-                    base\dir\Dir::make($parent_dir, true);
+                    Dir::make($parent_dir, true);
                 }
             } else {
                 // 可写或异常
@@ -137,8 +132,6 @@ final class File
 
         }
 
-        if (false === file_put_contents($file, (string)$content, LOCK_EX)) {
-            static::exception($file.'未知错误,无法写入');
-        }
+        (false !== file_put_contents($file, (string)$content, LOCK_EX)) || static::exception($file.'未知错误,无法写入');
     }
 }

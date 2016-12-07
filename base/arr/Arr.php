@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\arr;
 
-use msqphp\base;
 use msqphp\core\traits;
 
 final class Arr
@@ -29,20 +28,17 @@ final class Arr
      *
      * @throws ArrException
      */
-    public static function set(array & $array, string $arr_key, $arr_value) : void
+    public static function set(array & $array, ?string $arr_key, $arr_value) : void
     {
         // 如果键为空
-        if ('' === $arr_key) {
+        if (null === $arr_key) {
             $array = $arr_value;
             return;
         }
 
         // 以点分割
         $key = explode('.', $arr_key);
-
-        // 结果
         $result = & $array;
-
         // 递归
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             $result = & $result[$key[$i]];
@@ -65,19 +61,16 @@ final class Arr
      * @throws ArrException
      * @return miexd
      */
-    public static function get(array & $array, string $arr_key)
+    public static function get(array $array, ?string $arr_key)
     {
         // 键为空
-        if ('' === $arr_key) {
+        if (null === $arr_key) {
             return $array;
         }
 
         // 以点分割
         $key = explode('.', $arr_key);
-
-        // 结果
         $result = & $array;
-
         // 递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             $result = & $result[$key[$i]];

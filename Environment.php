@@ -5,6 +5,7 @@ final class Environment
 {
     // 框架版本
     private const vension = 2.0;
+
     // 运行模式
     private static $run_mode = '';
 
@@ -25,34 +26,28 @@ final class Environment
     // 初始化框架环境
     public static function init() : void
     {
-        core\error\Error::init();
+        // 错误处理
+        core\wrong\Wrong::init();
         // 时区设置
         date_default_timezone_set(app()->config->get('framework.timezone'));
-
-        define('CRON_START', microtime(true));
-        // 运行定时任务
-        core\cron\Cron::run();
-        define('CRON_END', microtime(true));
     }
-
     // 获取当前运行环境
     public static function getRunMode() : string
     {
-        if (static::$run_mode === '') {
-            switch (PHP_SAPI) {
-                case 'cli':
-                    static::$run_mode = 'cli';
-                    break;
-                case 'cgi':
-                case 'cgi-fcgi':
-                case 'apache':
-                case 'apache2filter':
-                case 'apache2handler':
-                default :
-                    static::$run_mode = 'web';
-            }
+        if (static::$run_mode !== '') {
+            return static::$run_mode;
         }
-        return static::$run_mode;
+        switch (PHP_SAPI) {
+            case 'cli':
+                return static::$run_mode = 'cli';
+            case 'cgi':
+            case 'cgi-fcgi':
+            case 'apache':
+            case 'apache2filter':
+            case 'apache2handler':
+            default :
+                return static::$run_mode = 'web';
+        }
     }
 
     /**

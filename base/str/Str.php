@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\str;
 
-use msqphp\base;
 use msqphp\core\traits;
 
 final class Str

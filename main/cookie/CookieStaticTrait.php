@@ -37,12 +37,10 @@ trait CookieStaticTrait
         // 初始化过直接返回
         static $inited = false;
 
-        if ($inited) {
-            return;
+        if (!$inited) {
+            $inited = true;
+            static::initCnnfigAndGetCookies();
         }
-        $inited = true;
-
-        static::initCnnfigAndGetCookies();
     }
 
     private static function initCnnfigAndGetCookies() : void

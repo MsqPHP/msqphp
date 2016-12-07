@@ -61,13 +61,13 @@ trait TestStaticTrait
     final protected static function testObjectProperty($obj, string $property, $value) : void
     {
         if ($obj->$property === $value) {
-            core\response\Response::dump('属性:'.get_class($obj).'->$'.$property, '测试成功');
+            core\response\Response::debugInfo('属性:'.get_class($obj).'->$'.$property, '测试成功');
         } else {
-            core\response\Response::dump('属性:'.get_class($obj).'->$'.$property, '测试失败');
-            core\response\Response::dump('结果应为：');
-            core\response\Response::dump($value);
-            core\response\Response::dump('实际结果：');
-            core\response\Response::dump($obj->$property);
+            core\response\Response::debugInfo('属性:'.get_class($obj).'->$'.$property, '测试失败');
+            core\response\Response::debugInfo('结果应为：');
+            core\response\Response::debugInfo($value);
+            core\response\Response::debugInfo('实际结果：');
+            core\response\Response::debugInfo($obj->$property);
             throw new TestException('测试发生错误,请检验代码');
         }
     }
@@ -79,13 +79,13 @@ trait TestStaticTrait
     final protected static function testClassStaticProperty(string $class, string $property, $value) : void
     {
         if ($class::$property === $value) {
-            core\response\Response::dump('属性:'.get_class($class).'::$'.$property, '测试成功');
+            core\response\Response::debugInfo('属性:'.get_class($class).'::$'.$property, '测试成功');
         } else {
-            core\response\Response::dump('属性:'.get_class($class).'::$'.$property, '测试失败');
-            core\response\Response::dump('结果应为：');
-            core\response\Response::dump($value);
-            core\response\Response::dump('实际结果：');
-            core\response\Response::dump($class::$property);
+            core\response\Response::debugInfo('属性:'.get_class($class).'::$'.$property, '测试失败');
+            core\response\Response::debugInfo('结果应为：');
+            core\response\Response::debugInfo($value);
+            core\response\Response::debugInfo('实际结果：');
+            core\response\Response::debugInfo($class::$property);
             throw new TestException('测试发生错误,请检验代码');
         }
     }

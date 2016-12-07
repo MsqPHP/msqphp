@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
-use msqphp\base;
+use msqphp\base\file\File;
 
 /**
  * 清空目录内容
@@ -30,7 +30,7 @@ return function (string $dir, bool $force = true) : void {
             static::delete($children_dir, true);
         }
         foreach (static::getFileList($dir, true) as $children_file) {
-            base\file\File::delete($children_file, true);
+            File::delete($children_file, true);
         }
     }
 };

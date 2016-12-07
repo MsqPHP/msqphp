@@ -1,7 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\base\dir;
 
-use msqphp\base;
+use msqphp\base\file\File;
+use msqphp\base\number\Number;
 
 /**
  * 得到目录文件大小
@@ -30,12 +31,12 @@ return function (string $dir, bool $round = true, bool $unit = true) {
     }
 
     foreach (static::getFileList($dir, true) as $children_file) {
-        $size += base\file\File::getSize($children_file, false, false);
+        $size += File::getSize($children_file, false, false);
     }
 
     $round && $size = round($size);
 
-    $unit  && $size = base\number\Number::byte($size);
+    $unit  && $size = Number::byte($size);
 
     return $size;
 };
