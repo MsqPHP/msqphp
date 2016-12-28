@@ -48,9 +48,9 @@ final class Template
     private static function initPattern() : void
     {
         // 正则开始
-        $preg_start     = '/^'.static::$left_delimiter;
+        $preg_start     = '/^'.preg_quote(static::$left_delimiter);
         // 正则结束
-        $preg_end       = '\\s*'.static::$right_delimiter.'$/';
+        $preg_end       = '\\s*'.preg_quote(static::$right_delimiter).'$/';
         // 至少一个空格
         $blank          = '\\s+';
         // 可能有空格,且数量不限
@@ -58,7 +58,9 @@ final class Template
         // 变量名称
         $name           = '([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)';
         // php变量
-        $var            = '\\$'.$name;
+        $var            = '(\\$[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)';
+        // php变量值
+        $var_value      = '(\\$[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\[\\]\\\'\\"\\.]*)';
         // 比较符
         $compare        = '(\\<\\=|\\>=|\\<|\\<\\>|\\>|\\<\\>|\\!\\=|\\=\\=|\\=\\=\\=|\\!\\=\\=)';
         // 字符串或者整值
@@ -85,15 +87,14 @@ final class Template
             //               <{$变量名}>
             'var'         => $preg_start.$var.$preg_end,
             //               <{$变量名[键][键].....}>
-            'array_a'     => $preg_start.$var.'([\\[\\w\'\\"\\]]+)'.$preg_end,
             //               <{$变量名.键.键.....}>
-            'array_b'     => $preg_start.$var.'([\\.\\w]+)'.$preg_end,
+            'array'     => $preg_start.$var.'([\\[\\w\'\\"\\]]+|[\\.\\w]+)'.$preg_end,
             //               <{函数名(任意值)}>
             'func'        => $preg_start.$func.$preg_end,
             //               <{foreach $array as $value}>
-            'foreach_a'   => $preg_start.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$preg_end,
+            'foreach_a'   => $preg_start.'foreach'.$blank.$var_value.$blank.'as'.$blank.$var.$preg_end,
             //               <{foreach $array as $key => $value}>
-            'foreach_b'   => $preg_start.'foreach'.$blank.$var.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var.$preg_end,
+            'foreach_b'   => $preg_start.'foreach'.$blank.$var_value.$blank.'as'.$blank.$var.$may_blank.'\\=\\>'.$may_blank.$var.$preg_end,
             //               <{endforeach}> || <{/endforeach}>
             'foreach_end' => $preg_start.'(\\/endforeach|endforeach)'.$preg_end,
             //               <{if $变量名 比较符 $变量名}>
@@ -287,6 +288,8 @@ final class Template
         // null
         } elseif ($value === 'null') {
             return null;
+        } elseif (is_string($value)) {
+            return $value;
         // 未知
         } else {
             static::exception('未知的类型值' . var_export($value, true));
@@ -320,5 +323,108 @@ final class Template
         } else {
             static::exception('未知的类型值' . var_export($value, true));
         }
+    }
+
+    private static function isCachedValue(string $name, array $data) : bool
+    {
+        return isset($data[$name]) && $data[$name]['cache'];
+    }
+    private static function getArrayValue(string $name, string $key, array $data)
+    {
+        // 分割字符串
+        $arr_key_list = false === strpos($key, '.') ? explode('][', trim($key, '[]')) : explode('.', trim($key, '.'));
+        // 获取对应值
+        $arr_key = array_map('static::textToPhpValue', $arr_key_list);
+        // 获取值
+        $result = $data[$name]['value'];
+
+        for ($i = 0, $l = count($arr_key); $i < $l; ++$i) {
+            if (!isset($result[$arr_key[$i]])) {
+                return NULL;
+            }
+            $result = $result[$arr_key[$i]];
+        }
+
+        return $result;
+    }
+    private static function getArrayName(string $name, string $key) : string
+    {
+        // 拼接成php格式
+        if (false !== strpos($key, '.')) {
+            $key = array_map('static::phpValueTotext', explode('.', trim($key, '.')));
+            $key = '['.implode('][', $key).']';
+        }
+        return '$'. $name . $key;
+    }
+    private static function parseFunctionWithNameAndArgsList(string $func_name, string $args_list, array $data)
+    {
+        // 函数是否缓存
+        $cached = null;
+        // 获取函数参数
+        $args_list = array_map('trim', explode(',', $args_list));
+        $args = [];
+        // 得到参数列表,可以为空,若果参数缓存则直接替换
+        for ($i = 0, $count = count($args_list); $i < $count; $i++) {
+            $arg_name = $args_list[$i];
+            // 不以$打头,则判断为一个简单的定值
+            if (!isset($arg_name[0]) || '$' !== $arg_name[0]) {
+                // 返回值
+                $args[$i] = static::textToPhpValue($arg_name);
+                continue;
+            }
+            // 真是参数名
+            $true_arg_name = substr($arg_name, 1);
+            // 如果为缓存值
+
+            // 是否数组判断
+            if ((false !== $pos = strpos($arg_name, '.')) || false !== $pos = strpos($arg_name, '[')) {
+                $array_name = substr($arg_name, 0, $pos);
+                $true_arg_name = $true_array_name = substr($array_name, 1);
+                $array_name_key = substr($arg_name, $pos);
+                $arg_value = static::getArrayValue($true_array_name, $array_name_key, $data);
+                $arg_name = static::getArrayName($true_array_name, $array_name_key);
+            } else {
+                $arg_value = isset($data[$true_arg_name]) ? $data[$true_arg_name]['value'] : '';
+            }
+
+            if (static::isCachedValue($true_arg_name, $data)) {
+                $cached === null && $cached = true;
+                // 返回缓存值
+                $args[$i] = $arg_value;
+            // 返回原值
+            } else {
+                if (true === $cached) {
+                    $cached = false;
+                    $i = 0;
+                } else {
+                    $cached = false;
+                    $args[$i] = $arg_name;
+                }
+            }
+        }
+
+        if (!$cached) {
+            $result = $func_name.'('.implode(',', array_map('static::phpValueTotext',$args)).')';
+        } else  {
+            switch (strtolower($func_name)) {
+                case 'isset':
+                    $key = $args_list[0];
+                    // 移除$
+                    $key = substr($key, 1);
+                    // 分割字符串
+                    $key_list = false === strpos($key, '.') ? explode('][', trim($key, '[]')) : explode('.', trim($key, '.'));
+                    // 获取对应值
+                    $key = array_map('static::textToPhpValue', $key_list);
+                    $key = implode('.', $key);
+                    $result = base\arr\Arr::isset($data, $key);
+                    break;
+                default:
+                    $result = (string) call_user_func_array($func_name, $args);
+                    break;
+            }
+        }
+
+        return ['cached'=>$cached, 'result'=>$result];
+
     }
 }

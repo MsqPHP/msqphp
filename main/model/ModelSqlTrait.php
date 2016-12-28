@@ -90,7 +90,7 @@ trait ModelSqlTrait
             $sql .= 'WHERE ';
             // 添加where值
             foreach ($pointer['where'] as [$having, $condition, $value]) {
-                $sql .= $having . $condition . $value . ' AND ';
+                $sql .= $having . ' ' . $condition . ' ' . $value . ' AND ';
             }
             $sql = substr($sql, 0, -4);
         } else {

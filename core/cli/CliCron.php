@@ -9,22 +9,32 @@ final class CliCron
 {
     private static function isRuned() : bool
     {
-        return is_file(\msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron_run');
+        if (!is_file(Cron::getFilePath('pid'))) {
+            return false;
+        } else {
+            return File::get(Cron::getFilePath('pid')) === 'true';
+        }
     }
     public static function run() : void
     {
         if (static::isRuned()) {
             return;
         }
-        File::write(\msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron_run', '');
+        File::write(Cron::getFilePath('pid'), 'true');
+
+        Cron::update(time(), 3600);
 
         Cli::forever(function() {
+            if (!static::isRuned()) {
+                return false;
+            }
             Cron::run();
             $next = abs(Cron::getNextRunTime() - time());
             Cli::memory_limit(5*1024*1024, function() {
-                File::delete(\msqphp\Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron_run');
+                File::delete(Cron::getFilePath('pid'));
             });
             sleep($next > 10 ? 10 : $next);
+            return true;
         });
     }
     public static function status() : void
@@ -33,7 +43,7 @@ final class CliCron
     }
     public static function stop() : void
     {
-
+        File::delete(Cron::getFilePath('pid'));
     }
     public static function rerun() : void
     {

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
-use msqphp\base;
+use msqphp\base\ip\Ip;
 
 trait RouteParseTrait
 {
@@ -23,18 +23,19 @@ trait RouteParseTrait
         // 获取路径和get参数
         $path_and_query = urldecode(ltrim($_SERVER['REQUEST_URI'], '/'));
 
+        static::$parse_info['get'] = [];
+
         // 若果不存在get参数,例:www.example.com/nihao/20
         if (false === $pos = strpos($path_and_query, '?')) {
             // 直接赋值
             static::$parse_info['path'] = static::deletePathSuffix($path_and_query);
-            $_GET = static::$parse_info['get'] = [];
         } else {
             // 分割path和query
             static::$parse_info['path']  = static::deletePathSuffix(substr($path_and_query, 0, $pos));
             static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
             !empty($query) && static::parseQuery($query);
         }
-
+        $_GET = static::$parse_info['get'];
         static::$pending_path = explode('/', static::$parse_info['path']);
     }
 
@@ -49,8 +50,6 @@ trait RouteParseTrait
                 static::$parse_info['get'][substr($param, 0, $pos)] = substr($param, $pos + 1);
             }
         }, explode('&', $query));
-
-        $_GET = & static::$parse_info['get'];
     }
 
     // 移除'index.php','.php'等后缀
@@ -84,6 +83,17 @@ trait RouteParseTrait
     // 获得查询语句(get参数)
     private static function getQuery() : string
     {
+        if (!isset($parse_info['query'])) {
+            $path_and_query = urldecode(ltrim($_SERVER['REQUEST_URI'], '/'));
+            if (fasle === $pos = strpos('?', $path_and_query)) {
+                static::$parse_info['query'] = '';
+                static::$parse_info['get'] = [];
+            } else {
+                static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
+                !empty($query) && static::parseQuery($query);
+            }
+            $_GET = static::$parse_info['get'];
+        }
         return static::$parse_info['query'];
     }
     // 获得访问方法
@@ -116,7 +126,7 @@ trait RouteParseTrait
     // 获得ip
     private static function getIp() : string
     {
-        return static::$parse_info['ip'] = static::$parse_info['ip'] ?? base\ip\Ip::get();
+        return static::$parse_info['ip'] = static::$parse_info['ip'] ?? Ip::get();
     }
     // 获得referer
     private static function getReferer() : string

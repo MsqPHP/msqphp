@@ -1,97 +1,26 @@
 <?php declare(strict_types = 1);
-namespace msqphp\core\cron;
+namespace msqphp\core\queue;
 
 final class Queue
 {
-    private $_queue = array();
-    protected $cache = null;
-    protected $queuecachename;
+    private $config = [];
+    private $handler = null;
 
-    /**
-    * 构造方法
-    * @param string $queuename 队列名称
-    */
-    function __construct($queuename)
+    public function __construct()
     {
-        $this->cache = Cache::instance();
-        $this->queuecachename = 'queue_' . $queuename;
-
-        $result = $this->cache->get($this->queuecachename);
-        if (is_array($result)) {
-        $this->_queue = $result;
-        }
+        $this->config = app()->config->get('queue');
+        $this->handler = new $config['handler']($config['config']['handler']);
     }
-
-    /**
-    * 将一个单元单元放入队列末尾
-    * @param mixed $value
-    */
-    function enQueue($value)
+    public function in(string $value)
     {
-        $this->_queue[] = $value;
-        $this->cache->set($this->queuecachename, $this->_queue);
-
-        return $this;
+        $this->handler->in($value);
     }
-
-    /**
-    * 将队列开头的一个或多个单元移出
-    * @param int $num
-    */
-    function sliceQueue($num = 1)
+    public function out() : ?string
     {
-        if (count($this->_queue) < $num) {
-        $num = count($this->_queue);
-        }
-        $output = array_splice($this->_queue, 0, $num);
-        $this->cache->set($this->queuecachename, $this->_queue);
-
-        return $output;
+        return $this->handler->out($value);
     }
-
-    /**
-    * 将队列开头的单元移出队列
-    */
-    function deQueue()
+    public function length() : int
     {
-        $entry = array_shift($this->_queue);
-        $this->cache->set($this->queuecachename, $this->_queue);
-        return $entry;
-    }
-
-    /**
-    * 返回队列长度
-    */
-    function size()
-    {
-        return count($this->_queue);
-    }
-
-    /**
-    * 返回队列中的第一个单元
-    */
-    function peek()
-    {
-        return $this->_queue[0];
-    }
-
-    /**
-    * 返回队列中的一个或多个单元
-    * @param int $num
-    */
-    function peeks($num)
-    {
-        if (count($this->_queue) < $num) {
-        $num = count($this->_queue);
-        }
-        return array_slice($this->_queue, 0, $num);
-    }
-
-    /**
-    * 消毁队列
-    */
-    function destroy()
-    {
-        $this->cache->remove($this->queuecachename);
+        return $this->handler->length();
     }
 }

@@ -35,6 +35,7 @@ final class CronMethod
             default:
                 throw new CronException($info[0]['type'].'未知的事件code码');
         }
+        Cron::recordLog(date('Y-m-d H:i:s').'执行任务[类型:]'.$info['type'].'[值:]'.$info['value']);
     }
     // 删除文件
     private static function deleteFile(array $info) : void
@@ -44,7 +45,30 @@ final class CronMethod
         } catch (base\file\FileException $e) {
             throw new CronException('定时任务执行失败,文件'.$info['value'].'无法删除,原因:'.$e->getMessage());
         }
-
-        Cron::recordLog(date('Y-m-d H:i:s')."\t".'[任务名:]'.$info['name']."\t\t".'[值:]删除文件:'.$info['value']);
+    }
+    private static function callback(array $info) : void
+    {
+        [$class,$method] = explode('@', $info['value'], 2);
+        if (false !== str_pos($method, '?')) {
+            [$method, $args] = explode('@', $method, 2);
+            if (false !== str_pos($args, '&')) {
+                $args = explode('&', $args);
+            } else {
+                $args = [$args];
+            }
+            foreach ($args as $key => $value) {
+                if ($value[0] === '(') {
+                    $type = substr($value, 1, strpos($value, ')'));
+                    switch($type) {
+                        case 'int':
+                            $value = (int)$value;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+        call_user_func_array([$class,$method], $args ?? []);
     }
 }

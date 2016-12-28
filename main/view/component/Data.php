@@ -7,10 +7,6 @@ final class Data
     // 二维数组，一维存放模版变量键，二维存放对应值，缓存，类型
     private $data     = [];
     private $pointer = [];
-    private function init() : self
-    {
-        $this->pointer = [];
-    }
     /**
      * @param  string $key 键
      * @param  string|array  $tpl_var  变量名称或对应值
@@ -25,7 +21,11 @@ final class Data
     {
         throw new ViewComponentException($message);
     }
-
+    public function init() : self
+    {
+        $this->pointer = [];
+        return $this;
+    }
     public function key(string $key) : self
     {
         $this->pointer['key'] = $key;

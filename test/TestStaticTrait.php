@@ -31,7 +31,7 @@ trait TestStaticTrait
         }
 
         if ($result === $func_result || is_a($result, '\Closure') && $result($func_result)) {
-            core\response\Response::dump($str, '测试成功;');
+            core\response\Response::debugInfo($str, '测试成功;');
         } else {
             $info = [
                 $str . '测试失败;',
@@ -43,7 +43,7 @@ trait TestStaticTrait
                 $func_result,
             ];
 
-            core\response\Response::dumpArray($info);
+            core\response\Response::debugArray($info);
 
             throw new TestException('测试发生错误,请检验代码');
         }

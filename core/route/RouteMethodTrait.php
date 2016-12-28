@@ -55,7 +55,7 @@ trait RouteMethodTrait
         }
 
         // 方法不匹配,返回
-        if (!in_array(static::getMethod(), $method)) {
+        if (!static::checkMethod($method)) {
             return;
         }
 
@@ -176,13 +176,16 @@ trait RouteMethodRunTrait
             'query'  => $query,
             'args'   => $args,
         ];
-
         call_user_func_array([new $class_name, $method], static::getArgsByQuery($query, $args));
     }
 }
 
 trait RouteMethodCheckTrait
 {
+    private static function checkMethod(array $method) : bool
+    {
+        return in_array(static::getMethod(), $method);
+    }
     /**
      * 检测参数是否符合并重组$_GET;
      *
@@ -236,9 +239,11 @@ trait RouteMethodCheckTrait
     {
         while (isset($query[0])) {
             [$query, $args_name, $source] = static::getArgsInfoByQuery($query);
-
             foreach ($args_name as $arg_name) {
                 if (false !== $pos = strpos($arg_name, '(')) {
+                    if (!isset($source[substr($arg_name,0,$pos)])) {
+                        return false;
+                    }
                     // 检测
                     if (false === static::checkRoule($source[substr($arg_name,0,$pos)], substr($arg_name,$pos +1, -1))) {
                         return false;

@@ -40,12 +40,17 @@ trait TemplateOneTrait
         return preg_replace_callback(static::$pattern['var'], function (array $matches) use ($data) : string {
             // 变量键
             $key = $matches[1];
-            // 如果数据中存在,并且缓存
-            if (isset($data[$key]) && $data[$key]['cache']) {
-                (is_array($data[$key]['value']) || is_object($data[$key]['value'])) && static::exception($key.'数组或对象被当作普通变量使用');
-                return (string) $data[$key]['value'];
+            // 获得真实键;
+            $true_key = substr($key, 1);
+            // 如果为缓存值
+            if (static::isCachedValue($true_key, $data)) {
+                // 判断类型,如果为错误类型,报错
+                (is_array($data[$true_key]['value']) || is_object($data[$true_key]['value'])) && static::exception($true_key.'数组或对象被当作普通变量使用');
+                // 替换对应值
+                return (string) $data[$true_key]['value'];
             } else {
-                return '<?php echo $'.$key.';?>';
+                // 返回一个php语句
+                return '<?php echo '.$key.';?>';
             }
         }, $content);
     }
@@ -59,33 +64,19 @@ trait TemplateOneTrait
      */
     private static function parArray(string $content, array $data) : string
     {
-        return preg_replace_callback([
-            static::$pattern['array_a'], static::$pattern['array_b']
-        ], function (array $matches) use ($data) : string {
+        return preg_replace_callback(static::$pattern['array'], function (array $matches) use ($data) : string {
             // 键
-            $var_name = $matches[1];
+            $arr_name = $matches[1];
+            // 真实名
+            $true_arr_name = substr($arr_name, 1);
             // 值
             $key = $matches[2];
 
-            // 数组缓存
-            if (isset($data[$var_name]) && $data[$var_name]['cache']) {
-                // 获取真实键的数组
-                $arr_key = array_map('static::textToPhpValue', false === strpos($key, '.') ? explode('][', trim($key, '[]')) : explode('.', trim($key, '.')));
-
-                // 获取值
-                $result = $data[$var_name]['value'];
-                for ($i = 0, $l = count($arr_key); $i < $l; ++$i) {
-                    $result = $result[$arr_key[$i]];
-                }
-
-                return $result;
+            // 如果是一个缓存值
+            if (static::isCachedValue($true_arr_name, $data)) {
+                return (string) static::getArrayValue($true_arr_name, $key, $data);
             } else {
-                // 拼接成php格式
-                if (false !== strpos($key, '.')) {
-                    $key = array_map('static::phpValueTotext', explode('.', trim($key, '.')));
-                    $key = '['.implode('][', $key).']';
-                }
-                return '<?php echo $'.$var_name.$key.';?>';
+                return '<?php echo '.static::getArrayName($true_arr_name, $key).';?>';
             }
         }, $content);
     }
@@ -107,37 +98,16 @@ trait TemplateOneTrait
     private static function parFunc(string $content, array $data) : string
     {
         return preg_replace_callback(static::$pattern['func'], function (array $matches) use ($data) : string {
-
             // 函数名称
             $func_name = $matches[1];
-
-            // 函数是否缓存
-            $cached = null;
-
-            // 获取函数参数
-            $args = array_map('trim', explode(',', $matches[2]));
-
-            // 得到参数列表,可以为空,若果参数缓存则直接替换
-            $args = $args === [''] ? [] : array_map(function (string $value) use ($data, & $cached) {
-                // 如果$开头,则为变量
-                if (isset($value[0]) && '$' === $value[0]) {
-                    // 去掉$
-                    $arg_name = substr($value, 1);
-                    if (isset($data[$arg_name]) && $data[$arg_name]['cache']) {
-                        $cached === null && $cached = true;
-                        return $data[$arg_name]['value'];
-                    } else {
-                        $cached = false;
-                        return $value;
-                    }
-                } else {
-                    // 返回值
-                    return static::textToPhpValue($value);
-                }
-            }, $args);
-
-            return $cached ? (string) call_user_func_array($func_name, $args) : '<?php echo (string) '.$func_name.'('.implode(',', array_map('static::phpValueTotext',$args)).');?>';
-
+            // 参数列表
+            $args_list = $matches[2];
+            $func_info = static::parseFunctionWithNameAndArgsList($func_name, $args_list, $data);
+            if ($func_info['cached']) {
+                return (string) $func_info['result'];
+            } else {
+                return '<?php echo (string) '.$func_info['result'].';?>';
+            }
         }, $content);
     }
 

@@ -99,7 +99,7 @@ abstract class View
      */
 
     // 当前页面为静态页面
-    public function static(int $expire = 3600) : self
+    protected function static(int $expire = 3600) : self
     {
         // 允许静态则生成一个视图静态页面对象
         HAS_STATIC && $this->static_html = new component\StaticHtml(['expire'=>$expire]);
@@ -107,18 +107,18 @@ abstract class View
     }
 
     // 添加一个原料
-    public function material(string $material) : self
+    protected function material(string $material) : self
     {
         return $this->addTpl($material, 'material');
     }
 
     // 添加一个零件
-    public function part(string $part) : self
+    protected function part(string $part) : self
     {
         return $this->addTpl($part, 'part');
     }
     // 添加一个组件
-    public function package(string $package) : self
+    protected function package(string $package) : self
     {
         return $this->addTpl($package, 'package');
     }
@@ -129,7 +129,7 @@ abstract class View
         return $this;
     }
     // 加工一个原件 material->part
-    public function process(string $part_name, int $expire = 7200) : void
+    protected function process(string $part_name, int $expire = 7200) : void
     {
         // 原材料信息
         $material_info = array_pop($this->tpl);
@@ -140,8 +140,9 @@ abstract class View
         is_file($material_file) || $this->exception('模版文件无法加工,原因:'.$material_info['name'].'模版不存在,模版文件位置应为'.$material_file);
         // 获得编译后零件信息
         $part_file = $this->getTplFilePath($part_name, 'part');
+        $now = time();
         // 开始头,表明过期时间
-        $begin = '<?php /*'.(0 !== $expire ? (string)(time()+$expire) : '0000000000').'*/?>';
+        $begin = '<?php /*'.(string)$now . (0 !== $expire ? (string)($now+$expire) : '0000000000').'*/?>';
         // 写入对应信息
         base\file\File::write($part_file, $begin.main\template\Template::commpile(
             // 文件内容
@@ -152,33 +153,40 @@ abstract class View
             $this->language === null ? $this->language->getData($part_name, $this->group->get()) : []
         ));
     }
+    protected function getCreateTime(string $name, string $type)
+    {
+        $file = $this->getTplFilePath($name, $type);
+        return (int) substr(base\file\File::read($file, 31), 8, 10);
+    }
     private function isExpired(string $file) : bool
     {
         if (!HAS_VIEW || !is_file($file)) {
             return false;
         }
-        if (time() > (int) substr(base\file\File::read($file, 21), 8, 10)) {
+        if (time() > (int) substr(base\file\File::read($file, 31), 18, 10)) {
             base\file\File::delete($file);
             return false;
         }
         return true;
     }
     // 原材料是否加工过,也可以理解为零件是否存在
-    public function processed(string $part_name) : bool
+    protected function processed(string $part_name) : bool
     {
         return $this->isExpired($this->getTplFilePath($part_name, 'part'));
     }
     // 拼装 part->package
-    public function assemble(string $package_name, int $expire = 3600) : void
+    protected function assemble(string $package_name, int $expire = 3600) : void
     {
         $material = $this->getAllComponnt();
 
         $package_file = $this->getTplFilePath($package_name, 'package');
 
-        $result = '<?php /*'.(0 !== $expire ? (string)(time()+$expire) : '0000000000').'*/?>';
+        $now = time();
+
+        $result = '<?php /*'.(string)$now . (0 !== $expire ? (string)($now+$expire) : '0000000000').'*/?>';
 
         foreach ($material as $file) {
-            $result .= substr(base\file\File::get($file), 22);
+            $result .= substr(base\file\File::get($file), 32);
         }
 
         base\file\File::write($package_file, $result, true);
@@ -189,13 +197,13 @@ abstract class View
     }
 
     // 是否拼装过,也可以理解为组件是否存在
-    public function assembled(string $package_name) : bool
+    protected function assembled(string $package_name) : bool
     {
         return $this->isExpired($this->getTplFilePath($package_name, 'package'));
     }
 
     // 展示
-    public function show() : void
+    protected function show() : void
     {
         if ($this->static_html === null) {
             core\response\Response::htmlFiles($this->getAllComponnt(), $this->data->getKeyValueData(), false, false);

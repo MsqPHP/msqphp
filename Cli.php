@@ -29,7 +29,6 @@ final class Cli
     }
     public static function run()
     {
-        echo 'nihao',PHP_EOL;
         static::$script = array_shift($GLOBALS['argv']);
         static::$args = $GLOBALS['argv'];
         switch (array_shift(static::$args)) {
@@ -61,9 +60,11 @@ final class Cli
     {
         switch (array_shift(static::$args)) {
             case 'run':
+            case 'start':
                 core\cli\CliCron::run();
                 break;
             case 'stop':
+            case 'end':
                 core\cli\CliCron::stop();
                 break;
             case 'rerun':
@@ -99,15 +100,15 @@ final class Cli
     public static function forever(\Closure $func, array $params = []) : void
     {
         set_time_limit(0);
-        while (true) {
-            call_user_func_array($func, $params);
+        $bool = true;
+        while ($bool) {
+            $bool = true && call_user_func_array($func, $params);
         }
     }
     public static function memory_limit(int $size, \Closure $func, array $params = []) : void
     {
         if ($size < memory_get_usage(true)) {
             call_user_func_array($func, $params);
-            exec('kill ' . getmypid());
         }
     }
 }

@@ -5,7 +5,7 @@ use msqphp\base\file\File;
 
 trait CronRunTrait
 {
-    use CronLockTrait;
+    use CronLockTrait, CronNextTimeTrait;
 
     // 执行定时任务
     public static function run() : void
@@ -60,7 +60,7 @@ trait CronRunTrait
                 // 获得单挑信息
                 $info = static::readOneInfo($info);
                 // 如果已经过时,执行对应任务
-                if ($info['time'] <= $now) {
+                if ((int)$info['time'] <= $now) {
                     // 调用方法并移除
                     CronMethod::runMethod($info);
                 } else {
@@ -89,7 +89,7 @@ trait CronRunTrait
     {
         $resource = fopen(static::getFilePath('info'), 'w');
         for ($i = 0,$l = count($info); $i < $l; ++$i) {
-            fwrite($resource, $info[$i]['time'] . '[' . $info[$i]['name'] . '](' . $info[$i]['type'] . '@' . $info[$i]['value'] . ')' . PHP_EOL);
+            fwrite($resource, $info[$i]['time'] . '[' . $info[$i]['type'] . '](' . $info[$i]['value'] . ')' . PHP_EOL);
         }
         fclose($resource);
     }
@@ -97,16 +97,15 @@ trait CronRunTrait
     // 读取一条信息
     private static function readOneInfo(string $text) : array
     {
-        //time[name](type@value)
-        //->time[name   type@value)
-        [$left, $right] = explode('](', $text, 2);
+        //time[type](value)
+        //->time[type   value)
+        [$left, $value] = explode('](', $text, 2);
         //->time name type value)
-        [$time, $name]  = explode('[', $left, 2);
-        [$type, $value] = explode('@', $right, 2);
+        [$time, $type]  = explode('[', $left, 2);
         // 移除末尾)
         $value          = substr($value, 0, -1);
         // 返回值
-        return ['time'=>$time,'name'=>$name,'value'=>$value,'type'=>$type];
+        return ['time'=>$time,'value'=>$value,'type'=>$type];
     }
 
     // 信息合并
@@ -177,25 +176,31 @@ trait CronLockTrait
     }
 }
 
-trait CronNextTime
+trait CronNextTimeTrait
 {
+    private static $next_run_time = null;
     // 得到下一次运行时间
     public static function getNextRunTime() : int
     {
+        if (static::$next_run_time !== null) {
+            return static::$next_run_time;
+        }
+
         $next_file = static::getFilePath('next_run_time');
         // 存在,直接返回
         if (is_file($next_file)) {
-            return (int) File::get($next_file);
+            return static::$next_run_time = (int) File::get($next_file);
         // 文件不存在,写入60秒后执行
         } else {
             $time = time() + 60;
             File::write($next_file, $time);
-            return $time;
+            return static::$next_run_time = $time;
         }
     }
     // 设置下一次运行时间
     public static function setNextRunTime(int $time) : void
     {
         File::write(static::getFilePath('next_run_time'), $time);
+        static::$next_run_time = $time;
     }
 }

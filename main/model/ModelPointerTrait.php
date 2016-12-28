@@ -133,7 +133,15 @@ trait ModelPointerTrait
                 $condition = array_shift($args);
             case 1:
                 $condition = $condition ?? '=';
-                $value = is_array($args[0]) ? $this->addPrepare($args[0][0], $args[0][1]) : $args[0];
+                if ($condition === 'in') {
+                    if (is_string($args[0])) {
+                        $value = '(\''. implode('\',\'', $args[0]).'\')';
+                    } else {
+                        $value = '('. implode(',', $args[0]).')';
+                    }
+                } else {
+                    $value = is_array($args[0]) ? $this->addPrepare($args[0][0], $args[0][1]) : $args[0];
+                }
                 break;
             default:
                 throw new ModelException('不合理的where查询', 1);

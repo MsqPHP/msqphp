@@ -1,27 +1,43 @@
 <?php declare(strict_types = 1);
 namespace msqphp;
 
+use msqphp\base\file\File;
+use msqphp\base\number\Number;
+use msqphp\core\cron\Cron;
+use msqphp\core\response\Response;
+
+
 final class App
 {
     // 应用运行
     public static function run() : void
     {
+        app()->config->get('framework.cron') && static::cronCheck();
+
         register_shutdown_function(['\\msqphp\\App', 'shutDown']);
 
-        is_file(Environment::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'cron_run') || Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'run']);
-        // is_file(static::getPath('storage').'framework'.DIRECTORY_SEPARATOR.'queue_run') || Cli::runPhpFile(static::getPath('bootstrap').'cli.php', ['queue', 'run']);
         static::runRoute();
     }
-
+    private static function cronCheck() : void
+    {
+        if (!is_file(Cron::getFilePath('pid'))) {
+            Response::unavailable(false);
+            set_time_limit(5);
+            Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'run']);
+            exit;
+        } elseif (1 === random_int(1, 10)) {
+            if (Cron::getNextRunTime() < time()) {
+                Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'stop']);
+            }
+        }
+    }
     // 关闭调用
     public static function shutDown() : void
     {
         // 记录或者打印信息
         if (APP_DEBUG) {
-            if (null !== core\response\Response::$type && 'html' !== core\response\Response::$type) {
-                return;
-            } else {
-                core\response\Response::debugArray(static::getFullInfo());
+            if (null === Response::$type || 'html' === Response::$type) {
+                Response::debugArray(static::getFullInfo());
             }
         } else {
             $content = static::getSimalInfo();
@@ -80,10 +96,10 @@ final class App
 
         if (isset($end_mem)) {
             $end_info[] = '内存信息:';
-            $end_info[] = "\t开始内存: " . base\number\Number::byte(PHP_START_MEM, false);
-            $end_info[] = "\t结束内存: " . base\number\Number::byte($end_mem, false);
-            $end_info[] = "\t内存差值: " . base\number\Number::byte($end_mem-PHP_START_MEM, false);
-            $end_info[] = "\t内存峰值: " . base\number\Number::byte(memory_get_peak_usage(), false);
+            $end_info[] = "\t开始内存: " . Number::byte(PHP_START_MEM, false);
+            $end_info[] = "\t结束内存: " . Number::byte($end_mem, false);
+            $end_info[] = "\t内存差值: " . Number::byte($end_mem-PHP_START_MEM, false);
+            $end_info[] = "\t内存峰值: " . Number::byte(memory_get_peak_usage(), false);
             unset($end_mem);
         }
 
@@ -100,10 +116,10 @@ final class App
             $file_info  = [];
             foreach ($files as $file) {
                 $byte        = filesize($file);
-                $file_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte($byte, false);
+                $file_info[] = "\t".'文件:'.$file."\t\t".'大小:'.Number::byte($byte, false);
                 $all_size    += $byte;
             }
-            $end_info[] = "\t".'总共加载文件:'.count($files).'个, 大小:'.base\number\Number::byte($all_size, false);
+            $end_info[] = "\t".'总共加载文件:'.count($files).'个, 大小:'.Number::byte($all_size, false);
             $end_info   = array_merge($end_info, $file_info);
             unset($file_info, $files, $all_size, $file, $byte);
         }
@@ -112,7 +128,7 @@ final class App
             $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count($composer);
             $end_info[] = 'composer加载文件列表:';
             foreach ($composer as $file) {
-                $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.base\number\Number::byte(filesize($file), false);
+                $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.Number::byte(filesize($file), false);
             }
         }
 

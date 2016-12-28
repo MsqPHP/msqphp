@@ -1,8 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
-use msqphp\base;
-
 trait RouteRouleTrait
 {
     // 所有路由规则

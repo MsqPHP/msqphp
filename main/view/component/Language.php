@@ -40,7 +40,7 @@ final class Language
      * @param   string  $file_name  文件名称
      * @return  array
      */
-    protected function getData(string $file_name, string $group) : array
+    public function getData(string $file_name, string $group) : array
     {
         $file = $this->config['path'] . $this->language . DIRECTORY_SEPARATOR . $group . DIRECTORY_SEPARATOR . $file_name . '.php';
 

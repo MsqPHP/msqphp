@@ -100,7 +100,7 @@ trait ResponseContentTrait
     // json格式返回
     public static function json($json_data, bool $exit = true, bool $return = false)
     {
-        return static::dump('json', base\json\Json::encode($json), $exit, $return);
+        return static::dump('json', base\json\Json::encode($json_data), $exit, $return);
     }
 
     // html格式返回

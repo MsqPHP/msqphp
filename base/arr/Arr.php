@@ -73,10 +73,34 @@ final class Arr
         $result = & $array;
         // 递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
+            if (!isset($result[$key[$i]])) {
+                return NULL;
+            }
             $result = & $result[$key[$i]];
         }
 
         // 返回
         return $result;
+    }
+    public static function isset(array $array, ?string $arr_key) : bool
+    {
+        // 键为空
+        if (null === $arr_key) {
+            return true;
+        }
+
+        // 以点分割
+        $key = explode('.', $arr_key);
+        $result = & $array;
+        // 递归赋值
+        for ($i = 0, $l = count($key); $i < $l; ++$i) {
+            if (!isset($result[$key[$i]])) {
+                return false;
+            }
+            $result = & $result[$key[$i]];
+        }
+
+        // 返回
+        return true;
     }
 }

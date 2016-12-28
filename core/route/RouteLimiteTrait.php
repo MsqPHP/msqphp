@@ -1,8 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
-use msqphp\base;
-
 trait RouteLimiteTrait
 {
     /**
@@ -17,9 +15,9 @@ trait RouteLimiteTrait
      * @return  void
      */
 
-    public static function limit($may, $target, \Closure $func, array $args) : void
+    public static function limit($may, $truevalue, \Closure $func, array $args) : void
     {
-        static::$matched || (in_array($target, (array)$may) && call_user_func_array($func, $args));
+        static::$matched || (in_array($truevalue, (array)$may) && call_user_func_array($func, $args));
     }
 
     // SSL协议, 即https限制

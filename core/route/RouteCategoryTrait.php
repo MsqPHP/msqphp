@@ -1,18 +1,16 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\route;
 
-use msqphp\base;
-
 trait RouteCategoryTrait
 {
-    private static $category_msg = [];
+    private static $category_info = [];
 
     use RouteUseCategoryTrait, RouteAddCategoryTrait, RouteSetCategoryTrait;
 
     // 得到当前的分组信息
     public static function getGroupInfo() : array
     {
-        return static::$category_msg['group'];
+        return static::$category_info['group'];
     }
 
     /**
@@ -24,7 +22,7 @@ trait RouteCategoryTrait
      *
      * @return string
      */
-    private static function getAndAddAllowedCategoryValue(string $name, $allowed, string $default) : string
+    private static function getAndAddAllowedCategoryValue(string $name, $allowed, $default) : string
     {
         // 如果当前url参数仍有值 并且 检测成功
         if (isset(static::$pending_path[0]) && static::checkAllowedCategoryValue(static::$pending_path[0], $allowed)) {
@@ -34,8 +32,14 @@ trait RouteCategoryTrait
             // 追加至Url
             static::$url .= $result.'/';
         } else {
-            // 取默认
-            $result = $default;
+            if (is_string($default)) {
+                // 取默认
+                $result = $default;
+            } elseif ($default instanceof \Closure) {
+                $result = (string) call_user_func_array($default, []);
+            } else {
+                throw new RouteException('错误的分组默认值类型,支持字符串定值或者一个返回字符串值的闭包函数');
+            }
         }
 
         // 添加对应常量
@@ -59,7 +63,7 @@ trait RouteCategoryTrait
 
         defined($constant) || define($constant, $value);
         // 添加到
-        static::$category_msg['constant'][$constant] = $value;
+        static::$category_info['constant'][$constant] = $value;
     }
 
     /**
@@ -88,7 +92,7 @@ trait RouteSetCategoryTrait
 {
     public static function setGroup(string $group, string $value, $namespace = null) : void
     {
-        static::$category_msg['group'][] = static::$category_msg['group'][$group] = $value;
+        static::$category_info['group'][] = static::$category_info['group'][$group] = $value;
 
         if ($namespace !== null) {
             // bool等于组值
@@ -104,12 +108,12 @@ trait RouteSetCategoryTrait
     }
     public static function setLanguage(string $language) : void
     {
-        static::$category_msg['language'] = $language;
+        static::$category_info['language'] = $language;
         static::addCategoryConstant('language', $language);
     }
     public static function setTheme(string $theme) : void
     {
-        static::$category_msg['theme'] = $theme;
+        static::$category_info['theme'] = $theme;
         static::addCategoryConstant('theme', $theme);
     }
 }
@@ -124,11 +128,11 @@ trait RouteAddCategoryTrait
      */
     public static function addLanguage(array $info) : void
     {
-        static::$category_msg['language'] = static::getAndAddAllowedCategoryValue('language', $info['allowed'], $info['default']);
+        static::$category_info['language'] = static::getAndAddAllowedCategoryValue('language', $info['allowed'], $info['default']);
     }
     public static function addTheme(array $info) : void
     {
-        static::$category_msg['theme'] = static::getAndAddAllowedCategoryValue('theme', $info['allowed'], $info['default']);
+        static::$category_info['theme'] = static::getAndAddAllowedCategoryValue('theme', $info['allowed'], $info['default']);
     }
 
     /**
@@ -152,7 +156,7 @@ trait RouteAddCategoryTrait
     public static function addGroup(array $info) : void
     {
         // 赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
-        static::$category_msg['group'][] = static::$category_msg['group'][$info['name']] = $group = static::getAndAddAllowedCategoryValue($info['name'], $info['allowed'], $info['default']);
+        static::$category_info['group'][] = static::$category_info['group'][$info['name']] = $group = static::getAndAddAllowedCategoryValue($info['name'], $info['allowed'], $info['default']);
 
         // 如果命名空间存在, 取其值
         if (isset($info['namespace'])) {
@@ -183,18 +187,18 @@ trait RouteUseCategoryTrait
     // 匹配分组,成功则调用对应函数
     public static function group(string $group, string $value, \Closure $func, array $args = []) : void
     {
-        $value === static::$category_msg['group'][$group] && call_user_func_array($func, $args);
+        $value === static::$category_info['group'][$group] && call_user_func_array($func, $args);
     }
 
     // 匹配语言,成功则调用对应函数
     public static function language(string $language, \Closure $func, array $args = []) : void
     {
-        $language === static::$category_msg['language'] && call_user_func_array($func, $args);
+        $language === static::$category_info['language'] && call_user_func_array($func, $args);
     }
 
     // 匹配主题,成功则调用对应函数
     public static function theme(string $theme, \Closure $func, array $args = []) : void
     {
-        $theme === static::$category_msg['theme'] &&call_user_func_array($func, $args);
+        $theme === static::$category_info['theme'] &&call_user_func_array($func, $args);
     }
 }

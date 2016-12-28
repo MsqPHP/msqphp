@@ -113,6 +113,15 @@ class TemplateTest extends \msqphp\test\Test
         $result = '<?php echo (string) php_sapi_name();?>';
         $this->args($content, $vars, $language)->result($result)->test();
     }
+    public function testParFunc3() : void
+    {
+        $content = '<{substr($a.name, 0, 2)}>';
+        $vars = ['a'=>['cache'=>true, 'value'=>['name'=>'test']]];
+        $language = [];
+        $result = 'te';
+
+        $this->args($content, $vars, $language)->result($result)->test();
+    }
     public function testParForeach() : void
     {
         $content = '<{foreach $arr as $v}><{$v}><{endforeach}>';
@@ -140,6 +149,42 @@ class TemplateTest extends \msqphp\test\Test
                 'value'=>[
                     'a'=>['A','B','C'],
                     'b'=>['D','E','F']
+                ]
+            ]
+        ];
+        $language = [];
+        $result = 'a:ABCb:DEF';
+        $this->args($content, $vars, $language)->result($result)->test();
+    }
+    public function testParForeach3() : void
+    {
+        $content = '<{foreach $arr.list as $key => $value}><{$key}>:<{foreach $value as $v}><{$v}><{endforeach}><{endforeach}>';
+        $vars = [
+            'arr'=>[
+                'cache'=>true,
+                'value'=>[
+                    'list'=> [
+                        'a'=>['A','B','C'],
+                        'b'=>['D','E','F']
+                    ]
+                ]
+            ]
+        ];
+        $language = [];
+        $result = 'a:ABCb:DEF';
+        $this->args($content, $vars, $language)->result($result)->test();
+    }
+    public function testParForeach4() : void
+    {
+        $content = '<{foreach $arr[\'list\'] as $key => $value}><{$key}>:<{foreach $value as $v}><{$v}><{endforeach}><{endforeach}>';
+        $vars = [
+            'arr'=>[
+                'cache'=>true,
+                'value'=>[
+                    'list'=> [
+                        'a'=>['A','B','C'],
+                        'b'=>['D','E','F']
+                    ]
                 ]
             ]
         ];

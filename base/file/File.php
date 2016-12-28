@@ -125,9 +125,6 @@ final class File
             } else {
                 // 可写或异常
                 is_writable($parent_dir)   || static::exception($file . '父目录,无法写入');
-
-                // 可执行或异常
-                is_executable($parent_dir) || static::exception($file . '父目录,无法执行');
             }
 
         }
