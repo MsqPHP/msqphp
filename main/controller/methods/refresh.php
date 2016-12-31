@@ -3,6 +3,6 @@ namespace msqphp\main\controller;
 
 use msqphp\core;
 
-return function() {
-    return core\response\Response::notFound();
+return function(bool $exit = true) {
+    core\response\Response::refresh($exit);
 };

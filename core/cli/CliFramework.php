@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\cli;
 
-class CliFramework
+final class CliFramework
 {
     public static function install(string $root) : void
     {
@@ -21,7 +21,7 @@ class CliFramework
         $path_config = [
             'root'        => $root,
             'application' => $root . 'application',
-            'applicationtest' => $root . 'applicationtest',
+            'test'        => $root . 'test',
             'resources'   => $root . 'resources',
             'bootstrap'   => $root . 'bootstrap',
             'config'      => $root . 'config',
@@ -31,18 +31,18 @@ class CliFramework
         ];
         //复制
         foreach ($path_config as $key => $path) {
-            base\dir\Dir::make($path, true);
-            if ('public' === $key || base\dir\Dir::isEmpty($path, true)) {
-                base\dir\Dir::copy($install_path.$key, $path, true);
+            base\dir\Dir::make($path);
+            if ('public' === $key || base\dir\Dir::isEmpty($path)) {
+                base\dir\Dir::copy($install_path.$key, $path);
             }
             chmod($path, ('public' === $key || 'storage' === $key) ? 0777 : 0755);
         }
 
         //lib目录对应目录创建
-        array_map(function (string $dir) use ($lib_path) {
+        foreach (base\dir\Dir::getAllDir($framework_path) as $dir) {
             if (base\str\Str::endsWith($dir, ['methods', 'gets', 'staticMethods', 'handlers', 'drivers', 'binds'])) {
-                base\dir\Dir::make(str_replace($framework_path.DIRECTORY_SEPARATOR, $lib_path, $dir), true);
+                base\dir\Dir::make(str_replace($framework_path.DIRECTORY_SEPARATOR, $lib_path, $dir));
             }
-        }, base\dir\Dir::getAllDir($framework_path));
+        }
     }
 }

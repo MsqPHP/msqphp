@@ -3,9 +3,7 @@ namespace msqphp\main\Session;
 
 final class Session
 {
-    use SessionStaticTrait;
-    use SessionPointerTrait;
-    use SessionOperateTrait;
+    use SessionStaticTrait, SessionPointerTrait, SessionOperateTrait;
 
 
     // 抛出异常
@@ -61,8 +59,12 @@ trait SessionStaticTrait
         // 注册并传参配置config
         session_set_save_handler(new $class_name($config['handlers_config'][$handler]), true);
 
+        static::session_start();
+    }
+    private static function session_start() : void
+    {
         // session名设置
-        session_name($config['name']);
+        session_name(static::$config['name']);
         // session开始
         session_start();
 
@@ -70,7 +72,12 @@ trait SessionStaticTrait
 
         static::$started = true;
     }
-
+    private static function session_close() : void
+    {
+        static::$started && session_write_close();
+        static::$sessions = $_SESSION = null;
+        static::$started = false;
+    }
 }
 
 trait SessionPointerTrait
@@ -82,6 +89,7 @@ trait SessionPointerTrait
     public function __construct()
     {
         $this->init();
+        static::$started || static::session_start();
     }
 
     // 初始化
@@ -142,8 +150,7 @@ trait SessionOperateTrait
     // 关闭
     public function close()
     {
-        static::$started && session_write_close();
-        static::$started = false;
+        static::session_close();
     }
     // 获得真是键
     private function getKey() : string

@@ -24,7 +24,7 @@ abstract class View
     }
 
     // 构造函数
-    public function __construct()
+    protected function __construct()
     {
         // 初始化配置
         $this->initConfig();
@@ -46,13 +46,13 @@ abstract class View
 
         // 目录检测
         is_dir($config['tpl_material_path']) || $this->exception('模版原料路径不存在');
-        is_dir($config['tpl_part_path']) || $this->exception('模版零件缓存路径不存在');
-        is_dir($config['tpl_package_path']) || $this->exception('模版组件缓存路径不存在');
+        is_dir($config['tpl_part_path'])     || $this->exception('模版零件缓存路径不存在');
+        is_dir($config['tpl_package_path'])  || $this->exception('模版组件缓存路径不存在');
 
         // 重新赋值
         $config['tpl_material_path'] = realpath($config['tpl_material_path']) . DIRECTORY_SEPARATOR;
-        $config['tpl_part_path']     = realpath($config['tpl_part_path']) . DIRECTORY_SEPARATOR;
-        $config['tpl_package_path']  = realpath($config['tpl_package_path']) . DIRECTORY_SEPARATOR;
+        $config['tpl_part_path']     = realpath($config['tpl_part_path'])     . DIRECTORY_SEPARATOR;
+        $config['tpl_package_path']  = realpath($config['tpl_package_path'])  . DIRECTORY_SEPARATOR;
 
         // 赋值
         $this->config = $config;
@@ -67,9 +67,11 @@ abstract class View
      *
      * @return  string
      */
-    protected function getTplFilePath(string $name, string $type) : string
+    private function getTplFilePath(string $name, string $type) : string
     {
+        // 若第一个字符为/ || \,则为顶级分组, 否则取路由对应分组值
         $group = $name[0] === '/' || $name[0] === '\\' ? '' : $this->group->get();
+        // 主题,语言存在取值
         $theme    = $this->theme === null ? '' : $this->theme->get() . DIRECTORY_SEPARATOR;
         $language = $this->language === null ? '' : $this->language->get() . DIRECTORY_SEPARATOR;
 

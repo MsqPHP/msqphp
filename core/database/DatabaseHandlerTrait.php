@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\database;
 
-
 trait DatabaseHandlerTrait
 {
     private static $handlers = [];

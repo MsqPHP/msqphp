@@ -3,7 +3,7 @@ namespace msqphp\core\container;
 
 use msqphp\core\traits;
 
-class Container
+final class Container
 {
     use traits\Instance;
 
@@ -12,6 +12,11 @@ class Container
     //已经实例化的服务
     private $instances = [];
 
+    public function exception(string $message) : void
+    {
+        throw new ContainerException($message);
+    }
+
     //获取服务
     public function get(string $name, array $params = [])
     {
@@ -19,26 +24,20 @@ class Container
         if (isset($this->instances[$name])) {
             return $this->instances[$name];
         }
-
         //是否已绑定
         if (!isset($this->bindings[$name])) {
             // 对应文件是否存在
             $file = __DIR__ . DIRECTORY_SEPARATOR . 'binds' . DIRECTORY_SEPARATOR . $name . '.php';
             // 判断用户扩展目录下是否存在
             is_file($file) || $file = \msqphp\Environment::getPath('library') . 'core' . DIRECTORY_SEPARATOR . 'container' . DIRECTORY_SEPARATOR . 'binds' . DIRECTORY_SEPARATOR . $name . '.php';
-            // 存在载入
-            if (is_file($file)) {
-                $info = require $file;
-                // 分享复制当实例集合中,否则直接返回
-                $this->registerService($name, $info['object'], $info['shared']);
-                // 重新获取
-                return $this->get($name, $params);
-            // 否则异常,取一个未知的容器值
-            } else {
-                throw new ContainerException($name . '并不存在于容器中');
-            }
+            // 存在载入, 否则异常,取一个未知的容器值
+            is_file($file) || $this->exception($name . '并不存在于容器中');
+            $info = require $file;
+            // 分享复制当实例集合中,否则直接返回
+            $this->registerService($name, $info['object'], $info['shared']);
+            // 重新获取
+            return $this->get($name, $params);
         }
-
         return $this->createObject($name, $params);
     }
 

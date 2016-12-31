@@ -25,7 +25,9 @@ final class Config
             // 加载全部                          获得文件列表
             array_map([$this, 'loadConfigFIle'], base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
             // 写入
-            HAS_CACHE && base\file\File::write($cache_path, '<?php return '.var_export($this->config, true).';');
+            base\file\File::write($cache_path, '<?php return '.var_export($this->config, true).';');
+            // 删除文件,避免更改后发生错误
+            HAS_CACHE || base\file\File::delete($cache_path);
         }
     }
 

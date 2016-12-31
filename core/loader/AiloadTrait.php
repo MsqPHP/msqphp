@@ -164,7 +164,7 @@ trait AiLoadOperateTrait
     public function delete() : void
     {
         try {
-            base\file\File::delete($this->getCahceFilePath($this->pointer['key']), true);
+            base\file\File::delete($this->getCahceFilePath($this->pointer['key']));
         } catch (base\dir\DirException $e) {
             static::exception('无法删除指定的智能加载缓存文件,错误原因:'.(string)$e->getMessage());
         }
@@ -175,7 +175,7 @@ trait AiLoadOperateTrait
     {
         try {
             // 清空对应目录下所有文件
-            base\dir\Dir::empty($this->getCacheDirPath(), true);
+            base\dir\Dir::empty($this->getCacheDirPath());
         } catch (base\dir\DirException $e) {
             static::exception('无法删除所有智能加载缓存文件,错误原因:'.(string)$e->getMessage());
         }

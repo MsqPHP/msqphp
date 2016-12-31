@@ -77,26 +77,6 @@ final class Cli
                 static::exception('未知的cli命令');
         }
     }
-    private static function queue()
-    {
-        switch (array_shift(static::$args)) {
-            case 'run':
-                core\cli\CliQueue::run();
-                break;
-            case 'stop':
-                core\cli\CliQueue::stop();
-                break;
-            case 'rerun':
-                core\cli\CliQueue::rerun();
-                break;
-            case 'status':
-                core\cli\CliQueue::status();
-                break;
-            default:
-                static::exception('未知的cli命令');
-        }
-    }
-
     public static function forever(\Closure $func, array $params = []) : void
     {
         set_time_limit(0);
@@ -107,8 +87,6 @@ final class Cli
     }
     public static function memory_limit(int $size, \Closure $func, array $params = []) : void
     {
-        if ($size < memory_get_usage(true)) {
-            call_user_func_array($func, $params);
-        }
+        $size < memory_get_usage(true) && call_user_func_array($func, $params);
     }
 }

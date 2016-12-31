@@ -3,7 +3,6 @@ namespace msqphp\main\controller;
 
 use msqphp\base;
 
-return function()
-{
+return function() {
     return base\ip\Ip::getInt();
 };

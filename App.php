@@ -36,6 +36,7 @@ final class App
     {
         // 记录或者打印信息
         if (APP_DEBUG) {
+            // 避免测试的时候json或其他格式时候的内容输出.
             if (null === Response::$type || 'html' === Response::$type) {
                 Response::debugArray(static::getFullInfo());
             }
@@ -63,15 +64,11 @@ final class App
     private static function getSimalInfo() : array
     {
         $end_info = [];
-
         //结束调用,产生框架运行信息;
-        defined('PHP_START_TIME') && $end_time = microtime(true);
-
-        if (isset($end_time)) {
-            $end_info[] = "\t总用时          : " . (string) round($end_time      - PHP_START_TIME , 12) . '秒';
-            defined('ROUTE_END') && $end_info[] = "\t路由加控制器用时: " . (string) round(ROUTE_END - ROUTE_START, 12) . '秒';
-            $end_info[] = "\t内存峰值: " . base\number\Number::byte(memory_get_peak_usage(), false);
-        }
+        defined('PHP_START_TIME') &&                        $end_info[] = "\t总用时          : " . (string) round(microtime(true)      - PHP_START_TIME , 12) . '秒';
+        defined('ROUTE_END') && defined('USER_FUNC_END') && $end_info[] = "\t路由用时        : " . (string) round(ROUTE_END      - ROUTE_START - USER_FUNC_END + USER_FUNC_START, 12) . '秒';
+        defined('USER_FUNC_END') &&                         $end_info[] = "\t用户函数用时    : " . (string) round(USER_FUNC_END - USER_FUNC_START, 12) . '秒';
+        $end_info[] = "\t内存峰值: " . Number::byte(memory_get_peak_usage(), false);
 
         return $end_info;
     }
@@ -83,6 +80,7 @@ final class App
 
         $end_info = [];
 
+        // 时间信息相关
         if (isset($end_time)) {
             $end_info[] = '时间信息:';
             $end_info[] = "\t现在时间戳      : " . (string) round(microtime(true)                , 12) . '秒';
@@ -93,7 +91,7 @@ final class App
             defined('USER_FUNC_END') &&                         $end_info[] = "\t用户函数用时    : " . (string) round(USER_FUNC_END - USER_FUNC_START, 12) . '秒';
             unset($end_time);
         }
-
+        // 内存信息相关
         if (isset($end_mem)) {
             $end_info[] = '内存信息:';
             $end_info[] = "\t开始内存: " . Number::byte(PHP_START_MEM, false);
@@ -102,31 +100,32 @@ final class App
             $end_info[] = "\t内存峰值: " . Number::byte(memory_get_peak_usage(), false);
             unset($end_mem);
         }
-
+        // 常量相关
         if (function_exists('get_defined_constants')) {
             $end_info[] = '常量信息:';
             foreach (get_defined_constants(true)['user'] as $key => $value) {
                 $end_info[] = "\t".$key."\t=>\t".var_export($value, true);
             }
         }
+        // 加载文件相关
         if (function_exists('get_required_files')) {
             $files      = get_required_files();
             $all_size   = 0;
-            $end_info[] = '加载信息:';
             $file_info  = [];
             foreach ($files as $file) {
                 $byte        = filesize($file);
                 $file_info[] = "\t".'文件:'.$file."\t\t".'大小:'.Number::byte($byte, false);
                 $all_size    += $byte;
             }
+            $end_info[] = '加载信息:';
             $end_info[] = "\t".'总共加载文件:'.count($files).'个, 大小:'.Number::byte($all_size, false);
             $end_info   = array_merge($end_info, $file_info);
             unset($file_info, $files, $all_size, $file, $byte);
         }
-
+        // 自动加载相关
         if (!empty($composer = core\loader\Loader::getLoadedClasses())) {
-            $end_info[] = 'composer加载文件个数(不准确,可能少一到两个):'.count($composer);
-            $end_info[] = 'composer加载文件列表:';
+            $end_info[] = '自动加载文件个数(不准确,可能少一到两个):'.count($composer);
+            $end_info[] = '自动加载文件列表:';
             foreach ($composer as $file) {
                 $end_info[] = "\t".'文件:'.$file."\t\t".'大小:'.Number::byte(filesize($file), false);
             }

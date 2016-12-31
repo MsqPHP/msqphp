@@ -88,9 +88,7 @@ final class File
             }
         } else {
         // 文件存在
-            if (!is_writable($file)) {
-                static::exception($file.'父目录,无法写入');
-            }
+            is_writable($file) || static::exception($file.'父目录,无法写入');
 
             if (false === file_put_contents($file, (string)$content, FILE_APPEND | LOCK_EX)) {
                 static::exception($file.'未知错误,无法追加内容');
@@ -106,13 +104,10 @@ final class File
     public static function write(string $file, $content, bool $force = true) : void
     {
         if (is_file($file)) {
-
             is_writable($file) || static::exception($file.'无法操作,无法写入');
-
         } else {
             // 父目录
             $parent_dir = dirname($file);
-
             // 目录不存在
             if (!is_dir($parent_dir)) {
                 // 错
@@ -126,9 +121,7 @@ final class File
                 // 可写或异常
                 is_writable($parent_dir)   || static::exception($file . '父目录,无法写入');
             }
-
         }
-
         (false !== file_put_contents($file, (string)$content, LOCK_EX)) || static::exception($file.'未知错误,无法写入');
     }
 }

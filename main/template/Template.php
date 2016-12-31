@@ -5,16 +5,13 @@ use msqphp\base;
 
 final class Template
 {
-    // 单句解析
-    use TemplateOneTrait;
-    // 多句解析
-    use TemplateMoreTrait;
+    // 单句解析             多句解析
+    use TemplateOneTrait, TemplateMoreTrait;
 
     // 左定界符
     private static $left_delimiter = '';
     // 右定界符
     private static $right_delimiter = '';
-
     // 正则
     private static $pattern = [];
 
@@ -41,9 +38,20 @@ final class Template
         static::$left_delimiter  = $config['left_delimiter']  ?? '<{';
         static::$right_delimiter = $config['right_delimiter'] ?? '}>';
 
-        static::initPattern();
+        static::includePattern();
     }
-
+    private static function includePattern() : void
+    {
+        $key = md5(static::$left_delimiter . static::$right_delimiter);
+        $file = \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'template_pattern_' . $key . '.php';
+        if (is_file($file)) {
+            static::$pattern = require $file;
+        } else {
+            static::initPattern();
+            base\file\File::write($file, '<?php return '.var_export(static::$pattern, true).';?>');
+            HAS_CACHE || base\file\File::delete($file);
+        }
+    }
     // 初始化正则数据
     private static function initPattern() : void
     {
@@ -88,7 +96,7 @@ final class Template
             'var'         => $preg_start.$var.$preg_end,
             //               <{$变量名[键][键].....}>
             //               <{$变量名.键.键.....}>
-            'array'     => $preg_start.$var.'([\\[\\w\'\\"\\]]+|[\\.\\w]+)'.$preg_end,
+            'array'       => $preg_start.$var.'([\\[\\w\'\\"\\]]+|[\\.\\w]+)'.$preg_end,
             //               <{函数名(任意值)}>
             'func'        => $preg_start.$func.$preg_end,
             //               <{foreach $array as $value}>

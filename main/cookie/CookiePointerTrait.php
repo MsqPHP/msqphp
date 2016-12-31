@@ -35,68 +35,63 @@ trait CookiePointerTrait
     // 设置前缀
     public function prefix(string $prefix) : self
     {
-        $this->pointer['prefix'] = $prefix;
-        return $this;
+        return $this->setPointerValue('prefix', $prefix);
     }
 
     // 设置键
     public function key(string $key) : self
     {
-        $this->pointer['key'] = $key;
-        return $this;
+        return $this->setPointerValue('key', $key);
     }
     // 设置值
     public function value($value) : self
     {
-        $this->pointer['value'] = $value;
-        return $this;
+        return $this->setPointerValue('value', $value);
     }
     // 设置前缀
     public function expire(int $expire) : self
     {
-        $this->pointer['expire'] = $expire;
-        return $this;
+        return $this->setPointerValue('expire', $expire);
     }
     // 设置路径
     public function path(string $path) : self
     {
-        $this->pointer['path'] = $path;
-        return $this;
+        return $this->setPointerValue('path', $path);
     }
     // 设置域名
     public function domain(string $domain) : self
     {
-        $this->pointer['domain'] = $domain;
-        return $this;
+        return $this->setPointerValue('domain', $domain);
     }
     // 设置 是否仅https
     public function secure(bool $secure = true) : self
     {
-        $this->pointer['secure'] = $secure;
-        return $this;
+        return $this->setPointerValue('secure', $secure);
     }
     // 设置 httponly
     public function httponly(bool $httponly = true) : self
     {
-        $this->pointer['httponly'] = $httponly;
-        return $this;
+        return $this->setPointerValue('httponly', $httponly);
     }
     // 是否url转码
     public function transcoding(bool $transcoding = false) : self
     {
-        $this->pointer['transcoding'] = $transcoding;
-        return $this;
+        return $this->setPointerValue('transcoding', $transcoding);
     }
     // 值解密
     public function decode(bool $decode = true) : self
     {
-        $this->pointer['decode'] = $decode;
-        return $this;
+        return $this->setPointerValue('decode', $decode);
     }
     // 值加密
     public function encode(bool $encode = true) : self
     {
-        $this->pointer['encode'] = $encode;
+        return $this->setPointerValue('encode', $encode);
+    }
+
+    private function setPointerValue(string $key, $value) : self
+    {
+        $this->pointer[$key] = $value;
         return $this;
     }
 }

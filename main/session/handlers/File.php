@@ -3,7 +3,7 @@ namespace msqphp\main\session\handlers;
 
 use msqphp\base;
 
-class File  implements \SessionHandlerInterface {
+final class File  implements \SessionHandlerInterface {
     private $path = '';
     private $extension = '';
 
@@ -20,12 +20,12 @@ class File  implements \SessionHandlerInterface {
         throw new SessionHandlerException($message);
     }
 
-    public function close ()
+    public function close()
     {
         return true;
     }
 
-    public function destroy ($session_id)
+    public function destroy($session_id)
     {
         try {
             base\file\File::delete($this->getFilePath($session_id));
@@ -35,7 +35,7 @@ class File  implements \SessionHandlerInterface {
         }
     }
 
-    public function gc ($maxlifetime)
+    public function gc($maxlifetime)
     {
         try {
             base\dir\dir::deleteAllFileByTime($this->path, 'm', $maxlifetime, $this->extension);
@@ -45,12 +45,12 @@ class File  implements \SessionHandlerInterface {
         }
     }
 
-    public function open ($save_path, $name)
+    public function open($save_path, $name)
     {
         return true;
     }
 
-    public function read ($session_id)
+    public function read($session_id)
     {
         $file_path = $this->getFilePath($session_id);
         if (!is_file($file_path)) {
@@ -63,7 +63,7 @@ class File  implements \SessionHandlerInterface {
         }
     }
 
-    public function write ($session_id , $session_data)
+    public function write($session_id , $session_data)
     {
         try {
             base\file\File::write($this->getFilePath($session_id), $session_data);

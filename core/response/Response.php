@@ -94,7 +94,9 @@ trait ResponseContentTrait
     // xml格式返回
     public static function xml($xml_data, string $root = 'root', bool $exit = true, bool $return = false)
     {
-        return static::dump('xml', '<?xml version="1.0" encoding="'.static::getCharset().'"?><'.$root.'>'.base\xml\Xml::encode($xml).'</'.$root.'>', $exit, $return);
+        return static::dump('xml',
+            '<?xml version="1.0" encoding="'.static::getCharset().'"?><'.$root.'>'.base\xml\Xml::encode($xml).'</'.$root.'>'
+        , $exit, $return);
     }
 
     // json格式返回
@@ -113,7 +115,16 @@ trait ResponseContentTrait
     {
         // 跳转页面
         $go_url = null === $url ? 'history.go(-1);' : 'window.location.href = "'.$url.'";';
-        return static::dump('html', '<meta charset="'.static::$charset.'"><script type="text/javascript">alert("'.addslashes($msg).'");'.$go_url.'</script>', $exit, $return);
+        return static::dump('html',
+            '<meta charset="'.static::$charset.'"><script type="text/javascript">alert("'.addslashes($msg).'");'.$go_url.'</script>'
+        , $exit, $return);
+    }
+    // js刷新页面
+    public static function refresh(bool $exit = true) : void
+    {
+        static::dump('html',
+            '<script type="text/javascript">location.reload();</script>'
+        , $exit, $return);
     }
 }
 
@@ -202,12 +213,16 @@ trait ResponseFileTrait
     // 错误信息显示
     public static function error(string $message, int $time = 3, string $url = '', bool $exit = true) : void
     {
-        static::htmlFile(static::getViewPath('error'), ['msg'=>$message,'time'=>$time,'url'=>$url], $exit, false);
+        static::htmlFile(static::getViewPath('error'),
+            ['msg'=>$message,'time'=>$time,'url'=>$url]
+        , $exit, false);
     }
     // 成功信息显示
     public static function success(string $message, int $time = 3, string $url = '', bool $exit = true) : void
     {
-        static::htmlFile(static::getViewPath('success'), ['msg'=>$message,'time'=>$time,'url'=>$url], $exit, false);
+        static::htmlFile(static::getViewPath('success'),
+            ['msg'=>$message,'time'=>$time,'url'=>$url]
+        , $exit, false);
     }
     // 不可用页面(维护)
     public static function unavailable(bool $exit = true) : void
@@ -228,10 +243,7 @@ trait ResponseFileTrait
         base\header\Header::header('location:'.$url, true, $code);
         $exit && exit;
     }
-    public static function refresh() : void
-    {
-        exit('未完成');
-    }
+
     // 页面跳转
     public static function jump(string $url, int $time = 0, string $message = '', bool $exit = true) : void
     {

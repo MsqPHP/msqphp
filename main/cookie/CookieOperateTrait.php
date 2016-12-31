@@ -17,7 +17,11 @@ trait CookieOperateTrait
     {
         return $this->getVal('decode');
     }
-
+    // 得到全部cookie值
+    public function getAll() : array
+    {
+        return static::$cookies;
+    }
     // 设置cookie值
     public function set() : void
     {
@@ -46,12 +50,6 @@ trait CookieOperateTrait
         $key = $this->getKey();
         setcookie($key, '', 0);
         unset(static::$cookies[$key]);
-    }
-
-    // 得到全部cookie值
-    public function getAll() : array
-    {
-        return static::$cookies;
     }
     // 清空cookie
     public function deleteAll() : void
@@ -85,7 +83,12 @@ trait CookieOperateTrait
         } else {
             // 取cookies中值
             $key = $this->getKey();
-            isset(static::$cookies[$key]) || static::exception('cookie值不存在');
+            // 允许通过get获得null值, 但不允许加密(设置cookie)时获得null值
+            if (!isset(static::$cookies[$key]) && $type === 'decode') {
+                return null;
+            } else {
+                static::exception('cookie值不存在');
+            }
             $value = static::$cookies[$key];
         }
         // 是否需要解码

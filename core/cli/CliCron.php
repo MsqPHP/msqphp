@@ -9,10 +9,10 @@ final class CliCron
 {
     private static function isRuned() : bool
     {
-        if (!is_file(Cron::getFilePath('pid'))) {
+        if (!is_file(Cron::getFilePath('cron_run'))) {
             return false;
         } else {
-            return File::get(Cron::getFilePath('pid')) === 'true';
+            return File::get(Cron::getFilePath('cron_run')) === 'true';
         }
     }
     public static function run() : void
@@ -20,7 +20,7 @@ final class CliCron
         if (static::isRuned()) {
             return;
         }
-        File::write(Cron::getFilePath('pid'), 'true');
+        File::write(Cron::getFilePath('cron_run'), 'true');
 
         Cron::update(time(), 3600);
 
@@ -31,7 +31,7 @@ final class CliCron
             Cron::run();
             $next = abs(Cron::getNextRunTime() - time());
             Cli::memory_limit(5*1024*1024, function() {
-                File::delete(Cron::getFilePath('pid'));
+                File::delete(Cron::getFilePath('cron_run'));
             });
             sleep($next > 10 ? 10 : $next);
             return true;

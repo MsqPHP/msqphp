@@ -53,7 +53,43 @@ final class Validator
     // 身份证验证
     public static function idCard(string $idCard) : bool
     {
-        static::exception('未实现');
+        $len = strlen($idCard);
+        // if ($len === 15) {
+        //     $patten = "/^(\d{6})+(\d{2})+(\d{2})+(\d{2})+(\d{3})$/";
+        //     if (false === preg_match($patten, $idCard, $matches)) {
+        //         return false;
+        //     }
+        //     $dtm_birth = '19'.$matches[2] . '/' . $matches[3]. '/' .$matches[4];
+        //     return strtotime($dtm_birth) ? true : false;
+        // }
+        if ($len === 18) {
+            // 最后一位大写
+            $idCard[-1] === 'x' && $idCard[-1] = 'X';
+
+            //检查18位
+            $patten = '/^(\d{6})+(\d{4})+(\d{2})+(\d{2})+(\d{3})([0-9]|X)$/';
+            if (false === preg_match($patten, $idCard, $matches)) {
+                return false;
+            }
+            $dtm_birth = $matches[2] . '/' . $matches[3]. '/' .$matches[4];
+             //检查生日日期是否正确
+            if (!strtotime($dtm_birth)) {
+              return FALSE;
+            }
+
+            //检验18位身份证的校验码是否正确。
+            //校验位按照ISO 7064:1983.MOD 11-2的规定生成，X可以认为是数字10。
+            $arr_int = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+            $sign = 0;
+            for ($i = 0; $i < 17; $i++ ) {
+                $sign += (int) $idCard[$i] * $arr_int[$i];
+            }
+            $arr_ch = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+            $val_num = $arr_ch[$sign % 11];
+
+            return $val_num === $idCard[-1];
+        }
+        return false;
     }
 
     // 颜色验证
@@ -79,11 +115,9 @@ final class Validator
         );
         foreach ($patterns as $pattern) {
             if (0 !== preg_match($pattern, $color)) {
-                unset($pattern);
                 return true;
             }
         }
-        unset($pattern);
         return false;
     }
 

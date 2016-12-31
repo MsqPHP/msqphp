@@ -22,16 +22,12 @@ trait CacheStaticTrait
     {
         // 初始化过直接返回
         static $inited = false;
-        if ($inited) {
-            return;
+        if (!$inited) {
+            $inited = true;
+            static::initConfig();
+            // 载入默认处理器接口文件
+            require __DIR__ . DIRECTORY_SEPARATOR . 'handlers' . DIRECTORY_SEPARATOR . 'CacheHandlerInterface.php';
         }
-        $inited = true;
-
-
-        static::initConfig();
-
-        // 载入默认处理器接口文件
-        require __DIR__ . DIRECTORY_SEPARATOR . 'handlers' . DIRECTORY_SEPARATOR . 'CacheHandlerInterface.php';
     }
 
     // 初始化配置
@@ -72,7 +68,7 @@ trait CacheStaticTrait
         // 配置合并
         $config               = array_merge(static::$config['handlers_config'][$type], $config);
 
-        // 获取一个键,代表该处理器在所有处理器中的一个键
+        // 获取一个键,代表该处理器在所有处理器中的一个键 若为配置中的,则直接取type,否则取一个md5键
         $key                  = empty($config) ? md5($type) : md5(serialize($config).$type);
 
         // 存在直接返回,否者获得一个实例
