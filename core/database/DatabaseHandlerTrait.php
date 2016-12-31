@@ -4,8 +4,6 @@ namespace msqphp\core\database;
 
 trait DatabaseHandlerTrait
 {
-    private static $config = [];
-    private static $handler = null;
     private static $handlers = [];
 
     // 获取连接信息
@@ -29,45 +27,49 @@ trait DatabaseHandlerTrait
                 static::exception('未知的数据库类型');
         }
     }
-
-    public static function getHandler(?string $name = null)
+    // 获取
+    public static function getHandler(string $name) : \PDO
     {
-        if (null === $name) {
-            return static::$handler = static::$handler ?? static::initHandler();
+        return static::$handlers[$name] = static::$handlers[$name] ?? static::initHandler($name);;
+    }
+    // 设置
+    public static function setHandler(string $name, \PDO $handler) : void
+    {
+        static::$handlers[$name] = $handler;
+    }
+    // 关闭
+    public static function closeHandler(string $name) : void
+    {
+        if (isset(static::$handlers[$name])) {
+            static::$handlers[$name] = null;
+            unset(static::$handlers[$name]);
         }
-
-        return static::$handlers[$name] = static::$handlers[$name] ?? static::initHandler(null);;
     }
-
-    public static function setHandler(string $name)
+    // 关闭所有
+    public static function closeAllHandler() : void
     {
-        static::$handler = static::getHandler($name);
+        foreach (static::$dba_handlers as $name) {
+            static::$handlers[$name] = null;
+            unset(static::$handlers[$name]);
+        }
     }
-
-    private static function initHandler(?string $name = null)
+    // 初始化
+    private static function initHandler(string $name) : \PDO
     {
         try {
+            // 获取配置
             $config = static::getConfig($name);
+            // 获得连接信息
             $connect_info = static::getConnectInfo($config);
+            // 初始化并设置对应属性
             $pdo = new \PDO($connect_info['dsn'], $connect_info['username'], $connect_info['password'], $config['params']);
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            // 设置默认编码
             $pdo->exec('SET NAMES ' . $config['charset']);
             return $pdo;
         } catch (\PDOException $e) {
+            // 异常捕捉
             static::exception($name.'数据库初始化失败,原因:'.$e->getMessage());
-        }
-    }
-
-    private static function getConfig(?string $name = null)
-    {
-        if ([] === static::$config) {
-            static::$config = $config = app()->config->get('database');
-        }
-        if (null === $name) {
-            return static::$config;
-        } else {
-            isset(static::$config[$name]) || static::exception('数据库'.$name.'配置不存在');
-            return static::$config[$name];
         }
     }
 }

@@ -1,36 +1,41 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\model;
 
-trait ModelSqlTrait
+trait ModelStaticTrait
 {
-    protected function getSql(string $type) : string
+    use ModelSqlBulidTrait;
+
+    protected static $config = [];
+
+    // 静态类初始化
+    protected static function initStatic() : void
     {
-        switch ($type) {
-            case 'exists':
-                return $this->getExistsQuery();
-            case 'select':
-            default:
-                return $this->getSelectQuery();
+        // 初始化过直接返回
+        static $inited = false;
+
+        if (!$inited) {
+            $inited = true;
+            static::$config = app()->config->get('model');
         }
     }
-
-    private function getExistsQuery() : string
+}
+trait ModelSqlBulidTrait
+{
+    private static function buildExistsSql(array $pointer) : string
     {
-        $pointer = $this->pointer;
         // 开始
         $sql = 'SELECT ';
-        isset($pointer['field']) || $this->exception('错误的sql语句,未指定查询值');
+        isset($pointer['field']) || static::exception('错误的sql语句,未指定查询值');
         // 以逗号分割字段,并移除最后的逗号,加一个空格.
         $sql .= rtrim(implode(',', $pointer['field']), ',') . ' ';
-        isset($pointer['table']) || $this->exception('错误的sql语句,未指定表名');
+        isset($pointer['table']) || static::exception('错误的sql语句,未指定表名');
         // 以逗号分割表名,并移除最后的逗号,加一个空格.
         $sql .= 'FROM '.rtrim(implode(',', $pointer['table']), ',') . ' ';
-
-        isset($pointer['value']) || $this->exception('错误的sql语句,未指定条件');
+        isset($pointer['value']) || static::exception('错误的sql语句,未指定条件');
         // WHERE
         $sql .= 'WHERE ';
         // 如果字段数小于值,无法判断
-        (count($pointer['field']) >= $l = count($pointer['value'])) || $this->exception('错误的sql语句,指定whrer条件错误');
+        (count($pointer['field']) >= $l = count($pointer['value'])) || static::exception('错误的sql语句,指定whrer条件错误');
         // where值
         for ($i = 0; $i < $l; ++$i) {
             $sql .= $pointer['field'][$i] . '=' . $pointer['value'][$i] . ' AND ';
@@ -40,22 +45,20 @@ trait ModelSqlTrait
         return $sql;
     }
 
-    private function getInsertQuery() : string
+    private static function buildInsertSql(array $pointer) : string
     {
-        $pointer = $this->pointer;
-        (isset($pointer['field']) && isset($pointer['value']) && count($pointer['field']) === count($pointer['value'])) || $this->exception('错误的sql插入语句,键值不存在或数目不匹配');
-        (isset($pointer['table']) && 1 === count($pointer['table'])) || $this->exception('错误的sql插入语句,未指定表名,或者指定表过多');
+        (isset($pointer['field']) && isset($pointer['value']) && count($pointer['field']) === count($pointer['value'])) || static::exception('错误的sql插入语句,键值不存在或数目不匹配');
+        (isset($pointer['table']) && 1 === count($pointer['table'])) || static::exception('错误的sql插入语句,未指定表名,或者指定表过多');
         return 'INSERT INTO '.$pointer['table'][0] . ' ('.rtrim(implode(',', $pointer['field']), ',') . ') ' . 'VALUES ('. rtrim(implode(',', $pointer['value']), ',').') ';
     }
-    private function getSelectQuery() : string
+    private static function buildSelectSql(array $pointer) : string
     {
-        $pointer = $this->pointer;
         // 开始
         $sql = 'SELECT ';
-        isset($pointer['field']) || $this->exception('错误的sql语句,未指定查询值');
+        isset($pointer['field']) || static::exception('错误的sql语句,未指定查询值');
         // 以逗号分割字段,并移除最后的逗号,加一个空格.
         $sql .= rtrim(implode(',', $pointer['field']), ',') . ' ';
-        isset($pointer['table']) || $this->exception('错误的sql语句,未指定表名');
+        isset($pointer['table']) || static::exception('错误的sql语句,未指定表名');
         // 以逗号分割表名,并移除最后的逗号,加一个空格.
         $sql .= 'FROM '.rtrim(implode(',', $pointer['table']), ',') . ' ';
 
@@ -77,7 +80,7 @@ trait ModelSqlTrait
                     $sql .= 'CROSS';
                     break;
                 default:
-                    $this->exception('未知的join语句类型');
+                    static::exception('未知的join语句类型');
             }
             $table = $pointer['join']['table'];
             $sql .=  ' JOIN '.$table.' ON ';
@@ -117,20 +120,19 @@ trait ModelSqlTrait
 
         return $sql;
     }
-    private function getUpdateQuery() : string
+    private static function buildUpdateSql(array $pointer) : string
     {
-        $pointer = $this->pointer;
-        (isset($pointer['table']) && 1 === count($pointer['table'])) || $this->exception('错误的sql更新语句,未指定表名,或者指定表过多');
+        (isset($pointer['table']) && 1 === count($pointer['table'])) || static::exception('错误的sql更新语句,未指定表名,或者指定表过多');
         // UPDATE `表名` SET
         $sql = 'UPDATE ' . $pointer['table'][0] . 'SET ';
         // 字段=值........
-        (isset($pointer['field']) && isset($pointer['value']) && count($pointer['field']) === $count = count($pointer['value'])) || $this->exception('错误的sql更新语句,键值不匹配');
+        (isset($pointer['field']) && isset($pointer['value']) && count($pointer['field']) === $count = count($pointer['value'])) || static::exception('错误的sql更新语句,键值不匹配');
         for ($i = 0; $i < $count; ++$i) {
             $sql .= $pointer['field'][$i] . '=' . $pointer['value'][$i] . ', ';
         }
         // 移除末尾, 然后添加where判断
         $sql = substr($sql, 0, -2) . ' WHERE ';
-        isset($pointer['where']) || $this->exception('错误的sql更新语句,where键不存在');
+        isset($pointer['where']) || static::exception('错误的sql更新语句,where键不存在');
         // 添加where值
         foreach ($pointer['where'] as $value) {
             $sql .= $value[0] . $value[1] . $value[2] . ' AND ';
@@ -138,7 +140,7 @@ trait ModelSqlTrait
         // 去除最后的 AND
         return substr($sql, 0, -4);
     }
-    private function getDeleteQuery() : string
+    private static function buildDeleteSql(array $pointer) : string
     {
     }
 }

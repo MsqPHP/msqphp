@@ -10,6 +10,11 @@ final class Cron
     // 定时任务缓存目录
     private static $path = '';
 
+    private static function exception(string $message) : void
+    {
+        throw new CronException($message);
+    }
+
     /**
      * 获得对应路径
      *

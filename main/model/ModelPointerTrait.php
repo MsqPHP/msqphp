@@ -17,7 +17,7 @@ trait ModelPointerTrait
     }
     private function getPrefix() : string
     {
-        return $this->pointer['prefix'] ?? $this->config['prefix'];
+        return $this->pointer['prefix'] ?? static::$config['prefix'];
     }
     private function getTrueField(string $field) : string
     {
@@ -39,7 +39,7 @@ trait ModelPointerTrait
                 $type = \PDO::PARAM_STR;
                 break;
             default:
-                $this->exception('未知类型');
+                static::exception('未知类型');
         }
         $pre_name = ':prepare' . (string) count($this->pointer['prepare'] ?? []);
         $this->pointer['prepare'][$pre_name] = [$value, $type];
@@ -49,9 +49,9 @@ trait ModelPointerTrait
 
     public function field() : self
     {
-        array_map(function (string $field) {
+        foreach (func_get_args() as $field) {
             $this->pointer['field'][] = $this->getTrueField($field);
-        }, func_get_args());
+        }
         return $this;
     }
     public function value($value, ?string $type = null) : self
@@ -73,9 +73,9 @@ trait ModelPointerTrait
 
     public function table() : self
     {
-        array_map(function (string $table) {
+        foreach (func_get_args() as $table) {
             $this->pointer['table'][] = $this->getTrueTable($table);
-        }, func_get_args());
+        }
         return $this;
     }
     public function join(string $type, string $table) : self
@@ -119,14 +119,17 @@ trait ModelPointerTrait
                 $this->pointer['join']['on'][] = [$this->getTrueField($args[0]), $args[1], $this->getTrueField($args[2])];
                 break;
             default:
-                $this->exception('错误的传递参数个数');
-                break;
+                static::exception('错误的传递参数个数');
         }
         return $this;
     }
     public function where()
     {
-        $args = func_get_args();
+        $this->pointer['where'][] = $this->getWhereOrHavingInfo(func_get_args());
+        return $this;
+    }
+    private function getWhereOrHavingInfo(array $args) : array
+    {
         $where = $this->getTrueField(array_shift($args));
         switch (count($args)) {
             case 2:
@@ -134,27 +137,21 @@ trait ModelPointerTrait
             case 1:
                 $condition = $condition ?? '=';
                 if ($condition === 'in') {
-                    if (is_string($args[0])) {
-                        $value = '(\''. implode('\',\'', $args[0]).'\')';
-                    } else {
-                        $value = '('. implode(',', $args[0]).')';
-                    }
+                    $value = is_string($args[0]) ? '(\''. implode('\',\'', $args[0]).'\')' : '('. implode(',', $args[0]).')';
                 } else {
                     $value = is_array($args[0]) ? $this->addPrepare($args[0][0], $args[0][1]) : $args[0];
                 }
                 break;
             default:
-                throw new ModelException('不合理的where查询', 1);
+                throw new ModelException('不合理的where|having查询');
         }
-
-        $this->pointer['where'][] = [$where, $condition, $value];
-        return $this;
+        return [$where, $condition, $value];
     }
     public function count() : self
     {
-        array_map(function (string $field) {
+        foreach (func_get_args() as $filed) {
             $this->pointer['field'][] = 'count('.$this->getTrueField($field).')';
-        }, func_get_args());
+        }
         return $this;
     }
     public function group(string $field)
@@ -164,20 +161,7 @@ trait ModelPointerTrait
     }
     public function having() : self
     {
-        $args = func_get_args();
-        $having = array_shift($args);
-        switch (count($args)) {
-            case 2:
-                $condition = array_shift($args);
-            case 1:
-                $condition = $condition ?? '=';
-                $value = is_array($args[0]) ? $this->addPrepare($args[0][0], $args[0][1]) : $args[0];
-                break;
-            default:
-                throw new ModelException('不合理的having查询', 1);
-        }
-
-        $this->pointer['having'][] = [$having, $condition, $value];
+        $this->pointer['having'][] = $this->getWhereOrHavingInfo(func_get_args());
         return $this;
     }
     public function order(string $field, string $type = 'ASC') : self

@@ -3,76 +3,90 @@ namespace msqphp\core\database;
 
 trait DatabaseOperateTrait
 {
-    public static function get(string $sql, array $prepare = [])
+    public static function get(string $handler, string $sql, array $prepare = [])
     {
         try {
-            $result = empty($prepare) ? static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC) : static::sqlPrepare($sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = empty($prepare)
+            ? static::sqlQuery($handler, $sql)->fetchAll(\PDO::FETCH_ASSOC)
+            : static::sqlPrepare($handler, $sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
-    public static function getOne(string $sql, array $prepare = [])
+    public static function getOne(string $handler, string $sql, array $prepare = [])
     {
 
         try {
-            $result = empty($prepare) ? static::sqlQuery($sql)->fetch(\PDO::FETCH_ASSOC) : static::sqlPrepare($sql, $prepare)->fetch(\PDO::FETCH_ASSOC);
+            $result = empty($prepare)
+            ? static::sqlQuery($handler, $sql)->fetch(\PDO::FETCH_ASSOC)
+            : static::sqlPrepare($handler, $sql, $prepare)->fetch(\PDO::FETCH_ASSOC);
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
-    public static function getColumn(string $sql, array $prepare = [])
+    public static function getColumn(string $handler, string $sql, array $prepare = [])
     {
         try {
-            $result = empty($prepare) ? static::sqlQuery($sql)->fetchColumn() : static::sqlPrepare($sql, $prepare)->fetchColumn();
+            $result = empty($prepare)
+            ? static::sqlQuery($handler, $sql)->fetchColumn()
+            : static::sqlPrepare($handler, $sql, $prepare)->fetchColumn();
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
-    public static function query(string $sql, array $prepare = [])
+    public static function query(string $handler, string $sql, array $prepare = [])
     {
 
         try {
-            $result = empty($prepare) ? static::sqlQuery($sql)->fetchAll(\PDO::FETCH_ASSOC) : static::sqlPrepare($sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = empty($prepare)
+            ? static::sqlQuery($handler, $sql)->fetchAll(\PDO::FETCH_ASSOC)
+            : static::sqlPrepare($handler, $sql, $prepare)->fetchAll(\PDO::FETCH_ASSOC);
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
-    public static function exec(string $sql,  array $prepare = []) : ?int
+    public static function exec(string $handler, string $sql, array $prepare = []) : ?int
     {
         try {
-            $result = empty($prepare) ? static::sqlExec($sql) : static::sqlPrepare($sql, $prepare)->rowCount();
+            $result = empty($prepare)
+            ? static::sqlExec($handler, $sql)
+            : static::sqlPrepare($handler, $sql, $prepare)->rowCount();
             return $result === false ? null : $result;
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
     // 获取最后插入id
-    public static function lastInsertId() : int
+    public static function lastInsertId(string $handler) : int
     {
         try {
-            return (int) static::getHandler()->lastInsertId();
+            return (int) static::getHandler($handler)->lastInsertId();
         } catch (\PDOException $e) {
             static::exception($e->getMessage());
         }
     }
+
+
+
+
     // 执行sql语句
-    private static function sqlQuery(string $sql) : \PDOStatement
+    private static function sqlQuery(string $handler, string $sql) : \PDOStatement
     {
-        return static::getHandler()->query($sql);
+        return static::getHandler($handler)->query($sql);
     }
     // 执行exec语句
-    private static function sqlExec(string $sql) : int
+    private static function sqlExec(string $handler, string $sql) : ?int
     {
-        return static::getHandler()->exec($sql);
+        return static::getHandler($handler)->exec($sql);
     }
     // 执行预处理语句
-    private static function sqlPrepare(string $sql, array $prepare = []) : \PDOStatement
+    private static function sqlPrepare(string $handler, string $sql, array $prepare = []) : \PDOStatement
     {
-        $stat = static::getHandler()->prepare($sql);
+        $stat = static::getHandler($handler)->prepare($sql);
         foreach ($prepare as $key => $value) {
             // 引用传递,避免出错
             $stat->bindParam($key, $prepare[$key][0], $prepare[$key][1]);

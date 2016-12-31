@@ -144,14 +144,14 @@ abstract class View
         // 开始头,表明过期时间
         $begin = '<?php /*'.(string)$now . (0 !== $expire ? (string)($now+$expire) : '0000000000').'*/?>';
         // 写入对应信息
-        base\file\File::write($part_file, $begin.main\template\Template::commpile(
+        base\file\File::write($part_file, base\str\Str::formatHtml($begin.main\template\Template::commpile(
             // 文件内容
             base\file\File::get($material_file),
             // 模版数据
             $this->data->getAll(),
             // 语言数据
             $this->language === null ? $this->language->getData($part_name, $this->group->get()) : []
-        ));
+        )));
     }
     protected function getCreateTime(string $name, string $type)
     {
@@ -189,7 +189,7 @@ abstract class View
             $result .= substr(base\file\File::get($file), 32);
         }
 
-        base\file\File::write($package_file, $result, true);
+        base\file\File::write($package_file, base\str\Str::formatHtml($result), true);
 
         unset($result);
 

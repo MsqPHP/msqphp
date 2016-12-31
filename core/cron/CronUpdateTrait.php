@@ -7,7 +7,7 @@ trait CronUpdateTrait
 {
     public static function update(int $begin_time, int $length) : void
     {
-        $file = static::getFilePath('update');
+        $file = static::getFilePath('cron');
         $end = $begin_time + $length;
         if (is_file($file)) {
             // 只读

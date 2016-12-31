@@ -228,7 +228,10 @@ trait ResponseFileTrait
         base\header\Header::header('location:'.$url, true, $code);
         $exit && exit;
     }
-
+    public static function refresh() : void
+    {
+        exit('未完成');
+    }
     // 页面跳转
     public static function jump(string $url, int $time = 0, string $message = '', bool $exit = true) : void
     {

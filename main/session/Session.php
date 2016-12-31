@@ -53,7 +53,7 @@ trait SessionStaticTrait
         // 还不存在, 抛出异常
         is_file($file) || static::exception($handler.' 未知的session处理器');
         // ini设置
-        ini_set('session.cache_expire', $config['expire']);
+        ini_set('session.cache_expire', (string)$config['expire']);
         // 加载文件
         require $file;
         // 拼接函数类名, 例:\msqphp\core\session\session\handlers\File
@@ -79,7 +79,7 @@ trait SessionPointerTrait
     private $pointer   = [];
 
     //构造函数
-    private function __construct()
+    public function __construct()
     {
         $this->init();
     }
@@ -122,7 +122,7 @@ trait SessionOperateTrait
     // 获取
     public function get()
     {
-        return static::$sessions[$this->getKey()];
+        return static::$sessions[$this->getKey()] ?? null;
     }
     public function getAll() : array
     {

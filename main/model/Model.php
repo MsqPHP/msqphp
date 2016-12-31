@@ -3,21 +3,19 @@ namespace msqphp\main\model;
 
 use msqphp\core;
 
-abstract class Model
+class Model
 {
-    private $config = [];
+    use ModelStaticTrait;
     // 指针层
     use ModelPointerTrait;
-    // sql拼接层
-    use ModelSqlTrait;
     // 操作层
     use ModelOperateTrait;
 
     public function __construct()
     {
-        $this->config = app()->config->get('model');
+        static::initStatic();
     }
-    protected function exception(string $message) : void
+    protected static function exception(string $message) : void
     {
         throw new ModelException($message);
     }

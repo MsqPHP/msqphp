@@ -1,37 +1,37 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\model;
 
-use msqphp\core;
+use msqphp\core\database\Database;
 
 trait ModelOperateTrait
 {
-    public function query(string $sql)
+    public function query()
     {
-        return core\database\Database::query($sql);
+        return Database::query($this->getHandler(), $this->getSql(), $this->getPrepare());
     }
-    public function exec(string $sql)
+    public function exec() : ?int
     {
-        return core\database\Database::exec($sql);
+        return Database::exec($this->getHandler(), $this->getSql(), $this->getPrepare());
     }
     public function exists() : bool
     {
-        return null !== core\database\Database::getColumn($this->getExistsQuery(), $this->getPrepare());
+        return null !== Database::getColumn($this->getHandler(), $this->getSql('exists'), $this->getPrepare());
     }
     public function getOne()
     {
-        return core\database\Database::getOne($this->limit(1)->getSelectQuery(), $this->getPrepare());
+        return Database::getOne($this->getHandler(), $this->limit(1)->getSql('select'), $this->getPrepare());
     }
     public function getColumn()
     {
-        return core\database\Database::getColumn($this->limit(1)->getSelectQuery(), $this->getPrepare());
+        return Database::getColumn($this->getHandler(), $this->limit(1)->getSql('select'), $this->getPrepare());
     }
     public function get()
     {
-        return core\database\Database::get($this->getSelectQuery(), $this->getPrepare());
+        return Database::get($this->getHandler(), $this->getSql('select'), $this->getPrepare());
     }
     public function add()
     {
-        return core\database\Database::exec($this->getInsertQuery(), $this->getPrepare());
+        return Database::exec($this->getHandler(), $this->getSql('insert'), $this->getPrepare());
     }
     public function set()
     {
@@ -39,26 +39,49 @@ trait ModelOperateTrait
     }
     public function update()
     {
-        return core\database\Database::exec($this->getUpdateQuery(), $this->getPrepare());
+        return Database::exec($this->getHandler(), $this->getSql('update'), $this->getPrepare());
     }
     public function delete()
     {
-        return core\database\Database::exec($this->getDeleteQuery(), $this->getPrepare());
+        return Database::exec($this->getHandler(), $this->getSql('delete'), $this->getPrepare());
     }
     public function transaction(\Closure $func, array $args = [])
     {
         try {
-            core\database\Database::beginTransaction();
+            Database::beginTransaction($this->getHandler());
             $result = call_user_func($func, $args);
-            core\database\Database::commit();
+            Database::commit($this->getHandler());
             return $result;
-        } catch (ModelException | core\database\DatabaseException $e) {
-            core\database\Database::rollBack();
+        } catch (ModelException | DatabaseException $e) {
+            Database::rollBack($this->getHandler());
             throw $e;
         }
     }
     public function lastInsertId() : int
     {
-        return core\database\Database::lastInsertId();
+        return Database::lastInsertId($this->getHandler());
+    }
+    protected function getSql(string $type) : string
+    {
+        if (isset($this->pointer['sql'])) {
+            return $this->pointer['sql'];
+        }
+        switch ($type) {
+            case 'insert':
+                return static::buildUpdateSql($this->pointer);
+            case 'delete':
+                return static::bulidDeleteSql($this->pointer);
+            case 'exists':
+                return static::buildExistsSql($this->pointer);
+            case 'update':
+                return static::buildUpdateSql($this->pointer);
+            case 'select':
+            default:
+                return static::buildSelectSql($this->pointer);
+        }
+    }
+    private function getHandler() : string
+    {
+        return $this->pointer['handler'] ?? static::$config['default_handler'];
     }
 }
