@@ -31,7 +31,7 @@ trait CacheOperateTrait
     public function increment() : int
     {
         try {
-            return $this->getHander()->increment($this->getKey(), $this->pointer['offset'] ?? 1);
+            return $this->getHander()->increment($this->getKey(), $this->params['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
             static::exception($this->getKey().'缓存无法自增,原因:'.$e->getMessage());
         }
@@ -45,7 +45,7 @@ trait CacheOperateTrait
     public function decrement() : int
     {
         try {
-            return $this->getHander()->decrement($this->getKey(), $this->pointer['offset'] ?? 1);
+            return $this->getHander()->decrement($this->getKey(), $this->params['offset'] ?? 1);
         } catch(handlers\CacheHandlerException $e) {
             static::exception($this->getKey().'缓存无法自减,原因:'.$e->getMessage());
         }
@@ -89,21 +89,21 @@ trait CacheOperateTrait
     private function getKey() : string
     {
         // 不存在异常
-        isset($this->pointer['key']) || static::exception('未选择任意缓存键');
+        isset($this->params['key']) || static::exception('未选择任意缓存键');
         // 添加前缀
-        return ($this->pointer['prefix'] ?? static::$config['prefix']) . $this->pointer['key'];
+        return ($this->params['prefix'] ?? static::$config['prefix']) . $this->params['key'];
     }
     // 得到缓存值
     private function getValue()
     {
-        isset($this->pointer['value']) || static::exception('未给当前缓存设置任意赋值');
+        isset($this->params['value']) || static::exception('未给当前缓存设置任意赋值');
 
-        return $this->pointer['value'];
+        return $this->params['value'];
     }
     // 得到过期时间
     private function getExpire() : int
     {
-        return HAS_CACHE ? $this->pointer['expire'] ?? static::$config['expire'] : 0;
+        return HAS_CACHE ? $this->params['expire'] ?? static::$config['expire'] : 0;
     }
 
 
@@ -111,14 +111,14 @@ trait CacheOperateTrait
     private function getHander() : handlers\CacheHandlerInterface
     {
         // 如果处理器存在,取其,直接返回
-        if (isset($this->pointer['handler'])) {
-            return $this->pointer['handler'];
+        if (isset($this->params['handler'])) {
+            return $this->params['handler'];
         // 有种类,则获取对应处理器
-        } elseif (isset($this->pointer['type'])) {
-            return $this->pointer['handler'] = static::getCacheHandler($this->pointer['type'], $this->pointer['config'] ?? []);
+        } elseif (isset($this->params['type'])) {
+            return $this->params['handler'] = static::getCacheHandler($this->params['type'], $this->params['config'] ?? []);
         // 取默认
         } else {
-            return $this->pointer['handler'] = static::getDefaultHandler();
+            return $this->params['handler'] = static::getDefaultHandler();
         }
     }
 }

@@ -26,7 +26,7 @@ trait CookieOperateTrait
     public function set() : void
     {
         // 获取cookie信息
-        $pointer   = $this->pointer;
+        $pointer   = $this->params;
 
         $key      = $this->getKey();
         $value    = $this->getVal('encode');
@@ -69,13 +69,13 @@ trait CookieOperateTrait
     // 得到当前操作cookie正确键值
     private function getKey() : string
     {
-        isset($this->pointer['key']) || static::exception('未选定任意cookie');
+        isset($this->params['key']) || static::exception('未选定任意cookie');
 
-        return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
+        return ($this->params['prefix'] ?? static::$config['prefix']).$this->params['key'];
     }
     private function getVal(string $type = '')
     {
-        $pointer = $this->pointer;
+        $pointer = $this->params;
 
         // 值存在,取值
         if (isset($pointer['value'])) {

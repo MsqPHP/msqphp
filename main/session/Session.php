@@ -3,7 +3,7 @@ namespace msqphp\main\Session;
 
 final class Session
 {
-    use SessionStaticTrait, SessionPointerTrait, SessionOperateTrait;
+    use SessionStaticTrait, SessionParamsTrait, SessionOperateTrait;
 
 
     // 抛出异常
@@ -80,10 +80,10 @@ trait SessionStaticTrait
     }
 }
 
-trait SessionPointerTrait
+trait SessionParamsTrait
 {
     // 当前操作session(所有操作型函数以此为基础)
-    private $pointer   = [];
+    private $params   = [];
 
     //构造函数
     public function __construct()
@@ -95,28 +95,31 @@ trait SessionPointerTrait
     // 初始化
     public function init() : self
     {
-        $this->pointer = [];
+        $this->params = [];
         static::initStatic();
+        return $this;
+    }
+    // 添加一个params值
+    private function setParamValue(string $key, $value) : self
+    {
+        $this->params[$key] = $value;
         return $this;
     }
 
     // 键
     public function key(string $key)
     {
-        $this->pointer['key'] = $key;
-        return $this;
+        return $this->setParamValue('key', $key);
     }
     // 前缀
     public function prefix(string $prefix)
     {
-        $this->pointer['prefix'] = $prefix;
-        return $this;
+        return $this->setParamValue('prefix', $prefix);
     }
     // 值
     public function value($value)
     {
-        $this->pointer['value'] = $value;
-        return $this;
+        return $this->setParamValue('value', $value);
     }
 }
 
@@ -139,8 +142,8 @@ trait SessionOperateTrait
     // 设置
     public function set()
     {
-        isset($this->pointer['value']) || static::exception('未设置对应session值');
-        static::$sessions[$this->getKey()] = $this->pointer['value'];
+        isset($this->params['value']) || static::exception('未设置对应session值');
+        static::$sessions[$this->getKey()] = $this->params['value'];
     }
     // 删除
     public function delete()
@@ -155,7 +158,7 @@ trait SessionOperateTrait
     // 获得真是键
     private function getKey() : string
     {
-        isset($this->pointer['key']) || static::exception('未设置对应session键');
-        return ($this->pointer['prefix'] ?? static::$config['prefix']).$this->pointer['key'];
+        isset($this->params['key']) || static::exception('未设置对应session键');
+        return ($this->params['prefix'] ?? static::$config['prefix']).$this->params['key'];
     }
 }

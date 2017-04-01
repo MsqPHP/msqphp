@@ -1,31 +1,32 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\model;
 
-trait ModelPointerTrait
+trait ModelParamsTrait
 {
-    protected $pointer = [];
+    protected $params = [];
 
     public function init() : self
     {
-        $this->pointer = [];
+        $this->params = [];
         return $this;
     }
 
-    private function getTrueTable(string $table) : string
+    private function getTableName(string $table) : string
     {
         return $table[0] === '`' ? $table : '`'.$this->getPrefix().$table.'`';
     }
     private function getPrefix() : string
     {
-        return $this->pointer['prefix'] ?? static::$config['prefix'];
+        return $this->params['prefix'] ?? static::$config['prefix'];
     }
-    private function getTrueField(string $field) : string
+    private function getQuoteField(string $field) : string
     {
-        return $field !== '*' ? '`'.$field.'`' : $field;
+        return $field !== '*' && strpos($field, '`') !== false
+        ? '`'.$field.'`' : $field;
     }
     private function getPrepare() : array
     {
-        return $this->pointer['prepare'] ?? [];
+        return $this->params['prepare'] ?? [];
     }
 
     private function addPrepare($value, string $type) : string
@@ -41,8 +42,8 @@ trait ModelPointerTrait
             default:
                 static::exception('未知类型');
         }
-        $pre_name = ':prepare' . (string) count($this->pointer['prepare'] ?? []);
-        $this->pointer['prepare'][$pre_name] = [$value, $type];
+        $pre_name = ':prepare' . (string) count($this->params['prepare'] ?? []);
+        $this->params['prepare'][$pre_name] = [$value, $type];
         return $pre_name;
     }
 
@@ -50,38 +51,38 @@ trait ModelPointerTrait
     public function field() : self
     {
         foreach (func_get_args() as $field) {
-            $this->pointer['field'][] = $this->getTrueField($field);
+            $this->params['field'][] = $this->getQuoteField($field);
         }
         return $this;
     }
     public function value($value, ?string $type = null) : self
     {
         if (is_array($value)) {
-            $this->pointer['value'][] = $this->addPrepare($value[0], $value[1]);
+            $this->params['value'][] = $this->addPrepare($value[0], $value[1]);
         } elseif (null !== $type) {
-            $this->pointer['value'][] = $this->addPrepare($value, $type);
+            $this->params['value'][] = $this->addPrepare($value, $type);
         } else {
-            $this->pointer['value'][] = $value;
+            $this->params['value'][] = $value;
         }
         return $this;
     }
     public function prefix(string $prefix) : self
     {
-        $this->pointer['prefix'] = $prefix;
+        $this->params['prefix'] = $prefix;
         return $this;
     }
 
     public function table() : self
     {
         foreach (func_get_args() as $table) {
-            $this->pointer['table'][] = $this->getTrueTable($table);
+            $this->params['table'][] = $this->getTableName($table);
         }
         return $this;
     }
     public function join(string $type, string $table) : self
     {
-        $this->pointer['join']['type'] = $type;
-        $this->pointer['join']['table']= $this->getTrueTable($table);
+        $this->params['join']['type'] = $type;
+        $this->params['join']['table']= $this->getTableName($table);
         return $this;
     }
     public function innerJoin(string $table) : self
@@ -110,13 +111,13 @@ trait ModelPointerTrait
         $args = func_get_args();
         switch (count($args)) {
             case 1:
-                $this->pointer['join']['on'][] = [$this->getTrueField($args[0]), '=', $this->getTrueField($args[0])];
+                $this->params['join']['on'][] = [$this->getQuoteField($args[0]), '=', $this->getQuoteField($args[0])];
                 break;
             case 2;
-                $this->pointer['join']['on'][] = [$this->getTrueField($args[0]), '=', $this->getTrueField($args[1])];
+                $this->params['join']['on'][] = [$this->getQuoteField($args[0]), '=', $this->getQuoteField($args[1])];
                 break;
             case 3:
-                $this->pointer['join']['on'][] = [$this->getTrueField($args[0]), $args[1], $this->getTrueField($args[2])];
+                $this->params['join']['on'][] = [$this->getQuoteField($args[0]), $args[1], $this->getQuoteField($args[2])];
                 break;
             default:
                 static::exception('错误的传递参数个数');
@@ -125,12 +126,12 @@ trait ModelPointerTrait
     }
     public function where()
     {
-        $this->pointer['where'][] = $this->getWhereOrHavingInfo(func_get_args());
+        $this->params['where'][] = $this->getWhereOrHavingInfo(func_get_args());
         return $this;
     }
     private function getWhereOrHavingInfo(array $args) : array
     {
-        $where = $this->getTrueField(array_shift($args));
+        $where = $this->getQuoteField(array_shift($args));
         switch (count($args)) {
             case 2:
                 $condition = array_shift($args);
@@ -150,28 +151,28 @@ trait ModelPointerTrait
     public function count() : self
     {
         foreach (func_get_args() as $filed) {
-            $this->pointer['field'][] = 'count('.$this->getTrueField($field).')';
+            $this->params['field'][] = 'count('.$this->getQuoteField($field).')';
         }
         return $this;
     }
     public function group(string $field)
     {
-        $this->pointer['group'][] = $field;
+        $this->params['group'][] = $field;
         return $this;
     }
     public function having() : self
     {
-        $this->pointer['having'][] = $this->getWhereOrHavingInfo(func_get_args());
+        $this->params['having'][] = $this->getWhereOrHavingInfo(func_get_args());
         return $this;
     }
     public function order(string $field, string $type = 'ASC') : self
     {
-        $this->pointer['order'][] = ['field'=>$this->getTrueField($field), 'type'=>strtolower($type) === 'desc' ? 'DESC' : 'ASC'];
+        $this->params['order'][] = ['field'=>$this->getQuoteField($field), 'type'=>strtolower($type) === 'desc' ? 'DESC' : 'ASC'];
         return $this;
     }
     public function limit(int $num1, ?int $num2 = null) : self
     {
-        $this->pointer['limit'] = $num2 === null ? [0, $num1] : [$num1, $num2];
+        $this->params['limit'] = $num2 === null ? [0, $num1] : [$num1, $num2];
         return $this;
     }
 }

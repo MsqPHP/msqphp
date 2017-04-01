@@ -4,7 +4,7 @@ namespace msqphp\main\cookie;
 final class Cookie
 {
     // 指针trait
-    use CookiePointerTrait, CookieOperateTrait, CookieStaticTrait;
+    use CookieParamsTrait, CookieOperateTrait, CookieStaticTrait;
 
     // 抛出异常
     private static function exception(string $message) : void

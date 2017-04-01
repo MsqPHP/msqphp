@@ -12,8 +12,7 @@ final class App
     // 应用运行
     public static function run() : void
     {
-        app()->config->get('framework.cron') && static::cronCheck();
-
+        // app()->config->get('framework.cron') && static::cronCheck();
         register_shutdown_function(['\\msqphp\\App', 'shutDown']);
 
         static::runRoute();

@@ -6,8 +6,8 @@ use msqphp\core;
 class Model
 {
     use ModelStaticTrait;
-    // 指针层
-    use ModelPointerTrait;
+    // 参数层
+    use ModelParamsTrait;
     // 操作层
     use ModelOperateTrait;
 

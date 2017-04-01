@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\tool;
+namespace msqphp\main\tool;
 
 use msqphp\base;
 

@@ -433,6 +433,9 @@ final class Template
         }
 
         return ['cached'=>$cached, 'result'=>$result];
-
+    }
+    private static function stringToPhpScript(string $content) : string
+    {
+        return '<?php echo \'' . str_replace('\'', '\\\'', $content). '\';?>';
     }
 }

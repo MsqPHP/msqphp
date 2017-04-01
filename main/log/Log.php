@@ -3,7 +3,7 @@ namespace msqphp\main\log;
 
 final class Log
 {
-    use LogStaticTrait, LogPointerAndOperateTrait;
+    use LogStaticTrait, LogParamsAndOperateTrait;
     const EMERGENCY = 'emergency';
     const ALERT     = 'alert';
     const CRITICAL  = 'critical';
@@ -64,20 +64,25 @@ trait LogStaticTrait
     }
 }
 
-trait LogPointerAndOperateTrait
+trait LogParamsAndOperateTrait
 {
 
-    private $pointer = [];
+    private $params = [];
 
     public function __construct()
     {
         $this->init();
     }
-
+    // 添加一个pointer值
+    private function setParamValue(string $key, $value) : self
+    {
+        $this->params[$key] = $value;
+        return $this;
+    }
     public function init() : self
     {
         static::initStatic();
-        $this->pointer = [];
+        $this->params = [];
         return $this;
     }
     public function msg(string $message) : self
@@ -86,13 +91,11 @@ trait LogPointerAndOperateTrait
     }
     public function message(string $message) : self
     {
-        $this->pointer['message'] = $message;
-        return $this;
+        return $this->setParamValue('message', $message);
     }
     public function level(string $level) : self
     {
-        $this->pointer['level'] = $level;
-        return $this;
+        return $this->setParamValue('level', $level);
     }
     public function type(string $type) : self
     {
@@ -100,12 +103,11 @@ trait LogPointerAndOperateTrait
     }
     public function context($context) : self
     {
-        $this->pointer['context'] = $context;
-        return $this;
+        return $this->setParamValue('context', $context);
     }
     public function recode() : void
     {
-        $pointer = $this->pointer;
+        $pointer = $this->params;
         $level = $pointer['level'] ?? '';
         if (in_array(strtolower($level), static::$config['level'])) {
             static::$handler->record($level, $pointer['message'] ?? '', $pointer['context'] ?? null);

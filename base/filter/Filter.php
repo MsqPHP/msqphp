@@ -58,27 +58,4 @@ final class Filter
             static::exception('不支持的格式');
         }
     }
-    /**
-     * php标签过滤
-     *
-     * @param  miexd $value 值
-     *
-     * @return miexd
-     */
-    public static function notPhpScript($value)
-    {
-        if (is_string($value)) {
-            return str_replace(['<?=','<?php','?>'], ['&lt;?=','&lt;?php','?&gt;'], $value);
-        } elseif (is_array($value)) {
-            return array_map('static::slashes', $value);
-        } elseif (is_int($value) || is_float($value)) {
-            return (string)$value;
-        } elseif (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        } elseif (is_null($value)) {
-            return 'null';
-        } else {
-            static::exception('不支持的格式');
-        }
-    }
 }

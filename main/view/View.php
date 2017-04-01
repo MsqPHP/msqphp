@@ -24,7 +24,7 @@ abstract class View
     }
 
     // 构造函数
-    protected function __construct()
+    public function __construct()
     {
         // 初始化配置
         $this->initConfig();

@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\cache;
 
-trait CachePointerTrait
+trait CacheParamsTrait
 {
     // 当前处理类的指针
-    private $pointer             = [];
+    private $params             = [];
 
     /**
      * @param  string  $type   处理类种类
@@ -27,55 +27,53 @@ trait CachePointerTrait
     {
         static::initStatic();
         // 将当前操作cache初始化
-        $this->pointer = [];
+        $this->params = [];
+        return $this;
+    }
+    // 添加一个pointer值
+    private function setParamValue(string $key, $value) : self
+    {
+        $this->params[$key] = $value;
         return $this;
     }
     // 缓存处理器类型
     public function type(string $type) : self
     {
-        $this->pointer['type'] = $type;
-        return $this;
+        return $this->setParamValue('type', $type);
     }
     // 缓存处理器配置
     public function config(array $config) : self
     {
-        $this->pointer['config'] = $config;
-        return $this;
+        return $this->setParamValue('config', $config);
     }
     // 设置处理类
     public function handler(handlers\CacheHandlerInterface $handler) : self
     {
-        $this->pointer['handler'] = $handler;
-        return $this;
+        return $this->setParamValue('handler', $handler);
     }
     // 设置当前缓存处理键前缀
     public function prefix(string $prefix) : self
     {
-        $this->pointer['prefix'] = $prefix;
-        return $this;
+        return $this->setParamValue('prefix', $prefix);
     }
     // 设置当前处理缓存键
     public function key(string $key) : self
     {
-        $this->pointer['key'] = $key;
-        return $this;
+        return $this->setParamValue('key', $key);
     }
     // 当前处理缓存值
     public function value($value) : self
     {
-        $this->pointer['value'] = $value;
-        return $this;
+        return $this->setParamValue('value', $value);
     }
     // 当前处理缓存偏移量
     public function offset(int $offset) : self
     {
-        $this->pointer['offset'] = $offset;
-        return $this;
+        return $this->setParamValue('offset', $offset);
     }
     // 设置当前处理缓存过期时间
     public function expire(int $expire) : self
     {
-        $this->pointer['expire'] = $expire;
-        return $this;
+        return $this->setParamValue('expire', $expire);
     }
 }

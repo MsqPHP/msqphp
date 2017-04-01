@@ -47,7 +47,7 @@ trait TemplateOneTrait
                 // 判断类型,如果为错误类型,报错
                 (is_array($data[$true_key]['value']) || is_object($data[$true_key]['value'])) && static::exception($true_key.'数组或对象被当作普通变量使用');
                 // 替换对应值
-                return (string) $data[$true_key]['value'];
+                return static::stringToPhpScript((string)$data[$true_key]['value']);
             } else {
                 // 返回一个php语句
                 return '<?php echo '.$key.';?>';
@@ -74,7 +74,7 @@ trait TemplateOneTrait
 
             // 如果是一个缓存值
             if (static::isCachedValue($true_arr_name, $data)) {
-                return (string) static::getArrayValue($true_arr_name, $key, $data);
+                return static::stringToPhpScript(static::getArrayValue($true_arr_name, $key, $data));
             } else {
                 return '<?php echo '.static::getArrayName($true_arr_name, $key).';?>';
             }
@@ -103,11 +103,10 @@ trait TemplateOneTrait
             // 参数列表
             $args_list = $matches[2];
             $func_info = static::parseFunctionWithNameAndArgsList($func_name, $args_list, $data);
-            if ($func_info['cached']) {
-                return (string) $func_info['result'];
-            } else {
-                return '<?php echo (string) '.$func_info['result'].';?>';
-            }
+            // return (string) $func_info['result'];
+            return $func_info['cached']
+            ? static::stringToPhpScript((string)$func_info['result'])
+            : '<?php echo (string) '.$func_info['result'].';?>';
         }, $content);
     }
 
@@ -123,7 +122,8 @@ trait TemplateOneTrait
         ], function (array $matches) use ($language) : string {
             // 语言存在返回
             if (isset($language[$matches[1]])) {
-                return (string) $language[$matches[1]];
+                // return (string) $language[$matches[1]];
+                return static::stringToPhpScript((string)$language[$matches[1]]);
             // 异常
             } else {
                 static::exception($matches[1].'对应语言不存在');
@@ -143,7 +143,8 @@ trait TemplateOneTrait
         ], function (array $matches) : string {
             // 常量存在,返回
             if (defined($matches[1])) {
-                return (string) constant($matches[1]);
+                // return (string) constant($matches[1]);
+                return static::stringToPhpScript((string)constant($matches[1]));
             // 异常
             } else {
                 static::exception($matches[1].'常量未定义');

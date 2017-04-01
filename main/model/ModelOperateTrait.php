@@ -63,25 +63,25 @@ trait ModelOperateTrait
     }
     protected function getSql(string $type) : string
     {
-        if (isset($this->pointer['sql'])) {
-            return $this->pointer['sql'];
+        if (isset($this->params['sql'])) {
+            return $this->params['sql'];
         }
         switch ($type) {
             case 'insert':
-                return static::buildUpdateSql($this->pointer);
+                return static::buildUpdateSql($this->params);
             case 'delete':
-                return static::bulidDeleteSql($this->pointer);
+                return static::bulidDeleteSql($this->params);
             case 'exists':
-                return static::buildExistsSql($this->pointer);
+                return static::buildExistsSql($this->params);
             case 'update':
-                return static::buildUpdateSql($this->pointer);
+                return static::buildUpdateSql($this->params);
             case 'select':
             default:
-                return static::buildSelectSql($this->pointer);
+                return static::buildSelectSql($this->params);
         }
     }
     private function getHandler() : string
     {
-        return $this->pointer['handler'] ?? static::$config['default_handler'];
+        return $this->params['handler'] ?? static::$config['default_handler'];
     }
 }
