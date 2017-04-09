@@ -95,4 +95,5 @@ final class Captcha
         imagegif($image);
         imagedestroy($image);
     }
+    
 }

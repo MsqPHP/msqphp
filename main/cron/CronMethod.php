@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\core\cron;
+namespace msqphp\main\cron;
 
 use msqphp\base;
 

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\model;
 
-use msqphp\core\database\Database;
+use msqphp\main\database\Database;
 
 trait ModelOperateTrait
 {

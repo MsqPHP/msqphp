@@ -3,7 +3,7 @@ namespace msqphp\core\cli;
 
 use msqphp\Cli;
 use msqphp\base\file\File;
-use msqphp\core\cron\Cron;
+use msqphp\main\cron\Cron;
 
 final class CliCron
 {

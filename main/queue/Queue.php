@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\core\queue;
+namespace msqphp\main\queue;
 
 final class Queue
 {

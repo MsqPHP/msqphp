@@ -10,13 +10,13 @@ use msqphp\base\file\File;
  *
  * @param  string $path   目录路径
  * @param  string $type   后缀名
- * @param  string $pre    前缀名
+ * @param  string $prefix    前缀名
  *
  * @throws DirException
  * @return void
  */
-return function (string $dir, string $type, string $pre = '') : void {
-    foreach (static::getAllFileByType($dir, $type, $pre) as $file) {
+return function (string $dir, string $type, string $prefix = '') : void {
+    foreach (static::getAllFileByType($dir, $type, $prefix) as $file) {
         File::delete($file, true);
     }
 };

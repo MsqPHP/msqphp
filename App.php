@@ -3,32 +3,23 @@ namespace msqphp;
 
 use msqphp\base\file\File;
 use msqphp\base\number\Number;
-use msqphp\core\cron\Cron;
+use msqphp\main\cron\Cron;
 use msqphp\core\response\Response;
 
 
 final class App
 {
+    public static function init() : void
+    {
+        register_shutdown_function(['\\msqphp\\App', 'shutDown']);
+    }
     // 应用运行
     public static function run() : void
     {
-        // app()->config->get('framework.cron') && static::cronCheck();
-        register_shutdown_function(['\\msqphp\\App', 'shutDown']);
-
-        static::runRoute();
-    }
-    private static function cronCheck() : void
-    {
-        if (!is_file(Cron::getFilePath('pid'))) {
-            Response::unavailable(false);
-            set_time_limit(5);
-            Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'run']);
-            exit;
-        } elseif (1 === random_int(1, 10)) {
-            if (Cron::getNextRunTime() < time()) {
-                Cli::runPhpFile(Environment::getPath('bootstrap').'cli.php', ['cron', 'stop']);
-            }
-        }
+        define('ROUTE_START', microtime(true));
+        //加载路由并运行
+        core\route\Route::run();
+        define('ROUTE_END', microtime(true));
     }
     // 关闭调用
     public static function shutDown() : void
@@ -45,20 +36,6 @@ final class App
                       ->level('success')
                       ->recode();
         }
-    }
-    public static function runRoute() : void
-    {
-        define('ROUTE_START', microtime(true));
-        //加载路由并运行
-        require __DIR__.'/core/route/RouteRouleTrait.php';
-        require __DIR__.'/core/route/RouteCategoryTrait.php';
-        require __DIR__.'/core/route/RouteLimiteTrait.php';
-        require __DIR__.'/core/route/RouteMethodTrait.php';
-        require __DIR__.'/core/route/RouteParseTrait.php';
-        require __DIR__.'/core/route/RouteStaticTrait.php';
-        require __DIR__.'/core/route/Route.php';
-        core\route\Route::run();
-        define('ROUTE_END', microtime(true));
     }
     private static function getSimalInfo() : array
     {

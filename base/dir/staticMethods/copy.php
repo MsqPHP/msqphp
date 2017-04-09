@@ -11,7 +11,7 @@ use msqphp\base\file\File;
  * @throws DirException
  * @return void
  */
-return function (string $from, string $to, bool $force = false) {
+return function (string $from, string $to, bool $force = false) : void {
     // 原目录是否存在
     is_dir($from) || static::exception($from.' 目录不存在');
 

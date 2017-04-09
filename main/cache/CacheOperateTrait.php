@@ -80,6 +80,12 @@ trait CacheOperateTrait
             static::exception('缓存无法清空,原因:'.$e->getMessage());
         }
     }
+    public function cleanAll() : void
+    {
+        foreach (static::$handlers as $handler) {
+            $this->handler($handler)->clean();
+        }
+    }
     public function flush() : void
     {
         $this->clear();

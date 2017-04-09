@@ -29,7 +29,6 @@ trait CacheStaticTrait
             require __DIR__ . DIRECTORY_SEPARATOR . 'handlers' . DIRECTORY_SEPARATOR . 'CacheHandlerInterface.php';
         }
     }
-
     // 初始化配置
     private static function initConfig() : void
     {

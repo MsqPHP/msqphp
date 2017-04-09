@@ -66,9 +66,7 @@ trait RouteMethodTrait
                 static::$matched = true;
                 static::$method_info = ['method' => $method, 'condition' => $conditions];
                 unset($method, $conditions);
-                define('USER_FUNC_START', microtime(true));
                 static::callFunction($func, $args, $aiload);
-                define('USER_FUNC_END', microtime(true));
                 return;
             }
         }
@@ -104,12 +102,12 @@ trait RouteMethodTrait
     {
         while (isset($query[0])) {
             [$query, $args_name, $source] = static::getArgsInfoByQuery($query);
-
             foreach ($args_name as $arg_name) {
                 $args[] = $source[$arg_name] ?? null;
             }
         }
         return $args;
+
     }
 }
 
@@ -127,6 +125,8 @@ trait RouteMethodRunTrait
      */
     private static function callFunction($func, array $args = [], bool $aiload) : void
     {
+        define('USER_FUNC_START', microtime(true));
+
         if ($aiload) {
             $loader = app()->loader;
             $loader->key(md5(static::$url.var_export(static::$method_info,true)))->load();
@@ -150,6 +150,7 @@ trait RouteMethodRunTrait
             }
             unset($loader);
         }
+        define('USER_FUNC_END', microtime(true));
     }
 
     /**

@@ -26,43 +26,27 @@ final class Environment
     // 初始化框架环境
     public static function init() : void
     {
-        static::initLoader();
-        static::loadAiloadFile();
+        static::initAutoLoader();
+        static::initRealWithAiload();
     }
     /**
      * loader静态类储存一个数组
      * 包括所有通过自动加载加载的文件(框架自带或者composer[需要改动代码])
      * 以实现智能加载
      * 所以在载入自动加载类前先载入对应文件
-     *
      */
-    private static function initLoader() : void
+    private static function initAutoLoader() : void
     {
         $framework_path = static::getPath('framework');
         if (COMPOSER_AUTOLOAD) {
-            /*
-            需要修改compose\ClassLoader.php 中函数为
-            function includeFile($file)
-            {
-                include $file;
-                \msqphp\core\loader\SimpleLoader::addClasses($file);
-            }
-            */
+            // 载入简易加载类文件
             require $framework_path . 'core/loader/BaseTrait.php';
             require $framework_path . 'core/loader/AiloadTrait.php';
             require $framework_path . 'core/loader/SimpleLoader.php';
             //使用则载入composer自动加载类
             require static::getPath('root') . 'vendor/autoload.php';
         } else {
-            /*
-              使用框架本身的自动加载。
-              加载方式将命名空间转换为目录再加载，大概是psr4的框架专用简化版。
-              支持空间映射：
-                  app    -》application
-                  test   -》test
-                  msqphp -》framework（框架路径） || library/msqphp/framework(图书馆路径)
-            */
-            //载入文件
+            // 载入完整加载类文件
             require $framework_path . 'core/loader/BaseTrait.php';
             require $framework_path . 'core/loader/AutoloadTrait.php';
             require $framework_path . 'core/loader/AiloadTrait.php';
@@ -70,6 +54,8 @@ final class Environment
             core\loader\Loader::register();
         }
     }
+
+    // 实际的初始化函数
     private static function initReal() : void
     {
         // 错误处理
@@ -77,7 +63,9 @@ final class Environment
         // 时区设置
         date_default_timezone_set(app()->config->get('framework.timezone'));
     }
-    private static function loadAiloadFile() : void
+
+    // 真正的环境初始化,配合aiload使用
+    private static function initRealWithAiload() : void
     {
         //智能加载缓存文件
         $aiload_cache_file = static::getPath('storage') . 'framework/aiload_cache_file.php';
@@ -107,10 +95,9 @@ final class Environment
                 $loader->deleteAll();
                 $loader->update();
             }
-            unset($loader);
-            unset(app()->loader);
         }
     }
+
     // 获取当前运行环境
     public static function getRunMode() : string
     {
@@ -130,13 +117,7 @@ final class Environment
         }
     }
 
-    /**
-     * 设置路径
-     *
-     * @param  array $path_config 路径配置
-     *
-     * @return void
-     */
+    // 设置路径
     public static function setPath(array $path_config) : void
     {
         foreach ($path_config as $name => $path) {
@@ -149,13 +130,7 @@ final class Environment
         }
     }
 
-    /**
-     * 获取路径
-     *
-     * @param  string $name 名称
-     *
-     * @return string
-     */
+    // 获取路径
     public static function getPath(string $name) : string
     {
         if (!isset(static::$path[$name])) {

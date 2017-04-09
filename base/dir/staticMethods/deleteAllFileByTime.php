@@ -11,13 +11,13 @@ use msqphp\base\file\File;
  * @param  string $dir        目录路径
  * @param  string $type       a(fileatime.访问时间), c(filectim.文件信息改变时间), m(filectime.修改时间)
  * @param  string $expire     过期时间
- * @param  string &ext        后缀缀名
- * @param  string $pre        前缀名
+ * @param  string &extension  后缀缀名
+ * @param  string $prefix     前缀名
  *
  * @throws DirException
  * @return void
  */
-return function (string $dir, string $type, int $expire = 3600, string $ext = '', string $pre = '') : void {
+return function (string $dir, string $type, int $expire = 3600, string $extension = '', string $prefix = '') : void {
     // 获取func 名
     switch ($type) {
         case 'a':
@@ -33,7 +33,7 @@ return function (string $dir, string $type, int $expire = 3600, string $ext = ''
     $expire = time() - $expire;
 
     // 遍历获取所有文件
-    foreach(static::getAllFileByType($dir, $ext, $pre) as $file) {
+    foreach(static::getAllFileByType($dir, $extension, $prefix) as $file) {
         // 过期删除
         $func($file) < $expire && File::delete($file);
     }

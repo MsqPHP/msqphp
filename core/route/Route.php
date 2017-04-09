@@ -43,8 +43,9 @@ final class Route
         // 路由流程文件
         $file = \msqphp\Environment::getPath('application') . 'route.php';
         is_file($file) || static::exception('路由解析失败,原因:路由流程文件'.$file.'不存在');
-        // 载入文件
+        // 载入规则文件
         require \msqphp\Environment::getPath('application') . 'route_rule.php';
+        // 载入逻辑文件
         require $file;
     }
 

@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\main\tool;
+namespace msqphp\core\tool;
 
 use msqphp\base;
 
@@ -15,7 +15,7 @@ final class Clean
     }
     public static function cache() : void
     {
-        app()->cache->clean();
+        app()->cache->cleanAll();
     }
     public static function view() : void
     {

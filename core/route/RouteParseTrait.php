@@ -33,23 +33,17 @@ trait RouteParseTrait
             // 分割path和query
             static::$parse_info['path']  = static::deletePathSuffix(substr($path_and_query, 0, $pos));
             static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
-            !empty($query) && static::parseQuery($query);
+            // query语句解析
+            !empty($query) && array_map(function (string $param) {
+                // 包括等于号,避免不完全的param参数
+                if (false !== $pos = strpos($param, '=')) {
+                    // 添加到数组中
+                    static::$parse_info['get'][substr($param, 0, $pos)] = substr($param, $pos + 1);
+                }
+            }, explode('&', $query));
         }
         $_GET = static::$parse_info['get'];
         static::$pending_path = explode('/', static::$parse_info['path']);
-    }
-
-    // 解析查询(get)参数
-    private static function parseQuery(string $query) : void
-    {
-        // query语句解析
-        array_map(function (string $param) {
-            // 包括等于号,避免不完全的param参数
-            if (false !== $pos = strpos($param, '=')) {
-                // 添加到数组中
-                static::$parse_info['get'][substr($param, 0, $pos)] = substr($param, $pos + 1);
-            }
-        }, explode('&', $query));
     }
 
     // 移除'index.php','.php'等后缀
@@ -83,17 +77,6 @@ trait RouteParseTrait
     // 获得查询语句(get参数)
     private static function getQuery() : string
     {
-        if (!isset($parse_info['query'])) {
-            $path_and_query = urldecode(ltrim($_SERVER['REQUEST_URI'], '/'));
-            if (fasle === $pos = strpos('?', $path_and_query)) {
-                static::$parse_info['query'] = '';
-                static::$parse_info['get'] = [];
-            } else {
-                static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
-                !empty($query) && static::parseQuery($query);
-            }
-            $_GET = static::$parse_info['get'];
-        }
         return static::$parse_info['query'];
     }
     // 获得访问方法

@@ -8,11 +8,12 @@ namespace msqphp\base\dir;
  *
  * @param  string $from       目录路径
  * @param  string $to         目标路径
+ * @param  string $force      不存在则创建, 存在则替换
  *
  * @throws DirException
  * @return void
  */
-return function (string $from, string $to) : void {
-    static::copy($from, $to);
-    static::delete($from);
+return function (string $from, string $to, bool $force = true) : void {
+    static::copy($from, $to, $force);
+    static::delete($from, $force);
 };

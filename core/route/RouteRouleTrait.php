@@ -21,8 +21,9 @@ trait RouteRouleTrait
         return isset(static::$roule[$key]) && (
             is_string(static::$roule[$key])
             ? 0 !== preg_match(static::$roule[$key], $value)
-            : call_user_func_array(static::$roule[$key], [$value])
+            : call_user_func_array(static::$roule[$key], [&$value])
         );
+
     }
 
     /**

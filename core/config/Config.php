@@ -1,7 +1,9 @@
 <?php declare(strict_types = 1);
 namespace msqphp\core\config;
 
-use msqphp\base;
+use msqphp\base\arr\Arr;
+use msqphp\base\file\File;
+use msqphp\base\dir\Dir;
 use msqphp\core\traits;
 
 final class Config
@@ -12,10 +14,10 @@ final class Config
     private $config = [];
 
     // 初始化
-    private function __construct()
+    private function __construct(?string $path = null)
     {
         // 配置缓存路径
-        $cache_path = \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cache_config.php';
+        $path = $path ?? \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cache_config.php';
 
         // 有缓存且文件存在,直接载入
         if (HAS_CACHE && is_file($cache_path)) {

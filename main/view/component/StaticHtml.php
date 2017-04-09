@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\view\component;
 
-use msqphp\base;
-use msqphp\core;
+use msqphp\core\route\Route;
 
 final class StaticHtml
 {
@@ -11,11 +10,8 @@ final class StaticHtml
     public function __construct(array $config)
     {
 
-        $this->path = core\route\Route::getStaticPath();
-
-        $expire = $config['expire'];
-
-        $this->content = 0 === $expire ? '' : '<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('public').'server.php\';exit;}?>';
+        $this->path = Route::getStaticPath();
+        $this->expire = $config['expire'];
     }
     public function addContent(string $content) : void
     {
@@ -24,7 +20,7 @@ final class StaticHtml
     // 静态页面写入
     public function writeHtml() : void
     {
-        base\file\File::write($this->path, $this->content, true);
+        Route::writeStaticFile($this->path, $this->content, $this->expire);
     }
     public function __destruct()
     {

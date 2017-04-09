@@ -1,5 +1,5 @@
 <?php declare(strict_types = 1);
-namespace msqphp\core\crypt;
+namespace msqphp\main\crypt;
 
 use msqphp\base;
 use msqphp\core\traits;

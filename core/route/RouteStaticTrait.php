@@ -17,37 +17,28 @@ trait RouteStaticTrait
         if (!static::$matched || !HAS_STATIC) {
             return;
         }
-        base\file\File::write(static::getStaticPath(), '<?php declare(strict_types = 1);
-        const APP_DEBUG  = ' . (APP_DEBUG  ? 'true' : 'false') . ';
-        const HAS_CACHE  = ' . (HAS_CACHE  ? 'true' : 'false') . ';
-        const HAS_VIEW   = ' . (HAS_VIEW   ? 'true' : 'false') . ';
-        const HAS_STATIC = ' . (HAS_STATIC ? 'true' : 'false') . ';
+        $content = '<?php
+// 加载基础文件
+require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/base_app.php\';
+require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/function.php\';
+require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/user.php\';
+// 初始化环境
+\msqphp\Environment::init();
+\msqphp\App::init();
 
-        require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/base_app.php\';
-        require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/loader.php\';
-        require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/loader.php\';
-        require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/function.php\';
-        require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/user.php\';
+// 控制器加路由开始时间
+define(\'ROUTE_START\', microtime(true));
 
-        // 控制器加路由开始时间
-        define(\'ROUTE_START\', microtime(true));
-        define(\'ROUTE_CONTROLLER_START\', microtime(true));
-
-        \msqphp\core\route\Route::parseQuery($_SERVER[\'QUERY_STRING\']);
-        \msqphp\core\route\Route::initStaticEnvironment('.var_export(static::getStaticInfo(), true).');
-        \msqphp\core\route\Roue:::runStaticFunc();
-        // 控制器加路由结束时间
-        define(\'ROUTE_END\', microtime(true));
-        \msqphp\App::end();
-        ');
+// 路由直接运行
+\msqphp\core\route\Route::initStaticEnvironment('.var_export(static::getStaticInfo(), true).');
+\msqphp\core\route\Route::runStaticFunc();
+// 控制器加路由结束时间
+define(\'ROUTE_END\', microtime(true));';
+        static::writeStaticFile(static::getStaticPath(), $content, 3600);
 
     }
 
-    /**
-     * 获取静态路径
-     *
-     * @return string
-     */
+    // 获取静态路径
     public static function getStaticPath() : string
     {
         $path = trim(strtr(static::getPath(), '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
@@ -56,7 +47,19 @@ trait RouteStaticTrait
 
         return \msqphp\Environment::getPath('public') . $path . 'index.php';
     }
-
+    /**
+     * 写入静态文件
+     * @param   string  $path     路径
+     * @param   string  $content  内容
+     * @param   int     $expire   过期时间
+     * @return  void
+     */
+    public static function writeStaticFile(string $path, string $content, int $expire = 3600) : void
+    {
+        if ($expire < 1) { return; }
+        $content = '<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('public').'server.php\';exit;}?>' . $content;
+        base\file\File::write($path, $content);
+    }
     /**
      * 设置路由信息
      *
@@ -67,24 +70,25 @@ trait RouteStaticTrait
     {
         include \msqphp\Environment::getPath('application').'route_rule.php';
         static::$category_info = $info['category_info'];
-        foreach ($category_info['constant'] as $key => $value) {
+        static::$method_info   = $info['method_info'];
+        static::$url           = $info['url'];
+        static::$namespace     = $info['namespace'];
+        foreach (static::$category_info['constant'] as $key => $value) {
             defined($key) || define($key, $value);
         }
-        static::$method_info = $info['method_info'];
-        // 重新解析get参数
-        static::getQuery();
+        // 解析路径和参数
+        static::parsePathAndQuery();
     }
     public static function runStaticFunc() : void
     {
-        static::checkMethod(static::$method_info['method']);
-        static::checkCondition(static::$method_info['condition']);
+        $method_info = static::$method_info;
+        static::checkMethod($method_info['method']);
+        static::checkCondition($method_info['condition']);
         define('USER_FUNC_START', microtime(true));
-
-        $class_name = static::$method_info['function']['class'];
-        $method = static::$method_info['function']['method'];
-        $query = static::$method_info['function']['query'];
-        $args = static::$method_info['function']['args'];
-
+        $class_name = $method_info['function']['class'];
+        $method = $method_info['function']['method'];
+        $query = $method_info['function']['query'];
+        $args = $method_info['function']['args'];
         call_user_func_array([new $class_name, $method], static::getArgsByQuery($query, $args));
         define('USER_FUNC_END', microtime(true));
     }
@@ -93,6 +97,8 @@ trait RouteStaticTrait
         return [
             'method_info' => static::$method_info,
             'category_info' => static::$category_info,
+            'url' => static::$url,
+            'namespace' => static::$namespace
         ];
     }
 }
