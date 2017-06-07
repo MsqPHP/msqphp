@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\core\route;
 
 use msqphp\base\ip\Ip;
@@ -15,10 +15,11 @@ trait RouteParseTrait
         // 'path'     =>'',
         // 'query'    =>'',
         // 'get'      =>[],
+        // 'extension' => '',
     ];
 
     // 解析路径和查询参数
-    private static function parsePathAndQuery() : void
+    private static function parsePathQueryExtension(): void
     {
         // 获取路径和get参数
         $path_and_query = urldecode(ltrim($_SERVER['REQUEST_URI'], '/'));
@@ -28,10 +29,10 @@ trait RouteParseTrait
         // 若果不存在get参数,例:www.example.com/nihao/20
         if (false === $pos = strpos($path_and_query, '?')) {
             // 直接赋值
-            static::$parse_info['path'] = static::deletePathSuffix($path_and_query);
+            static::$parse_info['path'] = static::parseExtension($path_and_query);
         } else {
             // 分割path和query
-            static::$parse_info['path']  = static::deletePathSuffix(substr($path_and_query, 0, $pos));
+            static::$parse_info['path']  = static::parseExtension(substr($path_and_query, 0, $pos));
             static::$parse_info['query'] = $query = substr($path_and_query, $pos + 1);
             // query语句解析
             !empty($query) && array_map(function (string $param) {
@@ -42,53 +43,52 @@ trait RouteParseTrait
                 }
             }, explode('&', $query));
         }
-        $_GET = static::$parse_info['get'];
+        $_GET                 = static::$parse_info['get'];
         static::$pending_path = explode('/', static::$parse_info['path']);
     }
 
     // 移除'index.php','.php'等后缀
-    private static function deletePathSuffix(string $path) : string
+    private static function parseExtension(string $path): string
     {
-        // 大于4个长度
-        if (isset($path[4])) {
-            // 如果倒数第四个字符为.,再判断是否以指定字符串结尾,是则移除,否则忽略
-            if ('.' === $path[-4]) {
-                if (in_array(substr($path, -10), ['/index.php', '/index.asp', '/index.jsp', '/index.jsf'])) {
-                    $path = substr($path, 0, strlen($path)-10);
-                } elseif (in_array(substr($path, -4), ['.php', '.asp', '.jsp', '.jsf'])) {
-                    $path = substr($path, 0, strlen($path)-4);
-                }
-            // 倒数第五个字符串点,同上
-            } elseif (isset($path[5]) && '.' === $path[-5]) {
-                if (in_array(substr($path, -11), ['/index.html', '/index.aspx'])) {
-                    $path = substr($path, 0, strlen($path)-11);
-                } elseif (in_array(substr($path, -5), ['.html', '.aspx'])) {
-                    $path = substr($path, 0, strlen($path)-5);
-                }
-            }
+        $pos_a = strrpos($path, '.');
+        $pos_b = strrpos($path, '/');
+        // .在/后 例:.com/index.php,此时获取后缀名
+        if ($pos_a && $pos_b && $pos_a > $pos_b) {
+            $extension = substr($path, $pos_a + 1);
+            $path      = substr($path, 0, $pos_a);
+            // 忽略/index,避免一些问题(可有可无)
+            isset($path[5]) && substr($path, -6) === '/index' && $path = substr($path, 0, strlen($path) - 10);
         }
+        static::$parse_info['extension'] = $extension ?? 'php';
         return trim($path, '/');
     }
 
-    private static function getPath() : string
+    // 获得路径
+    private static function getPath(): string
     {
         return static::$parse_info['path'];
     }
     // 获得查询语句(get参数)
-    private static function getQuery() : string
+    private static function getQuery(): string
     {
         return static::$parse_info['query'];
     }
-    // 获得访问方法
-    private static function getMethod() : string
+    // 获得扩展名
+    private static function getExtension(): string
     {
-        return static::$parse_info['method'] = static::$parse_info['method'] ?? strtolower( isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $_SERVER['REQUEST_METHOD'] );
+        return static::$parse_info['extension'];
+    }
+    // 获得访问方法
+    private static function getMethod(): string
+    {
+        return static::$parse_info['method'] = static::$parse_info['method'] ?? strtolower(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ? 'ajax' : $_SERVER['REQUEST_METHOD']);
     }
     // 获得协议
-    private static function getProtocol() : string
+    private static function getProtocol(): string
     {
         if (!isset(static::$parse_info['protocol'])) {
-            static::$parse_info['protocol'] = (isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS'])))
+            static::$parse_info['protocol'] =
+            (isset($_SERVER['HTTPS']) && ('1' === $_SERVER['HTTPS'] || 'on' === strtolower($_SERVER['HTTPS'])))
             ||
             (isset($_SERVER['SERVER_PORT']) && '443' === $_SERVER['SERVER_PORT'])
             ? 'https'
@@ -97,22 +97,22 @@ trait RouteParseTrait
         return static::$parse_info['protocol'];
     }
     // 获得域名
-    private static function getDomain() : string
+    private static function getDomain(): string
     {
         return static::$parse_info['domain'] = static::$parse_info['domain'] ?? $_SERVER['$_SERVER_NAME'] ?? $_SERVER['HTTP_HOST'];
     }
     // 获得端口
-    private static function getPort() : int
+    private static function getPort(): int
     {
         return static::$parse_info['port'] = (int) static::$parse_info['port'] ?? $_SERVER['SERVER_PORT'];
     }
     // 获得ip
-    private static function getIp() : string
+    private static function getIp(): string
     {
         return static::$parse_info['ip'] = static::$parse_info['ip'] ?? Ip::get();
     }
     // 获得referer
-    private static function getReferer() : string
+    private static function getReferer(): string
     {
         return static::$parse_info['referer'] = static::$parse_info['referer'] ?? $_SERVER['HTTP_REFERER'];
     }

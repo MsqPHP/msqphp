@@ -1,43 +1,40 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\crypt;
 
-use msqphp\base;
+use msqphp\core\config\Config;
 use msqphp\core\traits;
 
 final class Crypt
 {
     use traits\CallStatic;
 
-    public static function base64_encode(string $str) : string
-    {
-        return base64_encode($str);
-    }
-    public static function base64_decode(string $str) : string
-    {
-        return base64_decode($str);
-    }
-    public static function urlencode(string $str) : string
-    {
-        return urlencode($str);
-    }
-    public static function urldecode(string $str) : string
-    {
-        return urldecode($str);
-    }
-    public static function mcrypt_decrypt()
-    {
+    private static $salt = '';
+    private static $type = '';
 
-    }
-    public static function mcrypt_encrypt()
+    private static function getCryptSalt(): string
     {
-
+        return static::$salt = static::$salt ?? Config::get('framework.salt');
     }
-    public static function encode(string $str) : string
+    private static function getCryptType(): string
     {
-        return $str;
+        return static::$type = static::$type ?? Config::get('framework.crypt_type');
     }
-    public static function decode(string $str) : string
+    public static function encode(string $data): string
     {
-        return $str;
+        $data = openssl_encrypt($data, static::getCryptType(), static::getCryptSalt(), OPENSSL_RAW_DATA);
+        return base64_encode($data);
+    }
+    public static function decode(string $data): string
+    {
+        $data = base64_decode($data);
+        return openssl_decrypt($data, static::getCryptType(), static::getCryptSalt(), OPENSSL_RAW_DATA);
+    }
+    public static function hash(string $data, string $salt): string
+    {
+        return password_hash($data, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => 10]);
+    }
+    public static function vertify(string $data, string $hash): bool
+    {
+        return password_verify($data, $hash);
     }
 }

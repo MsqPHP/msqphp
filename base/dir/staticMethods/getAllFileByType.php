@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\dir;
 
 /**
@@ -13,17 +13,17 @@ namespace msqphp\base\dir;
  * @throws DirException
  * @return 一维索引数组，值为文件绝对路径
  */
-return function (string $dir, string $type = '*', string $pre = '') : array {
+return function (string $dir, string $type = '*', string $pre = ''): array{
     // 无法操作
     is_dir($dir) || static::exception($dir . '文件夹不存在');
 
     is_readable($dir) || static::exception($dir . '文件夹不可读');
 
-    $dir = realpath($dir).DIRECTORY_SEPARATOR;
+    $dir = realpath($dir) . DIRECTORY_SEPARATOR;
 
     false === strpos($type, '.') && $type = '.' . $type;
 
-    $files = glob($dir.$pre.'*'.$type);
+    $files = glob($dir . $pre . '*' . $type);
 
     foreach (static::getDirList($dir, true) as $children_dir) {
         $files = array_merge($files, static::getAllFileByType($children_dir, $type, $pre));

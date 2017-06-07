@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\dir;
 
 /**
@@ -12,8 +12,7 @@ namespace msqphp\base\dir;
  * @throws DirException
  * @return array
  */
-return function (string $dir, bool $absolute = false) : array
-{
+return function (string $dir, bool $absolute = false): array{
     // 无法操作
     is_dir($dir) || static::exception($dir . '文件夹不存在');
 
@@ -30,7 +29,7 @@ return function (string $dir, bool $absolute = false) : array
         }
         return $result;
     } else {
-        return array_filter($list, function($path) use ($dir) {
+        return array_filter($list, function ($path) use ($dir) {
             return $path !== '.' && $path !== '..' && is_dir($dir . $path);
         }, 0);
     }

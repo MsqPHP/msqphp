@@ -1,18 +1,17 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\core\route;
 
 use msqphp\base;
 
 trait RouteStaticTrait
 {
-    public static function static(\Closure $func, $args = []) : void
-    {
+    public static function static(\Closure $func, $args = []): void {
         // 未匹配,直接返回
         if (static::$matched) {
             return;
         }
         // 调用闭包函数
-        call_user_func_array($func,$args);
+        call_user_func_array($func, $args);
         // 未匹配成功或者不支持静态,则不属于static路由闭包函数包括范围,返回
         if (!static::$matched || !HAS_STATIC) {
             return;
@@ -30,7 +29,7 @@ require \'' . \msqphp\Environment::getPath('bootstrap') . 'framework/user.php\';
 define(\'ROUTE_START\', microtime(true));
 
 // 路由直接运行
-\msqphp\core\route\Route::initStaticEnvironment('.var_export(static::getStaticInfo(), true).');
+\msqphp\core\route\Route::initStaticEnvironment(' . var_export(static::getStaticInfo(), true) . ');
 \msqphp\core\route\Route::runStaticFunc();
 // 控制器加路由结束时间
 define(\'ROUTE_END\', microtime(true));';
@@ -39,7 +38,7 @@ define(\'ROUTE_END\', microtime(true));';
     }
 
     // 获取静态路径
-    public static function getStaticPath() : string
+    public static function getStaticPath(): string
     {
         $path = trim(strtr(static::getPath(), '/', DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
 
@@ -54,10 +53,10 @@ define(\'ROUTE_END\', microtime(true));';
      * @param   int     $expire   过期时间
      * @return  void
      */
-    public static function writeStaticFile(string $path, string $content, int $expire = 3600) : void
+    public static function writeStaticFile(string $path, string $content, int $expire = 3600): void
     {
-        if ($expire < 1) { return; }
-        $content = '<?php if (time() >' . (string) (time() + $expire) .') {require \''.\msqphp\Environment::getPath('public').'server.php\';exit;}?>' . $content;
+        if ($expire < 1) {return;}
+        $content = '<?php if (time() >' . (string) (time() + $expire) . ') {require \'' . \msqphp\Environment::getPath('public') . 'server.php\';exit;}?>' . $content;
         base\file\File::write($path, $content);
     }
     /**
@@ -66,9 +65,9 @@ define(\'ROUTE_END\', microtime(true));';
      * @param array $info = [
      * ]
      */
-    public static function initStaticEnvironment(array $info) : void
+    public static function initStaticEnvironment(array $info): void
     {
-        include \msqphp\Environment::getPath('application').'route_rule.php';
+        include \msqphp\Environment::getPath('application') . 'route_rule.php';
         static::$category_info = $info['category_info'];
         static::$method_info   = $info['method_info'];
         static::$url           = $info['url'];
@@ -77,28 +76,28 @@ define(\'ROUTE_END\', microtime(true));';
             defined($key) || define($key, $value);
         }
         // 解析路径和参数
-        static::parsePathAndQuery();
+        static::parsePathQueryExtension();
     }
-    public static function runStaticFunc() : void
+    public static function runStaticFunc(): void
     {
         $method_info = static::$method_info;
         static::checkMethod($method_info['method']);
         static::checkCondition($method_info['condition']);
         define('USER_FUNC_START', microtime(true));
         $class_name = $method_info['function']['class'];
-        $method = $method_info['function']['method'];
-        $query = $method_info['function']['query'];
-        $args = $method_info['function']['args'];
+        $method     = $method_info['function']['method'];
+        $query      = $method_info['function']['query'];
+        $args       = $method_info['function']['args'];
         call_user_func_array([new $class_name, $method], static::getArgsByQuery($query, $args));
         define('USER_FUNC_END', microtime(true));
     }
-    public static function getStaticInfo() : array
+    public static function getStaticInfo(): array
     {
         return [
-            'method_info' => static::$method_info,
+            'method_info'   => static::$method_info,
             'category_info' => static::$category_info,
-            'url' => static::$url,
-            'namespace' => static::$namespace
+            'url'           => static::$url,
+            'namespace'     => static::$namespace,
         ];
     }
 }

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\dir;
 
 /**
@@ -11,9 +11,9 @@ namespace msqphp\base\dir;
  * @throws DirException
  * @return 一维索引数组，值为文件绝对路径
  */
-return function (string $dir) : array {
+return function (string $dir): array{
 
-    is_readable($dir) || static::exception($dir.' 文件夹不存在或无法操作');
+    is_readable($dir) || static::exception($dir . ' 文件夹不存在或无法操作');
 
     $dir_list = static::getDirList($dir, true);
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\core\route;
 
 use msqphp\core\traits;
@@ -15,45 +15,49 @@ final class Route
     use RouteCategoryTrait, RouteLimiteTrait;
 
     // 方法,静态
-    use RouteMethodTrait, RouteStaticTrait;
+    use RouteMatchTrait, RouteStaticTrait;
 
     // 当前处理的url
-    private static $url           = '';
+    private static $url = '';
 
     // 待处理路径
-    private static $pending_path  = [];
+    private static $pending_path = [];
 
     // 当前命名空间
-    private static $namespace     = '\\app\\';
+    private static $namespace = '\\app\\';
 
     // 是否匹配成功过
-    private static $matched       = false;
+    private static $matched = false;
 
     // 异常抛出
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new RouteException($message);
     }
 
     // route运行
-    public static function run() : void
+    public static function run(): void
     {
-        // 解析路径和参数
-        static::parsePathAndQuery();
-        // 路由流程文件
-        $file = \msqphp\Environment::getPath('application') . 'route.php';
-        is_file($file) || static::exception('路由解析失败,原因:路由流程文件'.$file.'不存在');
-        // 载入规则文件
-        require \msqphp\Environment::getPath('application') . 'route_rule.php';
-        // 载入逻辑文件
-        require $file;
+        static::parsePathQueryExtension();
+        $procedure_file = \msqphp\Environment::getPath('application') . 'route.php';
+        $rule_file      = \msqphp\Environment::getPath('application') . 'route_rule.php';
+        is_file($procedure_file) || static::exception(printf('路由解析失败,原因:路由流程文件%s不存在', $procedure_file));
+        is_file($rule_file) || static::exception(printf('路由解析失败,原因:路由规则文件%s不存在', $rule_file));
+        require $rule_file;
+        require $procedure_file;
     }
 
     // 构建并获取url常量
-    public static function bulid() : string
+    public static function bulid(): string
     {
-        $url = static::getProtocol().'://'.static::getDomain().'/'.static::$url;
+        $url = static::getProtocol() . '://' . static::getDomain() . '/' . static::$url;
         defined('__URL__') || define('__URL__', $url);
         return $url;
+    }
+
+    // 错误,即匹配失败
+    public static function error(\Closure $func, array $args = []): void
+    {
+        static::$matched || call_user_func_array($func, $args);
     }
 }

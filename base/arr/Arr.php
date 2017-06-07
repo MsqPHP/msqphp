@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\arr;
 
 use msqphp\core\traits;
@@ -11,12 +11,11 @@ final class Arr
     use ArrOperateTrait;
 
     // 扔出异常
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new ArrException($message);
     }
 }
-
 
 trait ArrOperateTrait
 {
@@ -49,7 +48,7 @@ trait ArrOperateTrait
      * @throws ArrException
      */
 
-    public static function set(array & $array, ?string $arr_key, $arr_value) : void
+    public static function set(array &$array,  ? string $arr_key, $arr_value) : void
     {
         // 如果键为空
         if (null === $arr_key) {
@@ -58,18 +57,18 @@ trait ArrOperateTrait
         }
 
         // 以点分割
-        $key = explode('.', $arr_key);
-        $result = & $array;
+        $key    = explode('.', $arr_key);
+        $result = &$array;
         // 递归
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
-            $result = & $result[$key[$i]];
+            $result = &$result[$key[$i]];
         }
 
         // 赋值
         $result = $arr_value;
     }
 
-    public static function get(array $array, ?string $arr_key)
+    public static function get(array $array,  ? string $arr_key)
     {
         // 键为空
         if (null === $arr_key) {
@@ -77,21 +76,21 @@ trait ArrOperateTrait
         }
 
         // 以点分割
-        $key = explode('.', $arr_key);
-        $result = & $array;
+        $key    = explode('.', $arr_key);
+        $result = &$array;
         // 递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             if (!isset($result[$key[$i]])) {
-                return NULL;
+                return null;
             }
-            $result = & $result[$key[$i]];
+            $result = &$result[$key[$i]];
         }
 
         // 返回
         return $result;
     }
 
-    public static function isset(array $array, ?string $arr_key) : bool
+    public static function isset(array $array,  ? string $arr_key) : bool
     {
         // 键为空
         if (null === $arr_key) {
@@ -99,14 +98,14 @@ trait ArrOperateTrait
         }
 
         // 以点分割
-        $key = explode('.', $arr_key);
-        $result = & $array;
+        $key    = explode('.', $arr_key);
+        $result = &$array;
         // 递归赋值
         for ($i = 0, $l = count($key); $i < $l; ++$i) {
             if (!isset($result[$key[$i]])) {
                 return false;
             }
-            $result = & $result[$key[$i]];
+            $result = &$result[$key[$i]];
         }
 
         // 返回

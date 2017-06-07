@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 namespace msqphp\main\model;
 
+use \msqphp\core;
+
 trait ModelStaticTrait
 {
     use ModelSqlBulidTrait;
@@ -15,7 +17,7 @@ trait ModelStaticTrait
 
         if (!$inited) {
             $inited = true;
-            static::$config = app()->config->get('model');
+            static::$config = core\config\Config::get('model');
         }
     }
 }

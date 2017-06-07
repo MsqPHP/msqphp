@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\file;
 
 use msqphp\base\number\Number;
@@ -20,14 +20,14 @@ use msqphp\base\number\Number;
 
 return function (string $file, bool $round = true, bool $unit = true) {
 
-    is_file($file) || static::exception($file.' 文件不存在');
+    is_file($file) || static::exception($file . ' 文件不存在');
 
     // 获取字节大小
     $size = filesize($file);
 
     $round && $size = round($size);
 
-    $unit  && $size = Number::byte($size);
+    $unit && $size = Number::byte($size);
 
     return $size;
 };

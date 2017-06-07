@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\filter;
 
 use msqphp\core\traits;
@@ -7,7 +7,7 @@ final class Filter
 {
     use traits\CallStatic;
     // 扔出异常
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new FilterException($message);
     }
@@ -26,7 +26,7 @@ final class Filter
         } elseif (is_array($value)) {
             return array_map('static::html', $value);
         } elseif (is_int($value) || is_float($value)) {
-            return (string)$value;
+            return (string) $value;
         } elseif (is_bool($value)) {
             return $value ? 'true' : 'false';
         } elseif (is_null($value)) {
@@ -49,7 +49,7 @@ final class Filter
         } elseif (is_array($value)) {
             return array_map('static::slashes', $value);
         } elseif (is_int($value) || is_float($value)) {
-            return (string)$value;
+            return (string) $value;
         } elseif (is_bool($value)) {
             return $value ? 'true' : 'false';
         } elseif (is_null($value)) {

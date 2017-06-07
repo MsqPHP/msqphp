@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\date;
 
 use msqphp\core\traits;
@@ -8,7 +8,7 @@ final class Date
     use traits\CallStatic;
 
     // 扔出异常
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new DateException($message);
     }
@@ -20,13 +20,13 @@ final class Date
      */
 
     //年月日合法检测
-    public static function checkDate(int $year, int $month, int $day) : bool
+    public static function checkDate(int $year, int $month, int $day): bool
     {
         return checkdate($month, $day, $year);
     }
 
     // 两个时间差的天数
-    public static function passDay(int $year_a, int $month_a, int $day_a, int $year_b, int $month_b, int $day_b) : int
+    public static function passDay(int $year_a, int $month_a, int $day_a, int $year_b, int $month_b, int $day_b): int
     {
         $time_a = strtotime($year_a . '-' . $month_a . '-' . $day_a);
         $time_b = strtotime($year_b . '-' . $month_b . '-' . $day_b);
@@ -34,7 +34,7 @@ final class Date
     }
 
     // 格式化时间
-    public static function format(int $time, string $type = '') : int
+    public static function format(int $time, string $type = ''): int
     {
         switch ($type) {
             case 'zh-cn':
@@ -49,12 +49,12 @@ final class Date
     }
 
     // 获取指定时间在当前时间的表示方法
-    public static function before(int $time) : string
+    public static function before(int $time): string
     {
         $today = strtotime(date('Y-m-d 00:00:00'));
         if ($time > $today) {
             $limit = time() - $time;
-            if ($limit < 60 ) {
+            if ($limit < 60) {
                 $result = '刚刚';
             } elseif ($limit < 3600) {
                 $result = floor($limit / 60) . ' 分钟前';

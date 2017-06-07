@@ -1,21 +1,22 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\session\handlers;
 
 use msqphp\base;
+use msqphp\main\session\Session;
 
-final class File  implements \SessionHandlerInterface {
-    private $path = '';
+final class File implements \SessionHandlerInterface
+{
+    private $path      = '';
     private $extension = '';
 
     public function __construct(array $config)
     {
-        if (!is_dir($config['path'])) {
-            throw new FileException($config['path'].' session储存路径不存在');
-        }
-        $this->path      = realpath($config['path']).DIRECTORY_SEPARATOR;
+        is_dir($config['path']) || $this->exception($config['path'] . ' session储存路径不存在');
+
+        $this->path      = realpath($config['path']) . DIRECTORY_SEPARATOR;
         $this->extension = $config['extension'];
     }
-    private function exception(string $message) : void
+    private function exception(string $message): void
     {
         throw new SessionHandlerException($message);
     }
@@ -63,7 +64,7 @@ final class File  implements \SessionHandlerInterface {
         }
     }
 
-    public function write($session_id , $session_data)
+    public function write($session_id, $session_data)
     {
         try {
             base\file\File::write($this->getFilePath($session_id), $session_data);
@@ -74,6 +75,6 @@ final class File  implements \SessionHandlerInterface {
     }
     public function getFilePath($session_id)
     {
-        return $this->path.$session_id.$this->extension;
+        return $this->path . $session_id . $this->extension;
     }
 }

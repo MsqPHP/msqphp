@@ -1,14 +1,12 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\cache;
-
-use msqphp\core\traits;
 
 final class Cache
 {
-    use CachePointerTrait, CacheOperateTrait, CacheStaticTrait;
+    use CacheParamsTrait, CacheParamsHandler, CacheOperateTrait, CacheStaticTrait;
 
     // 抛出异常
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new CacheException($message);
     }

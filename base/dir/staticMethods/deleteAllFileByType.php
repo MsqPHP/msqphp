@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\dir;
 
 use msqphp\base\file\File;
@@ -15,7 +15,7 @@ use msqphp\base\file\File;
  * @throws DirException
  * @return void
  */
-return function (string $dir, string $type, string $prefix = '') : void {
+return function (string $dir, string $type, string $prefix = ''): void {
     foreach (static::getAllFileByType($dir, $type, $prefix) as $file) {
         File::delete($file, true);
     }

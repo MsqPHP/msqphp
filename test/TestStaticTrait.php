@@ -26,7 +26,7 @@ trait TestStaticTrait
 
         try {
             $func_result = call_user_func_array($func_info, $args);
-        } catch (\msqphp\core\exception\Exception | \Exception $e) {
+        } catch (\msqphp\core\wrong\Exception | \Exception $e) {
             $func_result = $e->getMessage();
         }
 

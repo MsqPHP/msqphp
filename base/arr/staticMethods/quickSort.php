@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\arr;
 
 /**
@@ -10,7 +10,7 @@ namespace msqphp\base\arr;
  *
  * @return array
  */
-return function (array $arr) : array {
+return function (array $arr): array{
     // 数组长度
     $l = count($arr);
 
@@ -22,8 +22,8 @@ return function (array $arr) : array {
     $left  = [];
     $right = [];
 
-    for (--$l; $l > 0;--$l) {
-        $mid > $arr[$l] && ($left[]=$arr[$l]) || ($right[]=$arr[$l]);
+    for (--$l; $l > 0; --$l) {
+        $mid > $arr[$l] && ($left[] = $arr[$l]) || ($right[] = $arr[$l]);
     }
 
     return array_merge(static::quickSort($left), [$mid], static::quickSort($right));

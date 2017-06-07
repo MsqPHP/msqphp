@@ -1,11 +1,11 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\core\tool;
 
 use msqphp\base;
 
 final class Clean
 {
-    public static function all() : void
+    public static function all(): void
     {
         static::cache();
         static::view();
@@ -13,25 +13,29 @@ final class Clean
         static::log();
         static::framework();
     }
-    public static function cache() : void
+    public static function cache(): void
     {
         app()->cache->cleanAll();
     }
-    public static function view() : void
+    public static function view(): void
     {
-        base\dir\Dir::empty(app()->config->get('view.tpl_part_path'));
-        base\dir\Dir::empty(app()->config->get('view.tpl_package_path'));
+        base\dir\Dir::empty(core\config\Config::get('view.tpl_part_path'));
+        base\dir\Dir::empty(core\config\Config::get('view.tpl_package_path'));
     }
-    public static function session() : void
+    public static function session(): void
     {
         app()->session->clean();
     }
-    public static function log() : void
+    public static function log(): void
     {
         app()->log->clean();
     }
-    public static function framework() : void
+    public static function aiload(): void
     {
-        base\dir\Dir::empty(\msqphp\Environment::getPath('storage').'framework');
+
+    }
+    public static function framework(): void
+    {
+        base\dir\Dir::empty(\msqphp\Environment::getPath('storage') . 'framework');
     }
 }

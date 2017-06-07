@@ -1,5 +1,6 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\file;
+
 /**
  * 移动文件
  * @func_name          move
@@ -10,7 +11,7 @@ namespace msqphp\base\file;
  * @throws FileException
  * @return void
  */
-return function (string $from, string $to, bool $force = true) : void {
+return function (string $from, string $to, bool $force = true): void {
     static::copy($from, $to, $force);
     static::delete($from, $force);
 };

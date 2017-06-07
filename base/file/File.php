@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\file;
 
 use msqphp\base\dir\Dir;
@@ -9,7 +9,7 @@ final class File
     use traits\CallStatic;
 
     // 扔出异常
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new FileException($message);
     }
@@ -24,37 +24,36 @@ final class File
      * @return void
      */
 
-
     // 删除文件
-    public static function drop(string $file, bool $force = true) : void
+    public static function drop(string $file, bool $force = true): void
     {
         static::delete($file, $force);
     }
-    public static function delete(string $file, bool $force = true) : void
+    public static function delete(string $file, bool $force = true): void
     {
         if (is_file($file)) {
             // 不可写,异常
-            !is_writable($file) && static::exception($file.'文件不可写,无法删除');
+            !is_writable($file) && static::exception($file . '文件不可写,无法删除');
             // 错误,异常
-            !unlink($file) && static::exception($file.'未知错误,无法删除');
-        } else{
+            !unlink($file) && static::exception($file . '未知错误,无法删除');
+        } else {
             // 强制或异常
-            $force || static::exception($file.'不存在,无法删除');
+            $force || static::exception($file . '不存在,无法删除');
         }
     }
 
     // 读取指定长度的文件内容
-    public static function read(string $file, int $len) : string
+    public static function read(string $file, int $len): string
     {
         // 存在或异常
-        is_file($file) || static::exception($file.'不存在,无法读取');
+        is_file($file) || static::exception($file . '不存在,无法读取');
 
         // 可读或异常
-        is_readable($file) || static::exception($file.'无法操作,无法读取');
+        is_readable($file) || static::exception($file . '无法操作,无法读取');
 
         // 读取内容
         $fp = fopen($file, 'r');
-        (false === $content = fread($fp, $len)) && static::exception($file.'未知错误,无法读取');
+        (false === $content = fread($fp, $len)) && static::exception($file . '未知错误,无法读取');
         fclose($fp);
         unset($fp);
 
@@ -62,49 +61,49 @@ final class File
     }
 
     // 获取文件内容
-    public static function get(string $file) : string
+    public static function get(string $file): string
     {
         // 存在或异常
-        is_file($file) || static::exception($file.'不存在,无法读取');
+        is_file($file) || static::exception($file . '不存在,无法读取');
 
         // 可读或异常
-        is_readable($file) || static::exception($file.'无法操作,无法读取');
+        is_readable($file) || static::exception($file . '无法操作,无法读取');
 
         // 无法读取
-        (false === $content = file_get_contents($file)) && static::exception($file.'未知错误,无法读取');
+        (false === $content = file_get_contents($file)) && static::exception($file . '未知错误,无法读取');
 
         return (string) $content;
     }
 
     // 追加文件内容
-    public static function append(string $file, $content, bool $force = true) : void
+    public static function append(string $file, $content, bool $force = true): void
     {
         // 文件不存在
         if (!is_file($file)) {
             if ($force) {
                 static::write($file, $content, true);
             } else {
-                static::exception($file.'不存在,无法追加内容');
+                static::exception($file . '不存在,无法追加内容');
             }
         } else {
-        // 文件存在
-            is_writable($file) || static::exception($file.'父目录,无法写入');
+            // 文件存在
+            is_writable($file) || static::exception($file . '父目录,无法写入');
 
-            if (false === file_put_contents($file, (string)$content, FILE_APPEND | LOCK_EX)) {
-                static::exception($file.'未知错误,无法追加内容');
+            if (false === file_put_contents($file, (string) $content, FILE_APPEND | LOCK_EX)) {
+                static::exception($file . '未知错误,无法追加内容');
             }
         }
     }
 
     // 重写文件|保存文件
-    public static function save(string $file, $content, bool $force = true) : void
+    public static function save(string $file, $content, bool $force = true): void
     {
         static::write($file, $content, $force, $code);
     }
-    public static function write(string $file, $content, bool $force = true) : void
+    public static function write(string $file, $content, bool $force = true): void
     {
         if (is_file($file)) {
-            is_writable($file) || static::exception($file.'无法操作,无法写入');
+            is_writable($file) || static::exception($file . '无法操作,无法写入');
         } else {
             // 父目录
             $parent_dir = dirname($file);
@@ -112,16 +111,16 @@ final class File
             if (!is_dir($parent_dir)) {
                 // 错
                 if (!$force) {
-                    static::exception($file.'父目录不存在,无法写入');
+                    static::exception($file . '父目录不存在,无法写入');
                 } else {
                     // 创建
                     Dir::make($parent_dir, true);
                 }
             } else {
                 // 可写或异常
-                is_writable($parent_dir)   || static::exception($file . '父目录,无法写入');
+                is_writable($parent_dir) || static::exception($file . '父目录,无法写入');
             }
         }
-        (false !== file_put_contents($file, (string)$content, LOCK_EX)) || static::exception($file.'未知错误,无法写入');
+        (false !== file_put_contents($file, (string) $content, LOCK_EX)) || static::exception($file . '未知错误,无法写入');
     }
 }

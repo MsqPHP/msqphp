@@ -1,16 +1,17 @@
-<?php declare(strict_types = 1);
-namespace msqphp\main\log\handlers;
+<?php declare (strict_types = 1);
+namespace msqphp\core\log\handlers;
 
 use msqphp\base;
 
 class File implements LoggerHandlerInterface
 {
     private $config = [
-        'path'          => '',
-        'max_size'      => 2097152,
-        'files'         => 1,
-        'deep'          => 0,
-        'extension'     => '.log',
+        'path'        => '',
+        'max_size'    => 2097152,
+        'files'       => 1,
+        'date_format' => 'Y-m-d H:i:s',
+        'deep'        => 0,
+        'extension'   => '.log',
     ];
 
     public function __construct(array $config)
@@ -32,8 +33,8 @@ class File implements LoggerHandlerInterface
     public function record(string $level, string $message, $context = null)
     {
         base\file\File::append(
-            $this->config['path'].(APP_DEBUG ? 'debug' . DIRECTORY_SEPARATOR : '').date('Y-m-d').DIRECTORY_SEPARATOR.$level.random_int(1, $this->config['files']).$this->config['extension']
-            , '['.date('Y-m-d H:i:s').']' . $level . ':' .$message .PHP_EOL
+            $this->config['path'] . (APP_DEBUG ? 'debug' . DIRECTORY_SEPARATOR : '') . date('Y-m-d') . DIRECTORY_SEPARATOR . $level . random_int(1, $this->config['files']) . $this->config['extension']
+            , '[' . date($this->config['date_format']) . ']' . $level . ':' . $message . PHP_EOL
             , true
         );
     }

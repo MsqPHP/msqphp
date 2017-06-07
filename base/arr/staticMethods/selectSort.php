@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\arr;
 
 /**
@@ -10,7 +10,7 @@ namespace msqphp\base\arr;
  *
  * @return array
  */
-return function (array $arr) : array {
+return function (array $arr): array{
     for ($i = 0, $len = count($arr); $i < $len - 1; ++$i) {
         $p = $i;
         for ($j = $i + 1; $j < $len; ++$j) {

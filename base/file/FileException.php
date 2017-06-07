@@ -1,7 +1,7 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\file;
 
-final class FileException extends \msqphp\core\exception\Exception
+final class FileException extends \msqphp\core\wrong\Exception
 {
 
 }

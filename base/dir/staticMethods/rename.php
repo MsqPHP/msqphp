@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\dir;
 
 /**
@@ -13,13 +13,13 @@ namespace msqphp\base\dir;
  * @throws DirException
  * @return void
  */
-return function (string $old_dir, string $new_dir, bool $force = true) : void {
+return function (string $old_dir, string $new_dir, bool $force = true): void{
     // 原目录是否存在
-    is_dir($old_dir) || static::exception($old_dir.'不存在, 无法重命名');
+    is_dir($old_dir) || static::exception($old_dir . '不存在, 无法重命名');
 
     // 是否可操作
     if (!is_writable($old_dir) || !is_executable($old_dir)) {
-        static::exception($old_dir.'不可操作, 无法重命名');
+        static::exception($old_dir . '不可操作, 无法重命名');
     }
 
     // 目标目录是否存在
@@ -27,7 +27,7 @@ return function (string $old_dir, string $new_dir, bool $force = true) : void {
         if ($force) {
             static::deleteDir($to_dir, true);
         } else {
-            static::exception($new_dir.'已存在, 无法重命名');
+            static::exception($new_dir . '已存在, 无法重命名');
         }
 
     }
@@ -38,13 +38,13 @@ return function (string $old_dir, string $new_dir, bool $force = true) : void {
         if ($force) {
             static::make($new_parent_path, true);
         } else {
-            static::exception($new_dir.'上级目录不存在, 无法重命名');
+            static::exception($new_dir . '上级目录不存在, 无法重命名');
         }
     }
 
     // 目标父目录是否可操作
     if (!is_writable($new_parent_path) || !is_executable($new_parent_path)) {
-        static::exception($new_dir.'上级目录无法操作, 无法重命名');
+        static::exception($new_dir . '上级目录无法操作, 无法重命名');
     }
 
     // 重命名

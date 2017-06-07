@@ -5,8 +5,6 @@ trait RouteCategoryTrait
 {
     private static $category_info = [];
 
-    use RouteUseCategoryTrait, RouteAddCategoryTrait, RouteSetCategoryTrait;
-
     // 得到当前的分组信息
     public static function getGroupInfo() : array
     {
@@ -28,7 +26,6 @@ trait RouteCategoryTrait
         if (isset(static::$pending_path[0]) && static::checkAllowedCategoryValue(static::$pending_path[0], $allowed)) {
             // 取值
             $result = array_shift(static::$pending_path);
-
             // 追加至Url
             static::$url .= $result.'/';
         } else {
@@ -41,28 +38,17 @@ trait RouteCategoryTrait
                 throw new RouteException('错误的分组默认值类型,支持字符串定值或者一个返回字符串值的闭包函数');
             }
         }
-
         // 添加对应常量
         static::addCategoryConstant($name, $result);
-
         return $result;
     }
 
-    /**
-     * 添加一个分类常量
-     *
-     * @param  string  $name   常量名称
-     * @param  string  $value  常量值
-     *
-     * @return void
-     */
+    // 添加一个分类常量
     private static function addCategoryConstant(string $name, string $value) : void
     {
-        // 定义常量
+        // 定义常量并存储到分组信息中
         $constant = '__'.strtoupper($name).'__';
-
         defined($constant) || define($constant, $value);
-        // 添加到
         static::$category_info['constant'][$constant] = $value;
     }
 
@@ -86,24 +72,14 @@ trait RouteCategoryTrait
             static::exception($may.'未知的检测类型,检测类型应为数组或路由规则名称');
         }
     }
-}
 
-trait RouteSetCategoryTrait
-{
-    public static function setGroup(string $group, string $value, $namespace = null) : void
+    public static function setGroup(string $group, string $value, ?string $namespace = null) : void
     {
         static::$category_info['group'][] = static::$category_info['group'][$group] = $value;
+        static::addCategoryConstant($group, $value);
 
-        if ($namespace !== null) {
-            // bool等于组值
-            if (true === $namespace) {
-                static::$namespace .= trim($value, '\\').'\\';
-            } elseif (is_string($namespace)) {
-            // 否则为过固定值
-                static::$namespace .= trim($namespace, '\\').'\\';
-            } else {
-                static::exception('路由分组的命名空间类型未知,应为true(与组值相同)或者string(固定值');
-            }
+        if ($namespace != null) {
+            static::$namespace .= trim($value, '\\').'\\';
         }
     }
     public static function setLanguage(string $language) : void
@@ -116,9 +92,7 @@ trait RouteSetCategoryTrait
         static::$category_info['theme'] = $theme;
         static::addCategoryConstant('theme', $theme);
     }
-}
-trait RouteAddCategoryTrait
-{
+
     /**
      * 多语支持 || 多主题支持
      * @param   array      $info = [
@@ -158,47 +132,16 @@ trait RouteAddCategoryTrait
         // 赋值给当前信息和分组, 键为组名, 值: 如果在允许范围内, 取其值, 否则取默认;
         static::$category_info['group'][] = static::$category_info['group'][$info['name']] = $group = static::getAndAddAllowedCategoryValue($info['name'], $info['allowed'], $info['default']);
 
-        // 如果命名空间存在, 取其值
-        if (isset($info['namespace'])) {
+        if ($info['namespace'] !== null) {
             // bool等于组值
             if (true === $info['namespace']) {
                 static::$namespace .= trim($group, '\\').'\\';
-            } elseif (is_string($info['namespace'])) {
+            } elseif (is_string($namespace)) {
             // 否则为过固定值
                 static::$namespace .= trim($info['namespace'], '\\').'\\';
             } else {
                 static::exception('路由分组的命名空间类型未知,应为true(与组值相同)或者string(固定值');
             }
         }
-    }
-}
-trait RouteUseCategoryTrait
-{
-    /**
-     * @param  string   $group    组名
-     * @param  string   $value    组值
-     * @param  string   $language 语言名
-     * @param  string   $theme    主题
-     * @param  \Closure $func     闭包函数
-     * @param  array    $args     参数
-     *
-     * @return void
-     */
-    // 匹配分组,成功则调用对应函数
-    public static function group(string $group, string $value, \Closure $func, array $args = []) : void
-    {
-        $value === static::$category_info['group'][$group] && call_user_func_array($func, $args);
-    }
-
-    // 匹配语言,成功则调用对应函数
-    public static function language(string $language, \Closure $func, array $args = []) : void
-    {
-        $language === static::$category_info['language'] && call_user_func_array($func, $args);
-    }
-
-    // 匹配主题,成功则调用对应函数
-    public static function theme(string $theme, \Closure $func, array $args = []) : void
-    {
-        $theme === static::$category_info['theme'] &&call_user_func_array($func, $args);
     }
 }

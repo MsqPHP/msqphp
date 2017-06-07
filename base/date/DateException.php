@@ -1,7 +1,7 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\date;
 
-final class DateException extends \msqphp\core\exception\Exception
+final class DateException extends \msqphp\core\wrong\Exception
 {
 
 }

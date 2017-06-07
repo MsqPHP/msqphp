@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\base\arr;
 
 /**
@@ -18,7 +18,7 @@ return function (array $array, int $count = 1) {
     $count = min($count, count($array));
 
     if ($count === 1) {
-        return $array[array_rand($array , 1)];
+        return $array[array_rand($array, 1)];
     } else {
 
         // 随机获取键

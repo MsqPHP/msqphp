@@ -1,66 +1,52 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\core\config;
 
 use msqphp\base\arr\Arr;
-use msqphp\base\file\File;
 use msqphp\base\dir\Dir;
-use msqphp\core\traits;
+use msqphp\base\file\File;
+use msqphp\Environment;
 
+/**
+ * 只是一个简单的配置读取,提供一个配置缓存功能.
+ */
 final class Config
 {
-    use traits\Instance;
+    private static $config = [];
 
-    // 配置
-    private $config = [];
-
-    // 初始化
-    private function __construct(?string $path = null)
+    private static function exception(string $message): void
     {
-        // 配置缓存路径
-        $path = $path ?? \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cache_config.php';
+        throw new ConfigException('[配置错误]' . $message);
+    }
 
-        // 有缓存且文件存在,直接载入
-        if (HAS_CACHE && is_file($cache_path)) {
-            // 直接载入
-            $this->config = require $cache_path;
+    public static function init()
+    {
+        $config_cache_path = Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cache_config.php';
+
+        HAS_CACHE || File::delete($config_cache_path);
+
+        if (is_file($config_cache_path)) {
+            static::$config = require $config_cache_path;
         } else {
-            // 加载全部                          获得文件列表
-            array_map([$this, 'loadConfigFIle'], base\dir\Dir::getFileList(\msqphp\Environment::getPath('config'), true));
-            // 写入
-            base\file\File::write($cache_path, '<?php return '.var_export($this->config, true).';');
-            // 删除文件,避免更改后发生错误
-            HAS_CACHE || base\file\File::delete($cache_path);
+            // 加载全部                              获得文件列表
+            array_map([__CLASS__, 'loadConfigFIle'], Dir::getFileList(Environment::getPath('config'), true));
+            File::write($config_cache_path, '<?php return ' . var_export(static::$config, true) . ';');
         }
     }
 
-    // 抛出异常
-    private function exception(string $message) : void
+    public static function get( ? string $key = null)
     {
-        throw new ConfigException($message);
+        return Arr::get(static::$config, $key);
     }
 
-    /**
-     * @param  string $key   键
-     * @param  miexd  $value 值
-     */
-
-    // 获取配置
-    public function get(?string $key = null)
+    public static function set( ? string $key, $value) : void
     {
-        return base\arr\Arr::get($this->config, $key);
+        Arr::set(static::$config, $key, $value);
     }
 
-    // 设置配置
-    public function set(?string $key, $value) : void
+    private static function loadConfigFIle(string $file) : void
     {
-        base\arr\Arr::set($this->config, $key, $value);
-    }
-
-    // 加载配置文件
-    private function loadConfigFIle(string $file) : void
-    {
-        is_readable($file) || $this->exception($file . '配置文件无法加载');
-
-        $this->config[pathinfo($file, PATHINFO_FILENAME)] = require $file;
+        is_file($file) || static::exception(sprintf('配置文件:%s , 无法加载,请检查目录或者文件是否存在', $file));
+        // 以文件名称作为配置键.
+        static::$config[pathinfo($file, PATHINFO_FILENAME)] = require $file;
     }
 }

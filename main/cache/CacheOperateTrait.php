@@ -1,14 +1,14 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\cache;
 
 trait CacheOperateTrait
 {
     // 当前处理缓存键是否存在
-    public function exists() : bool
+    public function exists(): bool
     {
-        return $this->getHander()->available($this->getKey());
+        return HAS_CACHE && $this->getHander()->available($this->getKey());
     }
-    public function available() : bool
+    public function available(): bool
     {
         return $this->exists();
     }
@@ -17,114 +17,80 @@ trait CacheOperateTrait
     public function get()
     {
         try {
-            return $this->getHander()->get($this->getKey());
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception($this->getKey().'缓存无法获取,原因:'.$e->getMessage());
+            return HAS_CACHE ? $this->getHander()->get($this->getKey()) : null;
+        } catch (handlers\CacheHandlerException $e) {
+            static::exception($this->getKey() . '缓存无法获取,原因:' . $e->getMessage());
         }
     }
 
     // 自增
-    public function inc() : int
+    public function inc(): int
     {
         return $this->increment();
     }
-    public function increment() : int
+    public function increment(): int
     {
-        try {
-            return $this->getHander()->increment($this->getKey(), $this->params['offset'] ?? 1);
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception($this->getKey().'缓存无法自增,原因:'.$e->getMessage());
+        if (HAS_CACHE) {
+
+            try {
+                return $this->getHander()->increment($this->getKey(), $this->params['offset'] ?? 1);
+            } catch (handlers\CacheHandlerException $e) {
+                static::exception($this->getKey() . '缓存无法自增,原因:' . $e->getMessage());
+            }
         }
+        return -1;
     }
 
     // 自减
-    public function dec() : int
+    public function dec(): int
     {
         return $this->decrement();
     }
-    public function decrement() : int
+    public function decrement(): int
     {
-        try {
-            return $this->getHander()->decrement($this->getKey(), $this->params['offset'] ?? 1);
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception($this->getKey().'缓存无法自减,原因:'.$e->getMessage());
+        if (HAS_CACHE) {
+            try {
+                return $this->getHander()->decrement($this->getKey(), $this->params['offset'] ?? 1);
+            } catch (handlers\CacheHandlerException $e) {
+                static::exception($this->getKey() . '缓存无法自减,原因:' . $e->getMessage());
+            }
         }
+        return -1;
     }
 
     // 设置当前处理缓存键 对应值
-    public function set() : void
+    public function set(): void
     {
-        try {
-            $this->getHander()->set($this->getKey(), $this->getValue(), $this->getExpire());
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception($this->getKey().'缓存无法赋值,原因:'.$e->getMessage());
+        if (HAS_CACHE) {
+            try {
+                $this->getHander()->set($this->getKey(), $this->getValue(), $this->getExpire());
+            } catch (handlers\CacheHandlerException $e) {
+                static::exception($this->getKey() . '缓存无法赋值,原因:' . $e->getMessage());
+            }
         }
     }
 
     // 删除当前处理缓存键
-    public function delete() : void
+    public function delete(): void
     {
         try {
             $this->getHander()->delete($this->getKey());
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception($this->getKey().'缓存无法删除,原因:'.$e->getMessage());
+        } catch (handlers\CacheHandlerException $e) {
+            static::exception($this->getKey() . '缓存无法删除,原因:' . $e->getMessage());
         }
     }
 
     // 清楚所有过期缓存
-    public function clear() : void
+    public function clear(): void
     {
         try {
             $this->getHander()->clear();
-        } catch(handlers\CacheHandlerException $e) {
-            static::exception('缓存无法清空,原因:'.$e->getMessage());
+        } catch (handlers\CacheHandlerException $e) {
+            static::exception('缓存无法清空,原因:' . $e->getMessage());
         }
     }
-    public function cleanAll() : void
-    {
-        foreach (static::$handlers as $handler) {
-            $this->handler($handler)->clean();
-        }
-    }
-    public function flush() : void
+    public function flush(): void
     {
         $this->clear();
-    }
-
-    // 得到缓存真实键
-    private function getKey() : string
-    {
-        // 不存在异常
-        isset($this->params['key']) || static::exception('未选择任意缓存键');
-        // 添加前缀
-        return ($this->params['prefix'] ?? static::$config['prefix']) . $this->params['key'];
-    }
-    // 得到缓存值
-    private function getValue()
-    {
-        isset($this->params['value']) || static::exception('未给当前缓存设置任意赋值');
-
-        return $this->params['value'];
-    }
-    // 得到过期时间
-    private function getExpire() : int
-    {
-        return HAS_CACHE ? $this->params['expire'] ?? static::$config['expire'] : 0;
-    }
-
-
-    // 得到缓存处理器
-    private function getHander() : handlers\CacheHandlerInterface
-    {
-        // 如果处理器存在,取其,直接返回
-        if (isset($this->params['handler'])) {
-            return $this->params['handler'];
-        // 有种类,则获取对应处理器
-        } elseif (isset($this->params['type'])) {
-            return $this->params['handler'] = static::getCacheHandler($this->params['type'], $this->params['config'] ?? []);
-        // 取默认
-        } else {
-            return $this->params['handler'] = static::getDefaultHandler();
-        }
     }
 }

@@ -1,12 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp;
 
 final class Environment
 {
     // 框架版本
-    private const vension = 2.0;
-
-    // 运行模式
+    const VENSION            = 2.0; // 运行模式
     private static $run_mode = '';
 
     // 所有目录存放
@@ -20,14 +18,23 @@ final class Environment
         'root'        => '',
         'storage'     => '',
         'test'        => '',
-        'framework'   => ''
+        'framework'   => '',
     ];
+    private static $vendor_path = [];
 
     // 初始化框架环境
-    public static function init() : void
+    public static function init(): void
     {
         static::initAutoLoader();
-        static::initRealWithAiload();
+
+        core\loader\AILoader::useAiload('environment', 1000, function () {
+            // 配置处理
+            core\config\Config::init();
+            // 错误处理
+            core\wrong\Wrong::init();
+            // 时区设置
+            date_default_timezone_set(core\config\Config::get('framework.timezone'));
+        }, [], static::getPath('storage') . 'framework/aiload_cache_file.php', true);
     }
     /**
      * loader静态类储存一个数组
@@ -35,71 +42,23 @@ final class Environment
      * 以实现智能加载
      * 所以在载入自动加载类前先载入对应文件
      */
-    private static function initAutoLoader() : void
+    private static function initAutoLoader(): void
     {
         $framework_path = static::getPath('framework');
+        require $framework_path . 'core/loader/AutoLoadRecord.php';
         if (COMPOSER_AUTOLOAD) {
             // 载入简易加载类文件
-            require $framework_path . 'core/loader/BaseTrait.php';
-            require $framework_path . 'core/loader/AiloadTrait.php';
-            require $framework_path . 'core/loader/SimpleLoader.php';
             //使用则载入composer自动加载类
             require static::getPath('root') . 'vendor/autoload.php';
         } else {
             // 载入完整加载类文件
-            require $framework_path . 'core/loader/BaseTrait.php';
-            require $framework_path . 'core/loader/AutoloadTrait.php';
-            require $framework_path . 'core/loader/AiloadTrait.php';
-            require $framework_path . 'core/loader/Loader.php';
-            core\loader\Loader::register();
-        }
-    }
-
-    // 实际的初始化函数
-    private static function initReal() : void
-    {
-        // 错误处理
-        core\wrong\Wrong::init();
-        // 时区设置
-        date_default_timezone_set(app()->config->get('framework.timezone'));
-    }
-
-    // 真正的环境初始化,配合aiload使用
-    private static function initRealWithAiload() : void
-    {
-        //智能加载缓存文件
-        $aiload_cache_file = static::getPath('storage') . 'framework/aiload_cache_file.php';
-
-        //缓存文件存在
-        if (is_file($aiload_cache_file)) {
-            //载入对应缓存
-            include $aiload_cache_file;
-            //初始化
-            static::initReal();
-            //随机值删除
-            random_int(1, 1000000) === 1000 && msqphp\base\file\File::delete($aiload_cache_file, true);
-        } else {
-            //创建一个新缓存
-            $loader = app()->loader;
-            $loader->key('environment')->load();
-
-            //初始化
-            static::initReal();
-
-            // 如果为最终,初始化,删除
-            if ($loader->last()) {
-                $needful_classes = $loader->getLastNeedfulClasses();
-                msqphp\base\file\File::write($aiload_cache_file, empty($needful_classes) ? '' : '<?php include \'' . implode('\';include \'', $loader->getLastNeedfulClasses()) . '\';', true);
-            // 删除全部
-            } else {
-                $loader->deleteAll();
-                $loader->update();
-            }
+            require $framework_path . 'core/loader/AutoLoader.php';
+            core\loader\AutoLoader::register();
         }
     }
 
     // 获取当前运行环境
-    public static function getRunMode() : string
+    public static function getRunMode(): string
     {
         if (static::$run_mode !== '') {
             return static::$run_mode;
@@ -112,13 +71,13 @@ final class Environment
             case 'apache':
             case 'apache2filter':
             case 'apache2handler':
-            default :
+            default:
                 return static::$run_mode = 'web';
         }
     }
 
     // 设置路径
-    public static function setPath(array $path_config) : void
+    public static function setPath(array $path_config): void
     {
         foreach ($path_config as $name => $path) {
             // 存在或报错
@@ -131,11 +90,31 @@ final class Environment
     }
 
     // 获取路径
-    public static function getPath(string $name) : string
+    public static function getPath(string $name): string
     {
         if (!isset(static::$path[$name])) {
             throw new \Exception('目标路径无法获取' . $name);
         }
         return static::$path[$name];
+    }
+
+    public static function getVenderFilePath(string $class, string $name, string $type):  ? string
+    {
+
+        // 去类命名空间头msqphp和类名
+        // 例:msqphp\base\dir\Dir ----> base\dir
+        $namespace       = str_replace([strrchr($class, '\\'), 'msqphp\\'], '', $class);
+        $file_path_right = strtr($namespace, '\\', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $type . DIRECTORY_SEPARATOR . $name . '.php';
+        foreach (static::$vendor_path as $file_path_left) {
+            $file_path = $file_path_left . $file_path_right;
+            if (is_file($file_path)) {
+                return $file_path;
+            }
+        }
+        return null;
+    }
+    public static function addVenderPath(string $path) : void
+    {
+        static::$vendor_path[] = realpath($path) . DIRECTORY_SEPARATOR;
     }
 }
