@@ -43,7 +43,7 @@ final class Cli
         set_time_limit(0);
         $bool = true;
         while ($bool) {
-            $bool = true && call_user_func_array($func, $params);
+            $bool = $bool && call_user_func_array($func, $params);
         }
     }
     public static function memoryLimit(int $size, \Closure $func, array $params = []): void

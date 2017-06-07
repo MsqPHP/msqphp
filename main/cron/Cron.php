@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\cron;
 
 use msqphp\base\file\File;
@@ -10,7 +10,7 @@ final class Cron
     // 定时任务缓存目录
     private static $path = '';
 
-    private static function exception(string $message) : void
+    private static function exception(string $message): void
     {
         throw new CronException($message);
     }
@@ -22,7 +22,7 @@ final class Cron
      *
      * @return  string
      */
-    public static function getFilePath(string $type = '') : string
+    public static function getFilePath(string $type = ''): string
     {
         // 为空赋值
         static::$path === '' && static::$path = \msqphp\Environment::getPath('storage') . 'framework' . DIRECTORY_SEPARATOR . 'cron' . DIRECTORY_SEPARATOR;
@@ -45,18 +45,18 @@ final class Cron
             case 'lock':
                 return static::$path . 'lock';
             case 'cron':
-                return \msqphp\Environment::getPath('application').'cron';
+                return \msqphp\Environment::getPath('application') . 'cron';
             default:
-                static::exception('错误的类型'.$type);
+                static::exception('错误的类型' . $type);
         }
     }
 
     // 日志写入
-    public static function recordLog(string $message) : void
+    public static function recordLog(string $message): void
     {
         try {
             File::append(static::getFilePath('log'), $message . PHP_EOL, true);
-        } catch(FileException $e) {
+        } catch (FileException $e) {
             throw new CronException('定时任务日志记录出错,错误原因:' . $e->getMessage());
         }
     }

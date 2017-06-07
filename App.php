@@ -34,8 +34,7 @@ final class App
     }
     private static function getSimalInfo(): array
     {
-        $end_info = [];
-        //结束调用,产生框架运行信息;
+        $end_info                                                       = [];
         defined('PHP_START_TIME') && $end_info[]                        = "\t总用时          : " . (string) round(microtime(true) - PHP_START_TIME, 12) . '秒';
         defined('ROUTE_END') && defined('USER_FUNC_END') && $end_info[] = "\t路由用时        : " . (string) round(ROUTE_END - ROUTE_START - USER_FUNC_END + USER_FUNC_START, 12) . '秒';
         defined('USER_FUNC_END') && $end_info[]                         = "\t用户函数用时    : " . (string) round(USER_FUNC_END - USER_FUNC_START, 12) . '秒';
@@ -47,7 +46,6 @@ final class App
     {
         defined('PHP_START_TIME') && $end_time = microtime(true);
         defined('PHP_START_MEM') && $end_mem   = memory_get_usage();
-        defined('PHP_START_CPU') && $end_cpu   = getrusage();
 
         $end_info = [];
 

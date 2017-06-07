@@ -74,11 +74,12 @@ final class Wrong
         $i = 1;
         foreach ($e->getTrace() as $trace) {
             $result[] = [
-                'num'  => $i++,
+                'num'  => $i,
                 'file' => $trace['file'] ?? '',
                 'line' => $trace['line'] ?? '',
                 'code' => isset($trace['type']) ? $trace['class'] . $trace['type'] . $trace['function'] . '()' : $trace['function'] . '()',
             ];
+            $i++;
         }
 
         return $result;

@@ -66,5 +66,5 @@ return function (int $year, int $month, int $day): string {
     // 生肖（对应地支）
     $shengxiao = $cShengXiao[($year % 12 + 1)];
     //  return 闰八月初二 庚子年 【鼠年】
-    return $tiangan . $dizhi . '年' . ' ' . '[' . $shengxiao . '年] ' . $month . $day;
+    return $tiangan . $dizhi . '年' . ' ' . '[' . $shengxiao . '年] ' . $month . $day . $week;
 };

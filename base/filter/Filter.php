@@ -22,18 +22,19 @@ final class Filter
     public static function html($value)
     {
         if (is_string($value)) {
-            return htmlspecialchars($value, ENT_QUOTES);
+            $result = htmlspecialchars($value, ENT_QUOTES);
         } elseif (is_array($value)) {
-            return array_map('static::html', $value);
+            $result = array_map('static::html', $value);
         } elseif (is_int($value) || is_float($value)) {
-            return (string) $value;
+            $result = (string) $value;
         } elseif (is_bool($value)) {
-            return $value ? 'true' : 'false';
+            $result = $value ? 'true' : 'false';
         } elseif (is_null($value)) {
-            return 'null';
+            $result = 'null';
         } else {
             static::exception('不支持的格式');
         }
+        return $result;
     }
     /**
      * 转义
@@ -45,17 +46,18 @@ final class Filter
     public static function slashes($value)
     {
         if (is_string($value)) {
-            return addslashes($value, ENT_QUOTES);
+            $result = addslashes($value, ENT_QUOTES);
         } elseif (is_array($value)) {
-            return array_map('static::slashes', $value);
+            $result = array_map('static::slashes', $value);
         } elseif (is_int($value) || is_float($value)) {
-            return (string) $value;
+            $result = (string) $value;
         } elseif (is_bool($value)) {
-            return $value ? 'true' : 'false';
+            $result = $value ? 'true' : 'false';
         } elseif (is_null($value)) {
-            return 'null';
+            $result = 'null';
         } else {
             static::exception('不支持的格式');
         }
+        return $result;
     }
 }

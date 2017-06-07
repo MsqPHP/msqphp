@@ -20,7 +20,7 @@ abstract class View
     // 抛出异常
     private function exception(string $message): void
     {
-        throw new ViewException('[视图错误]' . $message);
+        throw new ViewException('[视图异常]' . $message);
     }
 
     // 构造函数

@@ -3,5 +3,5 @@ namespace msqphp\main\template;
 
 interface TemplateIterator extends \Iterator
 {
-    //abstract function __construct(string $input);
+    public function __construct(string $input);
 }

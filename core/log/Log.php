@@ -21,7 +21,7 @@ final class Log
 
     private static function exception(string $message): void
     {
-        throw new LogException($message);
+        throw new LogException('[日志异常]' . $message);
     }
 
     public static function record(string $level, string $messages, array $context = []): void
@@ -41,7 +41,7 @@ final class Log
             static::$config = $config = array_merge(static::$config, Config::get('log'));
             // 连接处理器文件路径
             $file = \msqphp\Environment::getVenderFilePath(__CLASS__, $config['default_handler'], 'handlers');
-            is_file($file) || static::exception($type . '日志处理类不存在');
+            is_file($file) || static::exception($config['default_handler'] . '日志处理类不存在');
             // 加载处理类文件
             require $file;
             // 拼接类名

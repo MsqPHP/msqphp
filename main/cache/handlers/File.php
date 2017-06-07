@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 namespace msqphp\main\cache\handlers;
 
 use msqphp\base;
@@ -8,13 +8,13 @@ final class File implements CacheHandlerInterface
     // 配置参数
     private $config = [
         // 路径
-        'path'       => '',
+        'path'      => '',
         // 后缀
-        'extension'  => '',
+        'extension' => '',
         // 深度
-        'deep'       => 1,
+        'deep'      => 1,
         // 最大文件缓存数
-        'length'     => 0,
+        'length'    => 0,
     ];
 
     // 初始化
@@ -32,7 +32,7 @@ final class File implements CacheHandlerInterface
     }
 
     // 抛出异常
-    private function exception(string $message) : void
+    private function exception(string $message): void
     {
         throw new CacheHandlerException($message);
     }
@@ -46,7 +46,7 @@ final class File implements CacheHandlerInterface
      */
 
     // 是否存在
-    public function available(string $key) : bool
+    public function available(string $key): bool
     {
         // 获取文件路径
         $file = $this->filename($key);
@@ -57,13 +57,13 @@ final class File implements CacheHandlerInterface
         // 读取前十个字符, 如果大于现在时间, 则过期
         try {
             // 是否为空
-            if (time() > (int)base\file\File::read($file, 10)) {
+            if (time() > (int) base\file\File::read($file, 10)) {
                 base\file\File::delete($file);
                 return false;
             } else {
                 return true;
             }
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             return false;
         }
     }
@@ -74,7 +74,7 @@ final class File implements CacheHandlerInterface
         // 得到内容
         try {
             $value = base\file\File::get($this->filename($key));
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
         // 去除前十个字符（过期时间）
@@ -82,11 +82,11 @@ final class File implements CacheHandlerInterface
     }
 
     // 设置
-    public function set(string $key, $value, int $expire) : void
+    public function set(string $key, $value, int $expire): void
     {
         // 值:过期时间 . 转义后的值
 
-        $value = (string)(time() + $expire) . serialize($value);
+        $value = (string) (time() + $expire) . serialize($value);
 
         // 存储
         try {
@@ -96,18 +96,18 @@ final class File implements CacheHandlerInterface
             // 如果限制了最大储存数, 调用队列
             $this->config['length'] > 0 && $this->queue($key);
 
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
     }
     // 递增
-    public function increment(string $key, int $offset) : int
+    public function increment(string $key, int $offset): int
     {
         try {
             // 获取文件路径
             $file = $this->filename($key);
             // 判断文件情况
-            is_file($file) || $this->exception($file.'缓存文件不存在');
+            is_file($file) || $this->exception($file . '缓存文件不存在');
             // 获取内容
             $content = base\file\File::get($file);
             // 过期时间
@@ -119,31 +119,31 @@ final class File implements CacheHandlerInterface
             base\file\File::write($file, (string) $expire . serialize($num), true);
 
             return $num;
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
     }
     // 递减
-    public function decrement(string $key, int $offset) : int
+    public function decrement(string $key, int $offset): int
     {
         return $this->increment($key, 0 - $offset);
     }
     // 删除缓存
-    public function delete(string $key) : void
+    public function delete(string $key): void
     {
         // 获取文件路径
         try {
             base\file\File::delete($this->filename($key), true);
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
     }
     // 清空所有缓存
-    public function clear() : void
+    public function clear(): void
     {
         try {
             base\dir\Dir::deleteAllFileByType($this->config['path'], $this->config['extension']);
-        } catch(base\file\FileException $e) {
+        } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
     }
@@ -152,7 +152,7 @@ final class File implements CacheHandlerInterface
     {
 
         // 获取缓存队列文件名
-        $queue_file = $this->config['path'].'cacheQueue.php';
+        $queue_file = $this->config['path'] . 'cacheQueue.php';
 
         // 如果不存在
         $queue = is_file($queue_file) ? require $queue_file : [];
@@ -166,10 +166,10 @@ final class File implements CacheHandlerInterface
                 // 移除第一个
                 $old_key = array_shift($queue);
                 // 删除对应文件
-                base\file\File::delete($this->filename($key), true);
+                base\file\File::delete($this->filename($old_key), true);
             }
             // 重新写入
-            base\file\File::write($queue_file, '<?php return '.var_export($queue, true).';', true);
+            base\file\File::write($queue_file, '<?php return ' . var_export($queue, true) . ';', true);
         } catch (base\file\FileException $e) {
             $this->exception($e->getMessage());
         }
@@ -181,21 +181,21 @@ final class File implements CacheHandlerInterface
      *
      * @return string
      */
-    private function filename(string $key) : string
+    private function filename(string $key): string
     {
         $name = md5($key);
 
-        $dir  = $this->config['path'];
+        $dir = $this->config['path'];
         // 深度
         $deep = $this->config['deep'];
 
         for ($i = 0; $i < $deep; ++$i) {
-            $dir .= $name[$i].DIRECTORY_SEPARATOR;
+            $dir .= $name[$i] . DIRECTORY_SEPARATOR;
             // 目录不存在则创建
             is_dir($dir) || base\dir\Dir::make($dir, true, 0755);
         }
 
         // 目录.md5值.扩展名
-        return $dir.$name.$this->config['extension'];
+        return $dir . $name . $this->config['extension'];
     }
 }
